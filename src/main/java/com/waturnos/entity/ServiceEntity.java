@@ -1,37 +1,28 @@
 package com.waturnos.entity;
 
-import java.math.BigDecimal;
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.Data;
-
-@Data
-@Entity
-@Table(name = "services", schema = "waturnos")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Entity @Table(name="service")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class ServiceEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long serviceId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id")
-    private Tenant tenant;
-
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String name;
-    private Integer durationMin;
-    private BigDecimal price;
-    private Boolean active = true;
+    private String description;
+    private Integer durationMinutes;
+    private Double price;
+    private Integer advancePayment;
+    private Integer futureDays;
+    private String creator;
+    private String modificator;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="provider_id")
+    private Provider provider;
+
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="location_id")
+    private Location location;
 }
