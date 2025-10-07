@@ -1,33 +1,57 @@
 package com.waturnos.security;
 
-import com.waturnos.service.TenantService;
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 
-@Component
-public class ApiKeyFilter implements Filter {
+import org.springframework.web.filter.OncePerRequestFilter;
 
-    private static final String HEADER = "X-API-KEY";
-    private final TenantService tenantService;
+import com.waturnos.entity.Tenant;
+import com.waturnos.repository.TenantRepository;
 
-    public ApiKeyFilter(TenantService tenantService) {
-        this.tenantService = tenantService;
-    }
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+public class ApiKeyFilter extends OncePerRequestFilter {
 
-        HttpServletRequest req = (HttpServletRequest) request;
-        String key = req.getHeader(HEADER);
+	private final TenantRepository tenantRepository;
 
-        if (key == null || tenantService.findByApiKey(key).isEmpty()) {
-            throw new ServletException("API Key inválida o ausente");
-        }
+	public ApiKeyFilter(TenantRepository tenantRepository) {
+		this.tenantRepository = tenantRepository;
+	}
 
-        chain.doFilter(request, response);
-    }
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+
+		String path = request.getRequestURI();
+
+		// 🔹 ignorar endpoints públicos
+		if (path.startsWith("/auth") || path.startsWith("/actuator")) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		String apiKey = request.getHeader("X-API-KEY");
+
+		// si no hay apiKey, dejamos seguir (JWT puede manejarlo)
+		if (apiKey == null || apiKey.isEmpty()) {
+			filterChain.doFilter(request, response);
+			return;
+		}
+
+		Tenant tenant = tenantRepository.findByApiKey(apiKey);
+		if (tenant == null) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.getWriter().write("{\"error\":\"API Key inválida\"}");
+			return;
+		}
+		TenantContext.setTenantId(tenant.getTenantId());
+
+		try {
+			filterChain.doFilter(request, response);
+		} finally {
+			TenantContext.clear();
+		}
+	}
 }

@@ -20,7 +20,7 @@ public class ServiceEntityController {
         return serviceEntityService.getByTenant(tenantId);
     }
 
-    @PostMapping
+    @PostMapping	
     public ServiceEntity create(@RequestBody ServiceEntity serviceEntity) {
         return serviceEntityService.save(serviceEntity);
     }
