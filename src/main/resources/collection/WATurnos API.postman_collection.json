@@ -1,0 +1,1270 @@
+{
+	"info": {
+		"_postman_id": "e4878679-e99a-41d5-88c6-ad81acf3dbb5",
+		"name": "WATurnos API",
+		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29311595",
+		"_collection_link": "https://warped-crescent-210926.postman.co/workspace/OCTUBRE-2025~f5a8c77c-3bd7-4204-a7b4-0a785c42015f/collection/29311595-e4878679-e99a-41d5-88c6-ad81acf3dbb5?action=share&source=collection_link&creator=29311595"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "POST /auth/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+									"var data = pm.response.json();",
+									"if (data && data.token) { pm.environment.set('jwtToken', data.token); }"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/auth/login",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{
+					"name": "GET /organizations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /organizations",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil\",\n  \"type\": \"consultorio\",\n  \"timezone\": \"America/Argentina/Buenos_Aires\",\n  \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /organizations/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /organizations/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil (upd)\",\n  \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /organizations/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /organizations/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations/search",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /organizations/status/{status}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/organizations/status/ACTIVE",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"status",
+								"ACTIVE"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GET /users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/users",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez\",\n  \"email\": \"juan@waturnos.com\",\n  \"password\": \"1234\",\n  \"role\": \"MANAGER\",\n  \"organizationId\": 1\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/users",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/users/{{userId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /users/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez (upd)\",\n  \"active\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/users/{{userId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /users/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/users/{{userId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/users/byOrg/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/users/search",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Providers",
+			"item": [
+				{
+					"name": "GET /providers by org",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/providers",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /providers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Dra. Ana Garc\\u00eda\",\n  \"email\": \"ana@clinica.com\",\n  \"phone\": \"+54 9 249 300000\",\n  \"bio\": \"Kinesiolog\\u00eda\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/providers",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/providers/{{providerId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /providers/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Dra. Ana Garc\\u00eda (upd)\",\n  \"active\": true\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/providers/{{providerId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /providers/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/providers/{{providerId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/providers/byOrg/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/active",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/providers/active",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"providers",
+								"active"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"item": [
+				{
+					"name": "GET /services by Provider",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/provider/1",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"provider",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /services",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"providerId\": 1,\n  \"locationId\": 1,\n  \"name\": \"Corte de pelo\",\n  \"description\": \"Corte con lavado\",\n  \"price\": 3500,\n  \"durationMinutes\": 45,\n  \"advancePayment\": 0,\n  \"futureDays\": 30\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/services",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/{{serviceId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /services/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 3900,\n  \"durationMinutes\": 50\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/services/{{serviceId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /services/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/{{serviceId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/byProvider/{providerId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/byProvider/{{providerId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"byProvider",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/available",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/available",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"available"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/services/search",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"services",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clients",
+			"item": [
+				{
+					"name": "GET /clients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/clients",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /clients",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Carlos L\\u00f3pez\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400000\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/clients",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/clients/{{clientId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /clients/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Carlos L\\u00f3pez (upd)\",\n  \"phone\": \"+54 9 249 400999\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/clients/{{clientId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /clients/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/clients/{{clientId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/clients/byOrg/{{organizationId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/clients/search",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"clients",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "GET /bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /bookings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"clientId\": 1,\n  \"providerId\": 1,\n  \"serviceId\": 1,\n  \"startTime\": \"2025-10-26T10:00:00\",\n  \"endTime\": \"2025-10-26T10:45:00\",\n  \"status\": \"CONFIRMED\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/{{bookingId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Traer estudios previos\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/{{bookingId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /bookings/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/{{bookingId}}",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/upcoming",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/upcoming",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"upcoming"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/history",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/history",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}/cancel",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"El cliente no puede asistir\"\n}"
+						},
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/{{bookingId}}/cancel",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"{{bookingId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}/status/{status}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "http://{{baseUrl}}/bookings/{{bookingId}}/status/CONFIRMED",
+							"protocol": "http",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bookings",
+								"{{bookingId}}",
+								"status",
+								"CONFIRMED"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
