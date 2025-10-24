@@ -26,9 +26,9 @@ VALUES
 (3, 'booking_limit', '60');
 
 -- ============================================
--- USER
+-- USERS
 -- ============================================
-INSERT INTO "user" (id, full_name, email, phone, password_hash, organization_id, active, role, creator)
+INSERT INTO users (id, full_name, email, phone, password_hash, organization_id, active, role, creator)
 VALUES
 (1, 'Juan Barber', 'juan@barberia.com', '2494111111', 'hash1', 1, TRUE, 'admin', 'system'),
 (2, 'Laura Gym', 'laura@fitzone.com', '2494222222', 'hash2', 2, TRUE, 'manager', 'system'),
@@ -37,7 +37,7 @@ VALUES
 -- ============================================
 -- USER_PROPS
 -- ============================================
-INSERT INTO user_props (user_id, key, value)
+INSERT INTO users_props (users_id, key, value)
 VALUES
 (1, 'theme', 'dark'),
 (2, 'notifications', 'enabled'),

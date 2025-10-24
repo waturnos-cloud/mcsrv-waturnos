@@ -53,7 +53,7 @@ CREATE TABLE organization_props (
 
 -- Tabla: user
 -- Usuarios que administran la plataforma (admin, gestor, o proveedores con acceso)
-CREATE TABLE "user" (
+CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     full_name VARCHAR(255), -- Nombre completo
     email VARCHAR(255) UNIQUE, -- Email único para login
@@ -69,11 +69,11 @@ CREATE TABLE "user" (
     modificator VARCHAR(100) -- modificator
 );
 
--- Tabla: user_props
+-- Tabla: users_props
 -- Configuración extra por usuario (clave-valor)
-CREATE TABLE user_props (
+CREATE TABLE users_props (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES "user"(id) ON DELETE CASCADE,
+    users_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
     key VARCHAR(255),
     value TEXT
 );
@@ -256,17 +256,17 @@ CREATE TABLE provider_organization (
 -- ============================================
 
 -- user
-ALTER TABLE "user"
+ALTER TABLE users
     ADD CONSTRAINT fk_user_org
         FOREIGN KEY (organization_id)
         REFERENCES organization(id)
         ON DELETE CASCADE;
 
--- user_props
-ALTER TABLE user_props
-    ADD CONSTRAINT fk_userprops_user
-        FOREIGN KEY (user_id)
-        REFERENCES "user"(id)
+-- users_props
+ALTER TABLE users_props
+    ADD CONSTRAINT fk_usersprops_user
+        FOREIGN KEY (users_id)
+        REFERENCES users(id)
         ON DELETE CASCADE;
 
 -- provider
@@ -430,9 +430,9 @@ CREATE INDEX idx_location_org ON location(organization_id);
 CREATE INDEX idx_location_active ON location(active);
 
 -- USER
-CREATE INDEX idx_user_email ON "user"(email);
-CREATE INDEX idx_user_org ON "user"(organization_id);
-CREATE INDEX idx_user_role ON "user"(role);
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_user_org ON users(organization_id);
+CREATE INDEX idx_user_role ON users(role);
 
 -- PROVIDER
 CREATE INDEX idx_provider_org ON provider(organization_id);
