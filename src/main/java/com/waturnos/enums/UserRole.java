@@ -1,2 +1,5 @@
 package com.waturnos.enums;
-public enum UserRole { ADMIN, MANAGER, PROVIDER }
+
+public enum UserRole {
+	ADMIN, MANAGER, PROVIDER
+}

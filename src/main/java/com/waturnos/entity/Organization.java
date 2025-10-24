@@ -6,24 +6,29 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity @Table(name="organization")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Entity
+@Table(name = "organization")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Organization {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
-    private String logoUrl;
-    private String timezone;
-    private String type;
-    private String defaultLanguage;
-    private Boolean active = true;
-    @Enumerated(EnumType.STRING)
-    private OrganizationStatus status;
-    private String creator;
-    private String modificator;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	private String name;
+	private String logoUrl;
+	private String timezone;
+	private String type;
+	private String defaultLanguage;
+	private Boolean active = true;
+	@Enumerated(EnumType.STRING)
+	private OrganizationStatus status;
+	private String creator;
+	private String modificator;
+	private LocalDateTime createdAt;
+	private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "organization")
-    private List<Location> locations;
+	@OneToMany(mappedBy = "organization")
+	private List<Location> locations;
 }
