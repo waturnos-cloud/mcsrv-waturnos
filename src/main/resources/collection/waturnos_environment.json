@@ -1,0 +1,73 @@
+{
+  "name": "WATurnos - Local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "enabled": true
+    },
+    {
+      "key": "jwtToken",
+      "value": "",
+      "enabled": true
+    },
+    {
+      "key": "organizationId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "locationId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "providerId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "serviceId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "clientId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "bookingId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "paymentId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "notificationId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "recurrenceId",
+      "value": "1",
+      "enabled": true
+    },
+    {
+      "key": "providerOrgId",
+      "value": "1",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-10-24T15:35:53.444613Z",
+  "_postman_exported_using": "Postman/11.x"
+}

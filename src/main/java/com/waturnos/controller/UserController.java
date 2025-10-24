@@ -1,12 +1,21 @@
 package com.waturnos.controller;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.waturnos.entity.User;
 import com.waturnos.service.UserService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class UserController.
  */
@@ -34,6 +43,16 @@ public class UserController {
 	@GetMapping
 	public ResponseEntity<List<User>> getAll() {
 		return ResponseEntity.ok(service.findAll());
+	}
+
+	/**
+	 * Gets the all.
+	 *
+	 * @return the all
+	 */
+	@GetMapping("/{id}")
+	public ResponseEntity<Optional<User>> getById(@PathVariable Long id) {
+		return ResponseEntity.ok(service.findById(id));
 	}
 
 	/**
