@@ -1,0 +1,354 @@
+{
+	"info": {
+		"_postman_id": "8786ee62-dc20-483a-ba47-0a9fea268e5e",
+		"name": "WATurnos - API Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29311595",
+		"_collection_link": "https://warped-crescent-210926.postman.co/workspace/waturnos~259d7df1-992b-49bf-be19-8dedf14f9213/collection/29311595-8786ee62-dc20-483a-ba47-0a9fea268e5e?action=share&source=collection_link&creator=29311595"
+	},
+	"item": [
+		{
+			"name": "Tenant - Auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Parseamos la respuesta JSON",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Guardamos el token como variable de entorno",
+							"pm.environment.set(\"authToken\", jsonData.token);",
+							"",
+							"// Opcional: guardamos otros valores",
+							"pm.environment.set(\"userId\", jsonData.userId);",
+							"pm.environment.set(\"tenantId\", jsonData.tenantId);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "demo-key-123",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@barberia.com\",\n  \"password\": \"secret123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/auth/login",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tenant - Get All",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-API-KEY",
+						"value": "demo-key-123",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/tenants",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"tenants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tenant - Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Peluquería Laura\",\n  \"whatsappNumber\": \"+5492494123456\",\n  \"email\": \"contacto@pelulaura.com\",\n  \"address\": \"Av. Santamarina 456, Tandil\",\n  \"timezone\": \"America/Argentina/Buenos_Aires\",\n  \"apiKey\": \"demo-key-123\"\n}"
+				},
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/tenants",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"tenants"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customer - Get By Tenant",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/customers/tenant/1",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"customers",
+						"tenant",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customer - Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"tenant\": { \"tenantId\": 2 },\n  \"globalCustomer\": { \"globalCustomerId\": 2 }\n}"
+				},
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/customers",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Service - Get By Tenant",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/services/tenant/1",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"services",
+						"tenant",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Service - Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"tenant\": { \"tenantId\": 1 },\n  \"name\": \"Corte de pelo\",\n  \"durationMin\": 45,\n  \"price\": 2500.0,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/services",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"services"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Booking - Get By Tenant",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/bookings/tenant/1?=",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"bookings",
+						"tenant",
+						"1"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Booking - Create",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"tenant\": { \"tenantId\": 1 },\n  \"customer\": { \"customerId\": 1 },\n  \"service\": { \"serviceId\": 1 },\n  \"startTime\": \"2025-10-05T14:00:00\",\n  \"endTime\": \"2025-10-05T14:45:00\",\n  \"notes\": \"Turno de prueba\"\n}"
+				},
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/bookings",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"bookings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Booking - Update Status",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{authToken}}"
+					}
+				],
+				"url": {
+					"raw": "{{http}}://{{host}}:{{port}}/api/bookings/4/status?status=CONFIRMED",
+					"protocol": "{{http}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"api",
+						"bookings",
+						"4",
+						"status"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "CONFIRMED"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
