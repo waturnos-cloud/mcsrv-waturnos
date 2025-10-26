@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.waturnos.dto.request.LoginRequest;
 import com.waturnos.dto.response.LoginResponse;
 import com.waturnos.security.JwtUtil;
-import com.waturnos.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,8 +24,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
   
-  /** The user service. */
-  private final UserService userService; 
  /** The jwt util. */
  private final JwtUtil jwtUtil; 
  

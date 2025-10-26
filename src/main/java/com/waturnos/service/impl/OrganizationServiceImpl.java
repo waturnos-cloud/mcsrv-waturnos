@@ -1,7 +1,9 @@
 package com.waturnos.service.impl;
 
 import com.waturnos.entity.Organization;
+import com.waturnos.enums.UserRole;
 import com.waturnos.repository.OrganizationRepository;
+import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.OrganizationService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
+	@RequireRole({UserRole.ADMIN})
 	public Organization create(Organization org) {
 		return organizationRepository.save(org);
 	}

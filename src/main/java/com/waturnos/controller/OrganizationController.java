@@ -1,14 +1,21 @@
 package com.waturnos.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.waturnos.dto.beans.OrganizationDTO;
 import com.waturnos.entity.Organization;
-import com.waturnos.enums.UserRole;
 import com.waturnos.mapper.OrganizationMapper;
-import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.OrganizationService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 /**
  * The Class OrganizationController.
@@ -63,7 +70,6 @@ public class OrganizationController {
 	 * @return the response entity
 	 */
 	@PostMapping
-	@RequireRole({UserRole.ADMIN})
 	public ResponseEntity<ApiResponse<OrganizationDTO>> create(@RequestBody OrganizationDTO dto) {
 		Organization created = service.create(mapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization created", mapper.toDto(created)));
