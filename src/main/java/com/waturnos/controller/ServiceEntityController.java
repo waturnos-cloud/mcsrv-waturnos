@@ -12,7 +12,7 @@ import java.util.List;
  * The Class ServiceEntityController.
  */
 @RestController
-@RequestMapping("/api/services")
+@RequestMapping("/services")
 public class ServiceEntityController {
 	
 	/** The service. */

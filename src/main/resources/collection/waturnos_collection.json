@@ -20,19 +20,19 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/auth/login",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/auth/login",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "auth",
                 "login"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"admin\"\n}"
+              "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"12345\"\n}"
             }
           },
           "event": [
@@ -65,14 +65,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/organizations",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "organizations"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -91,14 +91,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/organizations",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "organizations"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -117,15 +117,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/organizations/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "organizations",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -144,15 +144,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/organizations/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "organizations",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -171,15 +171,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/organizations/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "organizations",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }
@@ -199,14 +199,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -225,14 +225,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -251,15 +251,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                "users",
                 "{{userId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -278,15 +278,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users",
                 "{{userId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -305,15 +305,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users",
                 "{{userId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -328,16 +328,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/byOrg/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/byOrg/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users",
                 "byOrg",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -352,15 +352,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/search?email=juan@waturnos.com",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/search?email=juan@waturnos.com",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "users",
                 "search"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }
@@ -380,14 +380,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -406,14 +406,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -432,15 +432,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers/{{providerId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers",
                 "{{providerId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -459,15 +459,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers/{{providerId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers",
                 "{{providerId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -486,15 +486,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers/{{providerId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers",
                 "{{providerId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -509,16 +509,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers/byOrg/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/byOrg/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers",
                 "byOrg",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -533,15 +533,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/providers/active",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/active",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "providers",
                 "active"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }
@@ -561,14 +561,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -587,14 +587,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -613,15 +613,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/{{serviceId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services",
                 "{{serviceId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -640,15 +640,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/{{serviceId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services",
                 "{{serviceId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -667,15 +667,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/{{serviceId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services",
                 "{{serviceId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -690,9 +690,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/byProvider/{{providerId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/byProvider/{{providerId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 
@@ -700,7 +700,7 @@
                 "byProvider",
                 "{{providerId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -715,15 +715,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/available?from=2025-10-26&to=2025-10-30",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/available?from=2025-10-26&to=2025-10-30",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services",
                 "available"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -738,15 +738,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/services/search?name=Corte",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/search?name=Corte",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "services",
                 "search"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }
@@ -766,14 +766,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -792,14 +792,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -818,15 +818,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients/{{clientId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients",
                 "{{clientId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -845,15 +845,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients/{{clientId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients",
                 "{{clientId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -872,15 +872,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients/{{clientId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients",
                 "{{clientId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -895,16 +895,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients/byOrg/{{organizationId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/byOrg/{{organizationId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients",
                 "byOrg",
                 "{{organizationId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -919,15 +919,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/clients/search?email=carlos@mail.com",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/search?email=carlos@mail.com",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "clients",
                 "search"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }
@@ -947,14 +947,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -973,14 +973,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -999,15 +999,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "{{bookingId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -1026,15 +1026,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "{{bookingId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -1053,15 +1053,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "{{bookingId}}"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -1076,15 +1076,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/upcoming?from=2025-10-26&to=2025-11-10",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/upcoming?from=2025-10-26&to=2025-11-10",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "upcoming"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -1099,15 +1099,15 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/history?clientId={{clientId}}",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/history?clientId={{clientId}}",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "history"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         },
@@ -1126,16 +1126,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}/cancel",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/cancel",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
                 "{{bookingId}}",
                 "cancel"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             },
             "body": {
               "mode": "raw",
@@ -1154,9 +1154,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/bookings/{{bookingId}}/status/CONFIRMED",
+              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/status/CONFIRMED",
               "host": [
-                "{{baseUrl}}"
+                "{{hostname}}/msvc-waturnos/v1.0"
               ],
               "path": [
                 "bookings",
@@ -1164,7 +1164,7 @@
                 "status",
                 "CONFIRMED"
               ],
-              "protocol": "http"
+              "protocol": "{{protocol}}"
             }
           }
         }

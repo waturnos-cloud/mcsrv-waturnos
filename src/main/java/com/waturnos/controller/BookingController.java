@@ -13,7 +13,7 @@ import java.util.List;
  * The Class BookingController.
  */
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 public class BookingController {
 	
 	/** The service. */
