@@ -1,6 +1,6 @@
 package com.waturnos.controller;
 
-import com.waturnos.dto.BookingDTO;
+import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;

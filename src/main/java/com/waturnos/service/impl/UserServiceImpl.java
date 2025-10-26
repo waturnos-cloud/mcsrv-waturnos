@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.User;
@@ -37,8 +38,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User create(User user) {
-		if (user.getPasswordHash() != null)
-			user.setPasswordHash(encoder.encode(user.getPasswordHash()));
+		
+		
+		
+		if (user.getPassword() != null)
+			user.setPassword(encoder.encode(user.getPassword()));
 		return userRepository.save(user);
 	}
 
@@ -46,10 +50,10 @@ public class UserServiceImpl implements UserService {
 	public User update(Long id, User user) {
 		User existing = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User not found"));
 		user.setId(existing.getId());
-		if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank())
-			user.setPasswordHash(encoder.encode(user.getPasswordHash()));
+		if (user.getPassword() != null && !user.getPassword().isBlank())
+			user.setPassword(encoder.encode(user.getPassword()));
 		else
-			user.setPasswordHash(existing.getPasswordHash());
+			user.setPassword(existing.getPassword());
 		return userRepository.save(user);
 	}
 

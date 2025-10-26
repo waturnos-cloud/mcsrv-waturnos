@@ -19,6 +19,7 @@ public class Provider {
 	private String phone;
 	private String photoUrl;
 	private String bio;
+	@Builder.Default
 	private Boolean active = true;
 	private String creator;
 	private String modificator;

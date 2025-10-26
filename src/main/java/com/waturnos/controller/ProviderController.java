@@ -1,6 +1,6 @@
 package com.waturnos.controller;
 
-import com.waturnos.dto.ProviderDTO;
+import com.waturnos.dto.beans.ProviderDTO;
 import com.waturnos.entity.Provider;
 import com.waturnos.mapper.ProviderMapper;
 import com.waturnos.service.ProviderService;

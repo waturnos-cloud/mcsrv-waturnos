@@ -21,6 +21,7 @@ public class Organization {
 	private String timezone;
 	private String type;
 	private String defaultLanguage;
+	@Builder.Default
 	private Boolean active = true;
 	@Enumerated(EnumType.STRING)
 	private OrganizationStatus status;

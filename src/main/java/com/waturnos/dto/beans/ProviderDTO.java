@@ -1,4 +1,4 @@
-package com.waturnos.dto;
+package com.waturnos.dto.beans;
 
 import lombok.Data;
 

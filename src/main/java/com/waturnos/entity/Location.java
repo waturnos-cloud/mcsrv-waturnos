@@ -20,6 +20,7 @@ public class Location {
 	private String email;
 	private Double latitude;
 	private Double longitude;
+	@Builder.Default
 	private Boolean active = true;
 	private String creator;
 	private String modificator;

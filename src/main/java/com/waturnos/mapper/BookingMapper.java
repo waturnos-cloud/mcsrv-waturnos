@@ -1,8 +1,17 @@
 package com.waturnos.mapper;
 
-import com.waturnos.dto.BookingDTO;
-import com.waturnos.entity.*;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
+import org.mapstruct.Named;
+import org.springframework.stereotype.Component;
+
+import com.waturnos.dto.beans.BookingDTO;
+import com.waturnos.entity.Booking;
+import com.waturnos.entity.Client;
+import com.waturnos.entity.Organization;
+import com.waturnos.entity.Provider;
+import com.waturnos.entity.ServiceEntity;
 
 @Mapper(componentModel = "spring")
 public interface BookingMapper {
