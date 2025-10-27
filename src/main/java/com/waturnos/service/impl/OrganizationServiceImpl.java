@@ -90,6 +90,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		
 		manager.setOrganization(organizationDB);
 		
+		manager.setRole(UserRole.MANAGER);
 		userRepository.save(manager);
 		
 		org.getLocations().stream().forEach(l -> l.setOrganization(organizationDB));
