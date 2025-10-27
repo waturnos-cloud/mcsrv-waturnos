@@ -1,6 +1,6 @@
 package com.waturnos.mapper;
 
-import com.waturnos.dto.OrganizationDTO;
+import com.waturnos.dto.beans.OrganizationDTO;
 import com.waturnos.entity.Organization;
 import org.mapstruct.Mapper;
 

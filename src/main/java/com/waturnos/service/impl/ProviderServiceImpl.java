@@ -1,23 +1,28 @@
 package com.waturnos.service.impl;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.waturnos.entity.Provider;
+import com.waturnos.repository.OrganizationRepository;
 import com.waturnos.repository.ProviderRepository;
 import com.waturnos.service.ProviderService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
-import org.springframework.stereotype.Service;
-import java.util.List;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ProviderServiceImpl implements ProviderService {
 	private final ProviderRepository providerRepository;
+	
+	private final OrganizationRepository organizationRepository;
 
-	public ProviderServiceImpl(ProviderRepository providerRepository) {
-		this.providerRepository = providerRepository;
-	}
 
 	@Override
 	public List<Provider> findByOrganization(Long organizationId) {
-		return providerRepository.findByOrganizationId(organizationId);
+		return organizationRepository.findById(organizationId).get().getProviders();
 	}
 
 	@Override

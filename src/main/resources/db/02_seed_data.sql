@@ -28,11 +28,11 @@ VALUES
 -- ============================================
 -- USERS
 -- ============================================
-INSERT INTO users (id, full_name, email, phone, password_hash, organization_id, active, role, creator)
+INSERT INTO users (id, full_name, email, phone, password, organization_id, active, role, creator)
 VALUES
-(1, 'Juan Barber', 'juan@barberia.com', '2494111111', 'hash1', 1, TRUE, 'admin', 'system'),
-(2, 'Laura Gym', 'laura@fitzone.com', '2494222222', 'hash2', 2, TRUE, 'manager', 'system'),
-(3, 'Pedro Dental', 'pedro@dentalmar.com', '2234333333', 'hash3', 3, TRUE, 'admin', 'system');
+(1, 'Juan Barber', 'juan@barberia.com', '2494111111', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 1, TRUE, 'admin', 'system'),
+(2, 'Laura Gym', 'laura@fitzone.com', '2494222222', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 2, TRUE, 'manager', 'system'),
+(3, 'Pedro Dental', 'pedro@dentalmar.com', '2234333333', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 3, TRUE, 'admin', 'system');
 
 -- ============================================
 -- USER_PROPS
@@ -73,11 +73,11 @@ VALUES
 -- ============================================
 -- CLIENT
 -- ============================================
-INSERT INTO client (id, full_name, email, phone, password_hash, organization_id, creator)
+INSERT INTO client (id, full_name, email, phone, password, organization_id, creator)
 VALUES
-(1, 'Mariano Pérez', 'mariano@mail.com', '2494771111', 'hash_cli1', 1, 'system'),
-(2, 'Lucía Gómez', 'lucia@mail.com', '2494882222', 'hash_cli2', 2, 'system'),
-(3, 'Tomás Díaz', 'tomas@mail.com', '2234993333', 'hash_cli3', 3, 'system');
+(1, 'Mariano Pérez', 'mariano@mail.com', '2494771111', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 1, 'system'),
+(2, 'Lucía Gómez', 'lucia@mail.com', '2494882222', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 2, 'system'),
+(3, 'Tomás Díaz', 'tomas@mail.com', '2234993333', '{bcrypt}$2a$10$uOty4UgdxoogqOudG16TPuw8bxz7tQ3oRG4.MK40r56HUE0Eu6mda', 3, 'system');
 
 -- ============================================
 -- CLIENT_PROPS

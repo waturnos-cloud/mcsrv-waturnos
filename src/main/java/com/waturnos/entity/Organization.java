@@ -21,6 +21,7 @@ public class Organization {
 	private String timezone;
 	private String type;
 	private String defaultLanguage;
+	@Builder.Default
 	private Boolean active = true;
 	@Enumerated(EnumType.STRING)
 	private OrganizationStatus status;
@@ -31,4 +32,7 @@ public class Organization {
 
 	@OneToMany(mappedBy = "organization")
 	private List<Location> locations;
+	
+	@ManyToMany(mappedBy = "organizations")
+    private List<Provider> providers;
 }

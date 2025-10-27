@@ -1,6 +1,6 @@
 package com.waturnos.controller;
 
-import com.waturnos.dto.BookingDTO;
+import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
@@ -13,7 +13,7 @@ import java.util.List;
  * The Class BookingController.
  */
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 public class BookingController {
 	
 	/** The service. */

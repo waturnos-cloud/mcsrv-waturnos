@@ -18,9 +18,10 @@ public class User {
 	private String fullName;
 	private String email;
 	private String phone;
-	private String passwordHash;
+	private String password;
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
+	@Builder.Default
 	private Boolean active = true;
 	private LocalDateTime lastLoginAt;
 	private String creator;

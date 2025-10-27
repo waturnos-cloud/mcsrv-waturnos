@@ -2,10 +2,15 @@
   "name": "WATurnos - Local",
   "values": [
     {
-      "key": "baseUrl",
-      "value": "http://localhost:8080",
+      "key": "hostname",
+      "value": "localhost:8080",
       "enabled": true
     },
+    {
+      "key": "protocol",
+      "value": "http",
+      "enabled": true
+    },    
     {
       "key": "jwtToken",
       "value": "",

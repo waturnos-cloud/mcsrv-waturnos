@@ -1,6 +1,6 @@
 package com.waturnos.controller;
 
-import com.waturnos.dto.ServiceDTO;
+import com.waturnos.dto.beans.ServiceDTO;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.mapper.ServiceMapper;
 import com.waturnos.service.ServiceEntityService;
@@ -12,7 +12,7 @@ import java.util.List;
  * The Class ServiceEntityController.
  */
 @RestController
-@RequestMapping("/api/services")
+@RequestMapping("/services")
 public class ServiceEntityController {
 	
 	/** The service. */

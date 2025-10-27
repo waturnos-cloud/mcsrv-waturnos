@@ -1,9 +1,14 @@
 server:
-  port: 8085
+  port: 8080
+  servlet:
+    context-path: /msvc-waturnos/v1.0
 
 spring:
   datasource:
-    url: jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require
+    url: jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos
+    #url: jdbc:postgresql://localhost:5432/waturnos
+    #username: postgres
+    #password: postgres
     username: neondb_owner
     password: npg_cpViMu5TF2Jx
     driver-class-name: org.postgresql.Driver
@@ -18,6 +23,11 @@ spring:
 jwt:
   secret: "cambiaEsteSecretoLargoConLetrasYNumeros1234567890abcdef"
   expiration-ms: 3600000
+  
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG  
   
 springdoc:
   api-docs:

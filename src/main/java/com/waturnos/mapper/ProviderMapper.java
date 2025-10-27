@@ -1,16 +1,16 @@
 package com.waturnos.mapper;
 
-import com.waturnos.dto.ProviderDTO;
+import org.mapstruct.Mapper;
+import org.mapstruct.Named;
+
+import com.waturnos.dto.beans.ProviderDTO;
 import com.waturnos.entity.Organization;
 import com.waturnos.entity.Provider;
-import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ProviderMapper {
-	@Mapping(target = "organizationId", source = "organization.id")
 	ProviderDTO toDto(Provider e);
 
-	@Mapping(target = "organization", source = "organizationId", qualifiedByName = "orgFromId")
 	Provider toEntity(ProviderDTO d);
 
 	@Named("orgFromId")

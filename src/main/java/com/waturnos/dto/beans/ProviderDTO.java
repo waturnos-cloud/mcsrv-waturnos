@@ -1,4 +1,6 @@
-package com.waturnos.dto;
+package com.waturnos.dto.beans;
+
+import java.util.List;
 
 import lombok.Data;
 
@@ -9,5 +11,5 @@ public class ProviderDTO {
 	private String email;
 	private String phone;
 	private Boolean active;
-	private Long organizationId;
+	private List<OrganizationDTO> organizations;
 }

@@ -1,43 +1,72 @@
 package com.waturnos.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import com.waturnos.entity.User;
+import com.waturnos.repository.UserRepository;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.GenericFilter;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * The Class JwtAuthFilter.
+ */
 @Component
-public class JwtAuthFilter extends OncePerRequestFilter {
+
+/**
+ * Instantiates a new jwt auth filter.
+ *
+ * @param jwtUtil the jwt util
+ * @param userRepository the user repository
+ */
+@RequiredArgsConstructor
+public class JwtAuthFilter extends GenericFilter {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 7772564977220933356L;
+	
+	/** The jwt util. */
 	private final JwtUtil jwtUtil;
+    
+    /** The user repository. */
+    private final UserRepository userRepository;
 
-	public JwtAuthFilter(JwtUtil jwtUtil) {
-		this.jwtUtil = jwtUtil;
-	}
+    /**
+     * Do filter.
+     *
+     * @param request the request
+     * @param response the response
+     * @param chain the chain
+     * @throws IOException Signals that an I/O exception has occurred.
+     * @throws ServletException the servlet exception
+     */
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        String authHeader = ((HttpServletRequest) request).getHeader("Authorization");
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws ServletException, IOException {
-		String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-		if (header != null && header.startsWith("Bearer ")) {
-			String token = header.substring(7);
-			try {
-				String subject = jwtUtil.getSubject(token);
-				User principal = new User(subject, "", Collections.emptyList());
-				UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
-						principal.getAuthorities());
-				auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(auth);
-			} catch (Exception ignored) {
-			}
-		}
-		chain.doFilter(request, response);
-	}
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.replace("Bearer ", "");
+
+            if (jwtUtil.isTokenValid(token)) {
+                String email = jwtUtil.getEmailFromToken(token);
+                User user = userRepository.findByEmail(email).orElse(null);
+                if (user != null) {
+                    var auth = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            }
+        }
+
+        chain.doFilter(request, response);
+    }
 }

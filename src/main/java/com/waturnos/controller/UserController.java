@@ -20,7 +20,7 @@ import com.waturnos.service.UserService;
  * The Class UserController.
  */
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
 	
 	/** The service. */
