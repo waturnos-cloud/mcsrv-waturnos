@@ -1,5 +1,7 @@
 package com.waturnos.dto.beans;
 
+import java.util.List;
+
 import com.waturnos.enums.OrganizationStatus;
 import lombok.Data;
 
@@ -13,4 +15,5 @@ public class OrganizationDTO {
 	private String defaultLanguage;
 	private Boolean active;
 	private OrganizationStatus status;
+	private List<LocationDTO> locations;
 }
