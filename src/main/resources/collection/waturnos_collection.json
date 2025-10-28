@@ -1,1174 +1,1510 @@
 {
-  "info": {
-    "name": "WATurnos API",
-    "_postman_id": "waturnos-api-complete",
-    "description": "Colecci\u00f3n completa de endpoints de WATurnos (Spring Boot + JWT).",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "Auth",
-      "item": [
-        {
-          "name": "POST /auth/login",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/auth/login",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"12345\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
-                  "var data = pm.response.json();",
-                  "if (data && data.token) { pm.environment.set('jwtToken', data.token); }"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Organizations",
-      "item": [
-        {
-          "name": "GET /organizations",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "organizations"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /organizations",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "organizations"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil\",\n  \"type\": \"consultorio\",\n  \"timezone\": \"America/Argentina/Buenos_Aires\",\n  \"status\": \"ACTIVE\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /organizations/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "organizations",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /organizations/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "organizations",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil (upd)\",\n  \"status\": \"ACTIVE\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /organizations/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "organizations",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Users",
-      "item": [
-        {
-          "name": "GET /users",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /users",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Juan P\\u00e9rez\",\n  \"email\": \"juan@waturnos.com\",\n  \"password\": \"1234\",\n  \"role\": \"MANAGER\",\n  \"organizationId\": 1\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /users/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-               "users",
-                "{{userId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /users/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Juan P\\u00e9rez (upd)\",\n  \"active\": true\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /users/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users",
-                "{{userId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /users/byOrg/{orgId}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/byOrg/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users",
-                "byOrg",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /users/search",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/users/search?email=juan@waturnos.com",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "users",
-                "search"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Providers",
-      "item": [
-        {
-          "name": "GET /providers",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /providers",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Dra. Ana Garc\\u00eda\",\n  \"email\": \"ana@clinica.com\",\n  \"phone\": \"+54 9 249 300000\",\n  \"bio\": \"Kinesiolog\\u00eda\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /providers/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers",
-                "{{providerId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /providers/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers",
-                "{{providerId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Dra. Ana Garc\\u00eda (upd)\",\n  \"active\": true\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /providers/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers",
-                "{{providerId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /providers/byOrg/{orgId}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/byOrg/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers",
-                "byOrg",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /providers/active",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/providers/active",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "providers",
-                "active"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Services",
-      "item": [
-        {
-          "name": "GET /services",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /services",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"providerId\": 1,\n  \"locationId\": 1,\n  \"name\": \"Corte de pelo\",\n  \"description\": \"Corte con lavado\",\n  \"price\": 3500,\n  \"durationMinutes\": 45,\n  \"advancePayment\": 0,\n  \"futureDays\": 30\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /services/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services",
-                "{{serviceId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /services/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services",
-                "{{serviceId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"price\": 3900,\n  \"durationMinutes\": 50\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /services/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services",
-                "{{serviceId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /services/byProvider/{providerId}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/byProvider/{{providerId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                
-                "services",
-                "byProvider",
-                "{{providerId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /services/available",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/available?from=2025-10-26&to=2025-10-30",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services",
-                "available"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /services/search",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/services/search?name=Corte",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "services",
-                "search"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Clients",
-      "item": [
-        {
-          "name": "GET /clients",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /clients",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Carlos L\\u00f3pez\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400000\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /clients/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients",
-                "{{clientId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /clients/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients",
-                "{{clientId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Carlos L\\u00f3pez (upd)\",\n  \"phone\": \"+54 9 249 400999\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /clients/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients",
-                "{{clientId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /clients/byOrg/{orgId}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/byOrg/{{organizationId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients",
-                "byOrg",
-                "{{organizationId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /clients/search",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/clients/search?email=carlos@mail.com",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "clients",
-                "search"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Bookings",
-      "item": [
-        {
-          "name": "GET /bookings",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "POST /bookings",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"organizationId\": 1,\n  \"clientId\": 1,\n  \"providerId\": 1,\n  \"serviceId\": 1,\n  \"startTime\": \"2025-10-26T10:00:00\",\n  \"endTime\": \"2025-10-26T10:45:00\",\n  \"status\": \"CONFIRMED\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /bookings/{id}",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /bookings/{id}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"notes\": \"Traer estudios previos\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE /bookings/{id}",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /bookings/upcoming",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/upcoming?from=2025-10-26&to=2025-11-10",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "upcoming"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "GET /bookings/history",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/history?clientId={{clientId}}",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "history"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        },
-        {
-          "name": "PUT /bookings/{id}/cancel",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/cancel",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}",
-                "cancel"
-              ],
-              "protocol": "{{protocol}}"
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"El cliente no puede asistir\"\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT /bookings/{id}/status/{status}",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{jwtToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/status/CONFIRMED",
-              "host": [
-                "{{hostname}}/msvc-waturnos/v1.0"
-              ],
-              "path": [
-                "bookings",
-                "{{bookingId}}",
-                "status",
-                "CONFIRMED"
-              ],
-              "protocol": "{{protocol}}"
-            }
-          }
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "caaeb724-0963-4410-89c7-48293a21126f",
+		"name": "WATurnos API",
+		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29311595",
+		"_collection_link": "https://warped-crescent-210926.postman.co/workspace/OCTUBRE-2025~f5a8c77c-3bd7-4204-a7b4-0a785c42015f/collection/29311595-caaeb724-0963-4410-89c7-48293a21126f?action=share&source=collection_link&creator=29311595"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "POST /auth/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+									"var data = pm.response.json();",
+									"if (data && data.token) { pm.environment.set('jwtToken', data.token); }"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@demo.com\",\n  \"password\": \"12345\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/auth/login",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{
+					"name": "GET /organizations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /organizations",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro2\",\n        \"type\": \"consultorio\",\n        \"logo_url\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitud\": -59.13662015561298\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitud\": -59.12189780501565\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan P\\u00e9rez\",\n        \"email\": \"juan@centromedico2.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /organizations/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /organizations/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil (upd)\",\n  \"status\": \"ACTIVE\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /organizations/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "GET /users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez\",\n  \"email\": \"juan@waturnos.com\",\n  \"password\": \"1234\",\n  \"role\": \"MANAGER\",\n  \"organizationId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /users/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez (upd)\",\n  \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /users/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/byOrg/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /users/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Providers",
+			"item": [
+				{
+					"name": "GET /providers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /providers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Dra. Ana Garc\\u00eda\",\n  \"email\": \"ana@clinica.com\",\n  \"phone\": \"+54 9 249 300000\",\n  \"bio\": \"Kinesiolog\\u00eda\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /providers/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Dra. Ana Garc\\u00eda (upd)\",\n  \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /providers/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/byOrg/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /providers/active",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/active",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"active"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Provider Organizations",
+			"item": [
+				{
+					"name": "GET /provider-organizations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /provider-organizations",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"providerId\": 1,\n  \"organizationId\": 1,\n  \"startDate\": \"2025-10-27\",\n  \"active\": true,\n  \"creator\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /provider-organizations/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations/{{providerOrganizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations",
+								"{{providerOrganizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /provider-organizations/provider/{providerId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations/provider/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations",
+								"provider",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /provider-organizations/organization/{organizationId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations/organization/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations",
+								"organization",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /provider-organizations/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"active\": false,\n  \"endDate\": \"2025-12-31\",\n  \"modificator\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations/{{providerOrganizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations",
+								"{{providerOrganizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /provider-organizations/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/provider-organizations/{{providerOrganizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"provider-organizations",
+								"{{providerOrganizationId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"item": [
+				{
+					"name": "GET /services",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /services",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"providerId\": 1,\n  \"locationId\": 1,\n  \"name\": \"Corte de pelo\",\n  \"description\": \"Corte con lavado\",\n  \"price\": 3500,\n  \"durationMinutes\": 45,\n  \"advancePayment\": 0,\n  \"futureDays\": 30\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /services/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"price\": 3900,\n  \"durationMinutes\": 50\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /services/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/byProvider/{providerId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/byProvider/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"byProvider",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/available",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/available",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"available"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Clients",
+			"item": [
+				{
+					"name": "GET /clients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /clients",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Carlos L\\u00f3pez\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400000\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /clients/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Carlos L\\u00f3pez (upd)\",\n  \"phone\": \"+54 9 249 400999\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /clients/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"{{clientId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/byOrg/{orgId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/byOrg/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"byOrg",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /clients/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/search",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Bookings",
+			"item": [
+				{
+					"name": "GET /bookings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /bookings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"organizationId\": 1,\n  \"clientId\": 1,\n  \"providerId\": 1,\n  \"serviceId\": 1,\n  \"startTime\": \"2025-10-26T10:00:00\",\n  \"endTime\": \"2025-10-26T10:45:00\",\n  \"status\": \"CONFIRMED\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/{id}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notes\": \"Traer estudios previos\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE /bookings/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/upcoming",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/upcoming",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"upcoming"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/history",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/history",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}/cancel",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"El cliente no puede asistir\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/cancel",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/{id}/status/{status}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/status/CONFIRMED",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}",
+								"status",
+								"CONFIRMED"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
 }
