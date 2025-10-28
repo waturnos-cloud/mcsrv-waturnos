@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,12 +41,14 @@ public class ProviderOrganization {
 	@JoinColumn(name = "organization_id", nullable = false)
 	private Organization organization;
 
-	private LocalDate startDate;
-	private LocalDate endDate;
+	private LocalDateTime startDate;
+	private LocalDateTime endDate;
+	@Default
 	private Boolean active = true;
 
-	private LocalDateTime createdAt = LocalDateTime.now();
-	private LocalDateTime updatedAt = LocalDateTime.now();
+	private LocalDateTime createdAt;
+	
+	private LocalDateTime updatedAt;
 	private String creator;
 	private String modificator;
 }

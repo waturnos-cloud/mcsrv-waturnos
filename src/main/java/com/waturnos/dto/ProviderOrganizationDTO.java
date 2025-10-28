@@ -1,16 +1,16 @@
 package com.waturnos.dto;
 
-import lombok.Data;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import lombok.Data;
 
 @Data
 public class ProviderOrganizationDTO {
 	private Long id;
 	private Long providerId;
 	private Long organizationId;
-	private LocalDate startDate;
-	private LocalDate endDate;
+	private LocalDateTime startDate;
+	private LocalDateTime endDate;
 	private Boolean active;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;

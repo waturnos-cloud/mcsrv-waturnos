@@ -26,7 +26,7 @@ public class SessionUtil {
     public static String getUserName() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User user) {
-            return user.getFullName();
+            return user.getEmail();
         }
         return null;
     }

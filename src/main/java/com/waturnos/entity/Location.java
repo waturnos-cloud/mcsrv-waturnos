@@ -26,6 +26,8 @@ public class Location {
 	private String modificator;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	@Builder.Default
+	private Boolean main=false;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "organization_id", nullable = false)

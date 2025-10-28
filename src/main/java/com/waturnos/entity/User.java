@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"organization"})
 public class User {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

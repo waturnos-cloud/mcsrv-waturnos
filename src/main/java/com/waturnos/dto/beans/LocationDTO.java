@@ -19,4 +19,6 @@ public class LocationDTO {
 	private Double latitude;
 	private Double longitude;
 	private Boolean active;
+	@Builder.Default 
+	private Boolean main = false;
 }
