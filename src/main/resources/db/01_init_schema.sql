@@ -38,7 +38,8 @@ CREATE TABLE location (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
-    modificator VARCHAR(100)
+    modificator VARCHAR(100),
+    main BOOLEAN DEFAULT FALSE -- Indica si la dirección es la principal
 );
 
 
@@ -238,8 +239,6 @@ CREATE TABLE provider_organization (
         REFERENCES provider(id) ON DELETE CASCADE,
     organization_id BIGINT NOT NULL 
         REFERENCES organization(id) ON DELETE CASCADE,
-    location_id BIGINT 
-        REFERENCES location(id) ON DELETE SET NULL,      -- Opcional: sede específica dentro de la organización
     start_date DATE DEFAULT CURRENT_DATE,                -- Desde cuándo trabaja en la organización
     end_date DATE,                                       -- Hasta cuándo (si aplica)
     active BOOLEAN DEFAULT TRUE,

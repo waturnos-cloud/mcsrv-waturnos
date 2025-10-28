@@ -13,7 +13,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
 
+import lombok.extern.slf4j.Slf4j;
+
 @ControllerAdvice // Indica que esta clase maneja excepciones de todos los Controllers
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
@@ -22,6 +25,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+    	log.error("ServiceException capturada. URI: {}", request.getDescription(false), ex);
         ErrorResponse errorDetails = new ErrorResponse(
             ErrorCode.GLOBAL_ERROR, 
             "Ocurrió un error inesperado. Consulte los logs.",
@@ -36,6 +40,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ServiceException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<ErrorResponse> handleGlobalException(ServiceException ex, WebRequest request) {
+    	
+        log.error("ServiceException capturada. URI: {}", request.getDescription(false), ex);
         ErrorResponse errorDetails = new ErrorResponse(
             ex.getErrorCode(), 
             "Ocurrió un error inesperado. Consulte los logs.",
