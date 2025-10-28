@@ -1,11 +1,9 @@
 {
 	"info": {
-		"_postman_id": "caaeb724-0963-4410-89c7-48293a21126f",
+		"_postman_id": "2e16610f-1175-4da7-9dad-85745b7f43a3",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "29311595",
-		"_collection_link": "https://warped-crescent-210926.postman.co/workspace/OCTUBRE-2025~f5a8c77c-3bd7-4204-a7b4-0a785c42015f/collection/29311595-caaeb724-0963-4410-89c7-48293a21126f?action=share&source=collection_link&creator=29311595"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -100,7 +98,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro2\",\n        \"type\": \"consultorio\",\n        \"logo_url\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitud\": -59.13662015561298\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitud\": -59.12189780501565\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan P\\u00e9rez\",\n        \"email\": \"juan@centromedico2.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
+							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro1\",\n        \"type\": \"consultorio\",\n        \"logo_url\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan Perez\",\n        \"email\": \"juan@centromedico.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",

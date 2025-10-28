@@ -29,7 +29,7 @@ public class AppConfig {
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
-				
+
 				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.cors(cors -> cors.configurationSource(request -> {
 					CorsConfiguration config = new CorsConfiguration();
@@ -45,27 +45,26 @@ public class AppConfig {
 					return config;
 				})).sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/swagger-ui.html",
-						"/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/auth/login").permitAll().anyRequest().authenticated())
+						"/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/auth/login").permitAll().anyRequest()
+						.authenticated())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-				
-				
+
 		return http.build();
 	}
-    @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http,
-                                                       PasswordEncoder passwordEncoder,
-                                                       CustomUserDetailsService userDetailsService) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder)
-                .and()
-                .build();
-    }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        // Crea un DelegatingPasswordEncoder con los mapeos predeterminados de Spring Security.
-        // Este reconocerá el prefijo {bcrypt} automáticamente.
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+	@SuppressWarnings("removal")
+	@Bean
+	public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder,
+			CustomUserDetailsService userDetailsService) throws Exception {
+		return http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(userDetailsService)
+				.passwordEncoder(passwordEncoder).and().build();
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		// Crea un DelegatingPasswordEncoder con los mapeos predeterminados de Spring
+		// Security.
+		// Este reconocerá el prefijo {bcrypt} automáticamente.
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
 }
