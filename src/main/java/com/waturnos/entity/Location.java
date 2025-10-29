@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"organization"})
 public class Location {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"service","provider","organization","client"})
 public class Booking {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

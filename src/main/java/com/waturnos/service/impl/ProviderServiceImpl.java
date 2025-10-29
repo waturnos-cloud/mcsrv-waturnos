@@ -27,6 +27,10 @@ public class ProviderServiceImpl implements ProviderService {
 
 	@Override
 	public Provider create(Provider provider) {
+		//Tengo que vincularle la organización
+		//Si no existe el usuario debo crearlo.
+		//El usuario que esta creando el provider tiene acceso a 1 organizacion, debe ser la misma que viene para crear.
+		
 		return providerRepository.save(provider);
 	}
 

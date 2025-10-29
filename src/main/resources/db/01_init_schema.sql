@@ -90,6 +90,7 @@ CREATE TABLE provider (
     bio TEXT, -- Breve descripción del profesional
     active BOOLEAN DEFAULT TRUE,
     organization_id BIGINT REFERENCES organization(id),
+    user_id BIGINT REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de alta
     creator VARCHAR(100), -- creador

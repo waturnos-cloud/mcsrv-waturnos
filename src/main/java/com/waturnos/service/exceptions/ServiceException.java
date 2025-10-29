@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 public class ServiceException extends RuntimeException {
 	
 	private static final long serialVersionUID = 5914954513605454776L;
-	private String errorCode;
+	private ErrorCode errorCode;
 	
-	public ServiceException(String errorCode, String message) {
+	public ServiceException(ErrorCode errorCode, String message) {
 		super(message);
 		this.errorCode = errorCode;
 	}

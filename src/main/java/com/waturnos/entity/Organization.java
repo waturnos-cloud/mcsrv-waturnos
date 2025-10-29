@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = {"locations","providers"})
 public class Organization {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

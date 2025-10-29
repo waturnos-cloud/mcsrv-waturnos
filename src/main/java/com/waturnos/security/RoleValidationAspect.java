@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
 import com.waturnos.security.annotations.RequireRole;
+import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +27,7 @@ public class RoleValidationAspect {
         User currentUser = authService.getCurrentUser();
         UserRole[] requiredRoles = requireRole.value();
         if (currentUser == null) {
-            throw new SecurityException("Access denied: user not authenticated.");
+            throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: user not authenticated.");
         }
         UserRole userRole = currentUser.getRole();
         
@@ -33,7 +35,7 @@ public class RoleValidationAspect {
                                       .anyMatch(role -> role == userRole);
 
         if (!hasPermission) {
-            throw new SecurityException("Access denied: insufficient permissions.");
+        	throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: insufficient permissions.");
         }
 
         return joinPoint.proceed();

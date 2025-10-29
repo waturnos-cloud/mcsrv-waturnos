@@ -115,7 +115,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 			Provider provider = Provider.builder().active(true).creator(SessionUtil.getUserName())
 					.fullName(manager.getFullName())
 					.email(manager.getEmail())
-					.createdAt(DateUtils.getCurrentDateTime()).build();
+					.createdAt(DateUtils.getCurrentDateTime())
+					.user(manager)//vinculo el manager ya que es el mismo usuario
+					.build();
 			providerRepository.save(provider);
 			ProviderOrganization providerOrganization = ProviderOrganization.builder().organization(organizationDB)
 					.provider(provider).createdAt(DateUtils.getCurrentDateTime())
@@ -127,7 +129,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 			providerOrganizationRepository.save(providerOrganization);
 			
 		}
-		
 		return organizationDB;
 		//TODO NOTIFY EMAIL 
 	}
