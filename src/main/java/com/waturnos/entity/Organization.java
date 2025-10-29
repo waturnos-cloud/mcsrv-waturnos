@@ -1,10 +1,23 @@
 package com.waturnos.entity;
 
-import com.waturnos.enums.OrganizationStatus;
-import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.waturnos.enums.OrganizationStatus;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "organization")
@@ -36,4 +49,5 @@ public class Organization {
 	
 	@ManyToMany(mappedBy = "organizations")
     private List<Provider> providers;
+
 }
