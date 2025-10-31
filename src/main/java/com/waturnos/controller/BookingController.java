@@ -1,13 +1,24 @@
 package com.waturnos.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.waturnos.dto.beans.BookingDTO;
+import com.waturnos.dto.request.AssignBooking;
+import com.waturnos.dto.request.CancelBooking;
 import com.waturnos.entity.Booking;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.service.BookingService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 /**
  * The Class BookingController.
@@ -67,6 +78,39 @@ public class BookingController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking created", mapper.toDto(created)));
 	}
 
+
+	
+	/**
+	 * Update status.
+	 *
+	 * @param id the id
+	 * @param status the status
+	 * @return the response entity
+	 */
+	@PostMapping("/assign")
+	public ResponseEntity<ApiResponse<BookingDTO>> assingBooking(@RequestBody AssignBooking dto) {
+		
+		Booking updated = service.assignBookingToClient(dto.getId(), dto.getClientId());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking assigned", mapper.toDto(updated)));
+	}
+	
+	/**
+	 * Update status.
+	 *
+	 * @param id the id
+	 * @param status the status
+	 * @return the response entity
+	 */
+	@PostMapping("/cancel")
+	public ResponseEntity<ApiResponse<BookingDTO>> cancelBooking(@RequestBody CancelBooking dto) {
+		
+		Booking canceled = service.cancelBooking(dto.getId(), dto.getReason());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
+	}
+	
+	
+	
+	
 	/**
 	 * Update status.
 	 *
@@ -80,4 +124,16 @@ public class BookingController {
 		Booking updated = service.updateStatus(id, status);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking status updated", mapper.toDto(updated)));
 	}
+	
+	
+	/**
+	 * Get status.
+	 *
+	 * @return the response entity
+	 */
+	@GetMapping
+	public ResponseEntity<List<BookingDTO>>  getBookings() {
+		return ResponseEntity.ok(service.findAll().stream().map(mapper::toDto).toList());
+	}
+
 }

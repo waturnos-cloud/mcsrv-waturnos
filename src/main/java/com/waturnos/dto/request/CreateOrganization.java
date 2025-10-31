@@ -19,6 +19,5 @@ public class CreateOrganization {
 	private OrganizationDTO organization;
 	private boolean simpleOrganization;
 	private UserDTO manager;
-	
 
 }
