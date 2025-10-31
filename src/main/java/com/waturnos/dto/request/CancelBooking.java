@@ -5,18 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Instantiates a new login request.
- */
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class LoginRequest {
-
-	/** The email. */
-	private String email;
-
-	/** The password. */
-	private String password;
+public class CancelBooking {
+	private Long id;
+	private String reason;
 }

@@ -13,7 +13,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/services")
-public class ServiceEntityController {
+public class ServiceController {
 	
 	/** The service. */
 	private final ServiceEntityService service;
@@ -27,7 +27,7 @@ public class ServiceEntityController {
 	 * @param s the s
 	 * @param m the m
 	 */
-	public ServiceEntityController(ServiceEntityService s, ServiceMapper m) {
+	public ServiceController(ServiceEntityService s, ServiceMapper m) {
 		this.service = s;
 		this.mapper = m;
 	}

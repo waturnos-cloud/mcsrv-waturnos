@@ -1,14 +1,16 @@
 package com.waturnos.dto.beans;
 
+import java.time.LocalDateTime;
+
 import com.waturnos.enums.BookingStatus;
+
 import lombok.Data;
-import java.time.OffsetDateTime;
 
 @Data
 public class BookingDTO {
 	private Long id;
-	private OffsetDateTime startTime;
-	private OffsetDateTime endTime;
+	private LocalDateTime startTime;
+	private LocalDateTime endTime;
 	private BookingStatus status;
 	private String notes;
 	private Long organizationId;
