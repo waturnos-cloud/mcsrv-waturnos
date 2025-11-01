@@ -398,7 +398,7 @@ ALTER TABLE organization
 
 ALTER TABLE booking
     ADD CONSTRAINT chk_booking_status
-        CHECK (status IN ('RESERVED','CONFIRMED','COMPLETED','CANCELLED'));
+        CHECK (status IN ('PENDING','RESERVED','CONFIRMED','COMPLETED','CANCELLED'));
 
 -- Evitar superposiciones lógicas básicas
 ALTER TABLE booking

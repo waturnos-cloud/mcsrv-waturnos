@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface OrganizationService {
+
 	List<Organization> findAll();
 
 	Optional<Organization> findById(Long id);
