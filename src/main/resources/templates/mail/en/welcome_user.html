@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">Welcome to the System</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+
+    <div style="max-width: 600px; margin: auto; border: 1px solid #0056b3; padding: 25px; border-radius: 8px;">
+        <h2 style="color: #007bff;">👋 Welcome to the Scheduler Platform!</h2>
+
+        <p>Hello **<span th:text="${USERNAME}">[Username Here]</span>**, your account has been successfully created.</p>
+
+        <p>To allow you to access the system immediately, we provide you with a temporary password:</p>
+        
+        <p style="text-align: center; font-size: 1.2em; font-weight: bold; background-color: #f0f8ff; padding: 10px; border-radius: 4px; border: 1px dashed #ced4da;">
+            Temporary Password: <span th:text="${TEMPORAL_PASSWORD}">[Password Here]</span>
+        </p>
+
+        <p>You can log in by clicking the link below:</p>
+        
+        <p style="text-align: center;">
+            <a th:href="${LINK}" 
+               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                Go to Login Page
+            </a>
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        
+        <p style="color: #dc3545; font-weight: bold;">⚠️ Security Recommendation:</p>
+        <p>For your security, we ask that once you log in with this temporary password, you **immediately go to your profile and change it** to a strong, personal password.</p>
+
+        <p>Thank you for joining our system!</p>
+        
+        <p>Best regards,<br>
+        The Scheduler Team.</p>
+    </div>
+
+</body>
+</html>

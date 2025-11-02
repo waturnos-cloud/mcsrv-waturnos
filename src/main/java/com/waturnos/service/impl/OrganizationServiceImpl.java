@@ -1,12 +1,15 @@
 package com.waturnos.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,9 @@ import com.waturnos.entity.ProviderOrganization;
 import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.enums.UserRole;
+import com.waturnos.notification.bean.NotificationRequest;
+import com.waturnos.notification.enums.NotificationType;
+import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.LocationRepository;
 import com.waturnos.repository.OrganizationRepository;
 import com.waturnos.repository.ProviderOrganizationRepository;
@@ -51,6 +57,10 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final ProviderOrganizationRepository providerOrganizationRepository;
 	
 	private final PasswordEncoder passwordEncoder;
+	
+	private final NotificationFactory notificationFactory;
+	
+	private final MessageSource messageSource;
 
 
 	@Override
@@ -84,6 +94,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@RequireRole({UserRole.ADMIN})
 	@Transactional(readOnly = false)
 	public Organization create(Organization org, User manager, boolean isSimpleOrganization) {
+		
 		Optional<User> user = userRepository.findByEmail(manager.getEmail());
 		if(user.isPresent()) {
 			throw new ServiceException(ErrorCode.EMAIL_ALREADY_EXIST_EXCEPTION, "Email already exists exception");
@@ -99,20 +110,38 @@ public class OrganizationServiceImpl implements OrganizationService {
 		
 		String passwordUser = Utils.buildPassword(manager.getFullName(), manager.getPhone());
 		log.error("Password inicial: "+ passwordUser);
-		
+		notificationFactory.send(buildRequest(manager,passwordUser));//tiene que ir al final del método
 		manager.setPassword(passwordEncoder.encode(passwordUser));
 		userRepository.save(manager);
-		
 		org.getLocations().stream().forEach(l -> l.setOrganization(organizationDB));
-		
 		locationRepository.saveAll(org.getLocations());
-		
 		
 		if(isSimpleOrganization) {
 			createProvider(manager, null, organizationDB);//No tengo bio ni foto, pueden actualizar luego su perfil profesional
 		}
 		return organizationDB;
-		//TODO NOTIFY EMAIL 
+		
+	}
+
+	/**
+	 * Builds the request.
+	 *
+	 * @param manager the manager
+	 * @param temporalPasswordUser 
+	 * @return the notification request
+	 */
+	private NotificationRequest buildRequest(User manager, String temporalPasswordUser) {
+		Map<String, String> properties = new HashMap<>();
+        properties.put("USERNAME", manager.getFullName());
+        properties.put("TEMPORAL_PASSWORD",  temporalPasswordUser);
+        properties.put("LINK",  messageSource
+				.getMessage("notification.WELCOME_USER.property.LINK", null, LocaleContextHolder.getLocale()));
+		return NotificationRequest
+				.builder().email(manager.getEmail()).language("ES")
+				.subject(messageSource
+				.getMessage("notification.subject.welcome_organization", null, LocaleContextHolder.getLocale()))
+				.type(NotificationType.WELCOME_USER)
+				.properties(properties).build();
 	}
 
 	/**
