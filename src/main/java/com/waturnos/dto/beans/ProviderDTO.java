@@ -10,6 +10,8 @@ public class ProviderDTO {
 	private String fullName;
 	private String email;
 	private String phone;
+	private String bio;
 	private Boolean active;
+	private String password;
 	private List<OrganizationDTO> organizations;
 }

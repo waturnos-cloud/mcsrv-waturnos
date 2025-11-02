@@ -1,6 +1,7 @@
 package com.waturnos.mapper;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import com.waturnos.dto.beans.ProviderDTO;
@@ -9,6 +10,8 @@ import com.waturnos.entity.Provider;
 
 @Mapper(componentModel = "spring")
 public interface ProviderMapper {
+	
+	@Mapping(target = "password", ignore = true)
 	ProviderDTO toDto(Provider e);
 
 	Provider toEntity(ProviderDTO d);
