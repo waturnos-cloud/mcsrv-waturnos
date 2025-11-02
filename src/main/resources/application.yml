@@ -28,8 +28,9 @@ spring:
   mail:
     host: smtp.gmail.com # O el host de tu proveedor
     port: 587             # El puerto estándar para TLS/STARTTLS
-    username: waturnos@gmail.com # Tu cuenta de correo
-    password: Turnos123. # ¡Usa una contraseña de aplicación, no la principal!
+#    username: waturnos@gmail.com # Tu cuenta de correo
+    username: nicolas.bacci@gmail.com # Tu cuenta de correo
+    password: gtmxixycmvsjdbkg # ¡Usa una contraseña de aplicación, no la principal!
     properties:
       mail:
         smtp:

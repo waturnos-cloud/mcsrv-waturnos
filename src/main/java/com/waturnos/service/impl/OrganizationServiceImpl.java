@@ -110,7 +110,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 		
 		String passwordUser = Utils.buildPassword(manager.getFullName(), manager.getPhone());
 		log.error("Password inicial: "+ passwordUser);
-		notificationFactory.send(buildRequest(manager,passwordUser));//tiene que ir al final del método
 		manager.setPassword(passwordEncoder.encode(passwordUser));
 		userRepository.save(manager);
 		org.getLocations().stream().forEach(l -> l.setOrganization(organizationDB));
@@ -119,6 +118,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		if(isSimpleOrganization) {
 			createProvider(manager, null, organizationDB);//No tengo bio ni foto, pueden actualizar luego su perfil profesional
 		}
+		notificationFactory.send(buildRequest(manager,passwordUser));
 		return organizationDB;
 		
 	}
