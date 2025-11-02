@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2e16610f-1175-4da7-9dad-85745b7f43a3",
+		"_postman_id": "19591058-e794-447b-be77-9806ae066d84",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -83,7 +83,7 @@
 					"response": []
 				},
 				{
-					"name": "POST /organizations",
+					"name": "Create organization / ADMIN",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -98,7 +98,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro1\",\n        \"type\": \"consultorio\",\n        \"logo_url\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan Perez\",\n        \"email\": \"juan@centromedico.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
+							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro10\",\n        \"type\": \"consultorio\",\n        \"logoUrl\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan Perez\",\n        \"email\": \"juan2@centromedico22.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",
@@ -110,6 +110,76 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Manager - ADMIN /MANAGER",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"Manager Perez\",\n    \"email\": \"manager2@centromedico.com\",\n    \"phone\": \"2494000002\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/managers/1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"managers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Provider - ADMIN /MANAGER",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"Profesional2@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/providers/1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"providers",
+								"1"
 							]
 						}
 					},
@@ -142,7 +212,7 @@
 					"response": []
 				},
 				{
-					"name": "PUT /organizations/{id}",
+					"name": "Update Basic Info - ADMIN/MANAGER",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -157,10 +227,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Centro M\\u00e9dico Tandil (upd)\",\n  \"status\": \"ACTIVE\"\n}"
+							"raw": "{\n  \n  \"name\": \"Centro Médico Tandil (upd)\",\n  \"type\": \"consultorio médico\",\n\"logoUrl\": \"http://logo2.jpeg\"\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -169,6 +239,114 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations",
+								"update",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate- ADMIN",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}/ACTIVE",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"update",
+								"{{organizationId}}",
+								"ACTIVE"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate - ADMIN Copy",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}/INACTIVE",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"update",
+								"{{organizationId}}",
+								"INACTIVE"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Locations - ADMIN/MANAGER Copy",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \n  \"locations\": [\n        {\n            \"id\": 1,\n            \"name\": \"Sede principal\",\n            \"address\": \"San Martin 100\",\n            \"phone\": \"24940000\",\n            \"email\": \"centromedicotandil@gmail.com\",\n            \"latitude\": -37.32629891,\n            \"longitude\": -59.1366291,\n\n            \"main\": true\n        },\n        {\n            \"name\": \"Sede secundaria nueva\",\n            \"address\": \"Sarmiento 1100\",\n            \"phone\": \"24940003333444\",\n            \"email\": \"centromedicotandilsecundario@gmail.com\",\n            \"latitude\": -37.31924476,\n            \"longitude\": -59.12144898,\n            \"main\": false\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/updatelocations/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"organizations",
+								"updatelocations",
 								"{{organizationId}}"
 							]
 						}
