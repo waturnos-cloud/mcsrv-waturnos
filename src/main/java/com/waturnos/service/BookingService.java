@@ -32,6 +32,8 @@ public interface BookingService {
 	 * @return the booking
 	 */
 	Booking create(Booking booking);
+	
+	void create(List<Booking> list);
 
 	/**
 	 * Update status.

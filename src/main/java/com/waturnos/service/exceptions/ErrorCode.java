@@ -9,6 +9,9 @@ public enum ErrorCode {
     
     EMAIL_ALREADY_EXIST_EXCEPTION("1000", "error.message.email.already.exist"),
     USER_NOT_FOUND("1001", "error.message.user.not.found"),
+    
+    //SERVICE - 1100
+    SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     ;
 
     private final String code;

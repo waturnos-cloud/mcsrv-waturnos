@@ -1,12 +1,22 @@
 package com.waturnos.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.waturnos.dto.beans.ServiceDTO;
+import com.waturnos.dto.request.CreateService;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.mapper.AvailabilityMapper;
 import com.waturnos.mapper.ServiceMapper;
 import com.waturnos.service.ServiceEntityService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 /**
  * The Class ServiceEntityController.
@@ -19,7 +29,8 @@ public class ServiceController {
 	private final ServiceEntityService service;
 	
 	/** The mapper. */
-	private final ServiceMapper mapper;
+	private final ServiceMapper serviceMapper;
+	private final AvailabilityMapper availabilityMapper;
 
 	/**
 	 * Instantiates a new service entity controller.
@@ -27,9 +38,10 @@ public class ServiceController {
 	 * @param s the s
 	 * @param m the m
 	 */
-	public ServiceController(ServiceEntityService s, ServiceMapper m) {
+	public ServiceController(ServiceEntityService s, ServiceMapper m, AvailabilityMapper am) {
 		this.service = s;
-		this.mapper = m;
+		this.serviceMapper = m;
+		this.availabilityMapper = am;
 	}
 
 	/**
@@ -40,7 +52,7 @@ public class ServiceController {
 	 */
 	@GetMapping("/provider/{providerId}")
 	public ResponseEntity<List<ServiceDTO>> getByProvider(@PathVariable Long providerId) {
-		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(mapper::toDto).toList());
+		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(serviceMapper::toDto).toList());
 	}
 
 	/**
@@ -51,7 +63,7 @@ public class ServiceController {
 	 */
 	@GetMapping("/location/{locationId}")
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
-		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(mapper::toDto).toList());
+		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDto).toList());
 	}
 
 	/**
@@ -61,9 +73,10 @@ public class ServiceController {
 	 * @return the response entity
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody ServiceDTO dto) {
-		ServiceEntity created = service.create(mapper.toEntity(dto));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", mapper.toDto(created)));
+	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
+		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
+				availabilityMapper.toEntityList(createService.getListAvailability()));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDto(created)));
 	}
 
 	/**
@@ -75,7 +88,7 @@ public class ServiceController {
 	 */
 	@PutMapping("/{id}")
 	public ResponseEntity<ApiResponse<ServiceDTO>> update(@PathVariable Long id, @RequestBody ServiceDTO dto) {
-		ServiceEntity updated = service.update(id, mapper.toEntity(dto));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", mapper.toDto(updated)));
+		ServiceEntity updated = service.update(id, serviceMapper.toEntity(dto));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDto(updated)));
 	}
 }

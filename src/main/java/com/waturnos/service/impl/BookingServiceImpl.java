@@ -68,6 +68,11 @@ public class BookingServiceImpl implements BookingService {
 	public Booking create(Booking booking) {
 		return bookingRepository.save(booking);
 	}
+	
+	@Override
+	public void create(List<Booking> list) {
+		bookingRepository.saveAll(list);
+	}
 
 	/**
 	 * Update status.

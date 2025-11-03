@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"provider","location"})
+@ToString(exclude = {"providerOrganizationId"})
 public class ServiceEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,12 +25,8 @@ public class ServiceEntity {
 	private String modificator;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "provider_id")
-	private Provider provider;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "location_id")
-	private Location location;
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id")
+	private ProviderOrganization providerOrganizationId;
 }
