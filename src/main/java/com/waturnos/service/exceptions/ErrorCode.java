@@ -11,6 +11,9 @@ public enum ErrorCode {
     USER_NOT_FOUND("1001", "error.message.user.not.found"),
     
     ORGANIZATION_NOT_FOUND_EXCEPTION("1002", "error.message.organization.not.found"),
+    
+    // SERVICE
+    SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     ;
 
     private final String code;

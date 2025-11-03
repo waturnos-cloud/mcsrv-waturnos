@@ -59,7 +59,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
 	@Transactional(readOnly = false)
 	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability) {
-		Optional<ServiceEntity> service = serviceRepository.findByNameAndProviderId(serviceEntity.getName(), serviceEntity.getProvider().getId());
+		Optional<ServiceEntity> service = serviceRepository.findByNameAndProviderOrganizationId(serviceEntity.getName(), serviceEntity.getProviderOrganization().getId());
 		if(service.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}

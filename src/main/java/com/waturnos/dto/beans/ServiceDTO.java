@@ -12,5 +12,6 @@ public class ServiceDTO {
 	private Integer advancePayment;
 	private Integer futureDays;
 	private Long providerId;
+	private Long organizationId;
 	private Long locationId;
 }

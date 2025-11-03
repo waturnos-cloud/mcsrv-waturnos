@@ -52,7 +52,7 @@ public class ServiceController {
 	 */
 	@GetMapping("/provider/{providerId}")
 	public ResponseEntity<List<ServiceDTO>> getByProvider(@PathVariable Long providerId) {
-		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(serviceMapper::toDto).toList());
+		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(serviceMapper::toDTO).toList());
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class ServiceController {
 	 */
 	@GetMapping("/location/{locationId}")
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
-		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDto).toList());
+		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class ServiceController {
 	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
 		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
 				availabilityMapper.toEntityList(createService.getListAvailability()));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDto(created)));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 
 	/**
@@ -89,6 +89,6 @@ public class ServiceController {
 	@PutMapping("/{id}")
 	public ResponseEntity<ApiResponse<ServiceDTO>> update(@PathVariable Long id, @RequestBody ServiceDTO dto) {
 		ServiceEntity updated = service.update(id, serviceMapper.toEntity(dto));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDto(updated)));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
 }
