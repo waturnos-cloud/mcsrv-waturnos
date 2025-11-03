@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <title th:remove="all">Bienvenido al Sistema</title>
+   </head>
+   <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <div
+         style="max-width: 600px; margin: auto; border: 1px solid #0056b3; padding: 25px; border-radius: 8px;">
+         <h2 style="color: #007bff;">👋 ¡Bienvenido/a a la plataforma del
+            Turnero!
+         </h2>
+         <p>
+            Hola **<span th:text="${USERNAME}">[Nombre de Usuario]</span>**, tu
+            cuenta ha sido creada con éxito.
+         </p>
+         <p>Para que puedas acceder al sistema de inmediato, te
+            proporcionamos una contraseña temporal:
+         </p>
+         <p
+            style="text-align: center; font-size: 1.2em; font-weight: bold; background-color: #f0f8ff; padding: 10px; border-radius: 4px; border: 1px dashed #ced4da;">
+            Contraseña Temporal: <span th:text="${TEMPORAL_PASSWORD}">[Password
+            Aquí]</span>
+         </p>
+         <p>Puedes iniciar sesión haciendo clic en el siguiente enlace:</p>
+         <p style="text-align: center;">
+            <a th:href="${LINK}"
+               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Ir a la Página de Login </a>
+         </p>
+         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+         <p style="color: #dc3545; font-weight: bold;">⚠️ Recomendación de
+            Seguridad:
+         </p>
+         <p>Por tu seguridad, te pedimos que una vez inicies sesión con
+            esta contraseña temporal, **vayas inmediatamente a tu perfil y la
+            cambies** por una contraseña personal y más robusta.
+         </p>
+         <p>¡Gracias por unirte a nuestro sistema!</p>
+         <p>
+            Saludos cordiales,<br> El equipo del Turnero.
+         </p>
+      </div>
+   </body>
+</html>

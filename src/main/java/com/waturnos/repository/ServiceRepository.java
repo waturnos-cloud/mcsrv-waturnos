@@ -1,12 +1,12 @@
 package com.waturnos.repository;
 
-import com.waturnos.entity.ServiceEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.waturnos.entity.ServiceEntity;
+
 public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
 	Optional<ServiceEntity> findByNameAndProviderId(String name, Long providerId);
 	List<ServiceEntity> findByProviderId(Long providerId);

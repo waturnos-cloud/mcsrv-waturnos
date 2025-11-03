@@ -22,7 +22,28 @@ spring:
     properties:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
-
+  jackson:
+    default-property-inclusion: NON_NULL
+# 1. Configuración de Email (JavaMailSender)
+  mail:
+    host: smtp.gmail.com # O el host de tu proveedor
+    port: 587             # El puerto estándar para TLS/STARTTLS
+    username: waturnos@gmail.com # Tu cuenta de correo
+    password: drjp qvlr bgiw pmtv
+ # ¡Usa una contraseña de aplicación, no la principal!
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true    
+# 2. Configuración de Thymeleaf para emails
+  thymeleaf:
+    prefix: classpath:/templates/mail/ # Ubicación de tus plantillas de email
+    suffix: .html                     # Extensión de tus plantillas
+    mode: HTML5
+    encoding: UTF-8
+    cache: false                      # Desactivar caché en desarrollo                      
 jwt:
   secret: "cambiaEsteSecretoLargoConLetrasYNumeros1234567890abcdef"
   expiration-ms: 3600000
@@ -37,3 +58,10 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# El formato es: [CHANNEL_NAME]=[NOTIFICATION_TYPE_1]|[NOTIFICATION_TYPE_2]|...
+notification:
+  channels:
+    EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER
+    WHATSAPP: RESET_PASSWORD
+    PUSH: APPOINTMENT_REMINDER
