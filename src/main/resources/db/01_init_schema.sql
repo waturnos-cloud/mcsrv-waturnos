@@ -89,13 +89,31 @@ CREATE TABLE provider (
     photo_url TEXT, -- Imagen pública del profesional
     bio TEXT, -- Breve descripción del profesional
     active BOOLEAN DEFAULT TRUE,
-    organization_id BIGINT REFERENCES organization(id),
     user_id BIGINT REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de alta
     creator VARCHAR(100), -- creador
     modificator VARCHAR(100) -- modificator
 );
+
+-- Tabla: provider_organization
+-- Relación N a N entre proveedores y organizaciones (por ejemplo, un profesional trabaja en varias sucursales).
+CREATE TABLE provider_organization (
+    id BIGSERIAL PRIMARY KEY,
+    provider_id BIGINT NOT NULL 
+        REFERENCES provider(id) ON DELETE CASCADE,
+    organization_id BIGINT NOT NULL 
+        REFERENCES organization(id) ON DELETE CASCADE,
+    start_date DATE DEFAULT CURRENT_DATE,                -- Desde cuándo trabaja en la organización
+    end_date DATE,                                       -- Hasta cuándo (si aplica)
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creator VARCHAR(100),
+    modificator VARCHAR(100),
+    UNIQUE (provider_id, organization_id)   -- Evita duplicados de asignación
+);
+
 
 -- Tabla: service
 -- Servicios que se ofrecen en la organización, cada uno asociado a un provider
@@ -107,7 +125,7 @@ CREATE TABLE service (
     price DECIMAL(10,2), -- Precio final
     advance_payment INT, -- porcentaje de pago por adelantado, de 0 a 100
     future_days INT, -- cantidad de dias a futuro 
-    provider_id BIGINT REFERENCES provider(id),
+    provider_organization_id BIGINT REFERENCES provider_organization(id),
     location_id BIGINT REFERENCES location(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de alta
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de modificacion
@@ -156,9 +174,7 @@ CREATE TABLE booking (
     end_time TIMESTAMPTZ NOT NULL,                 -- Fecha y hora de fin (con zona horaria)
     status VARCHAR(50) NOT NULL,                   -- Estado del turno: e.g. 'reserved', 'confirmed', 'completed', 'cancelled'
     notes TEXT,                                    -- Notas internas del turno (anotaciones del profesional/admin)
-    organization_id BIGINT REFERENCES organization(id) ON DELETE SET NULL, -- Organización dueña del turno
     client_id BIGINT REFERENCES client(id) ON DELETE SET NULL,             -- Cliente que reservó
-    provider_id BIGINT REFERENCES provider(id) ON DELETE SET NULL,         -- Profesional que atiende
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,           -- Servicio asociado
     recurrence_id BIGINT,                          -- Referencia opcional a la tabla recurrence (si aplica)
     cancel_reason TEXT,                            -- Motivo de cancelación (texto libre)
@@ -232,23 +248,6 @@ CREATE TABLE unavailability (
 );
 
 
--- Tabla: provider_organization
--- Relación N a N entre proveedores y organizaciones (por ejemplo, un profesional trabaja en varias sucursales).
-CREATE TABLE provider_organization (
-    id BIGSERIAL PRIMARY KEY,
-    provider_id BIGINT NOT NULL 
-        REFERENCES provider(id) ON DELETE CASCADE,
-    organization_id BIGINT NOT NULL 
-        REFERENCES organization(id) ON DELETE CASCADE,
-    start_date DATE DEFAULT CURRENT_DATE,                -- Desde cuándo trabaja en la organización
-    end_date DATE,                                       -- Hasta cuándo (si aplica)
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creator VARCHAR(100),
-    modificator VARCHAR(100),
-    UNIQUE (provider_id, organization_id, location_id)   -- Evita duplicados de asignación
-);
 
 
 -- ============================================
@@ -269,19 +268,8 @@ ALTER TABLE users_props
         REFERENCES users(id)
         ON DELETE CASCADE;
 
--- provider
-ALTER TABLE provider
-    ADD CONSTRAINT fk_provider_org
-        FOREIGN KEY (organization_id)
-        REFERENCES organization(id)
-        ON DELETE CASCADE;
-
 -- service
 ALTER TABLE service
-    ADD CONSTRAINT fk_service_provider
-        FOREIGN KEY (provider_id)
-        REFERENCES provider(id)
-        ON DELETE SET NULL,
     ADD CONSTRAINT fk_service_location
         FOREIGN KEY (location_id)
         REFERENCES location(id)
@@ -310,17 +298,9 @@ ALTER TABLE client_props
 
 -- booking
 ALTER TABLE booking
-    ADD CONSTRAINT fk_booking_org
-        FOREIGN KEY (organization_id)
-        REFERENCES organization(id)
-        ON DELETE SET NULL,
     ADD CONSTRAINT fk_booking_client
         FOREIGN KEY (client_id)
         REFERENCES client(id)
-        ON DELETE SET NULL,
-    ADD CONSTRAINT fk_booking_provider
-        FOREIGN KEY (provider_id)
-        REFERENCES provider(id)
         ON DELETE SET NULL,
     ADD CONSTRAINT fk_booking_service
         FOREIGN KEY (service_id)
@@ -372,20 +352,6 @@ ALTER TABLE location
         REFERENCES organization(id)
         ON DELETE CASCADE;
 
--- provider_organization
-ALTER TABLE provider_organization
-    ADD CONSTRAINT fk_provider_org_provider
-        FOREIGN KEY (provider_id)
-        REFERENCES provider(id)
-        ON DELETE CASCADE,
-    ADD CONSTRAINT fk_provider_org_org
-        FOREIGN KEY (organization_id)
-        REFERENCES organization(id)
-        ON DELETE CASCADE,
-    ADD CONSTRAINT fk_provider_org_location
-        FOREIGN KEY (location_id)
-        REFERENCES location(id)
-        ON DELETE SET NULL;
 
 -- ============================================
 -- CONSTRAINTS ADICIONALES DE INTEGRIDAD
@@ -404,6 +370,12 @@ ALTER TABLE booking
 ALTER TABLE booking
     ADD CONSTRAINT chk_booking_times
         CHECK (start_time < end_time);
+        
+ALTER TABLE booking
+    ADD CONSTRAINT fk_booking_recurrence
+        FOREIGN KEY (recurrence_id)
+        REFERENCES recurrence(id)
+        ON DELETE SET NULL;        
 
 -- Porcentaje de pago válido
 ALTER TABLE service
@@ -412,59 +384,95 @@ ALTER TABLE service
 
 -- Sin nombres duplicados por organización
 ALTER TABLE provider
-    ADD CONSTRAINT uq_provider_email_org UNIQUE (organization_id, email);
+    ADD CONSTRAINT uq_provider_email_org UNIQUE (email);
 
 ALTER TABLE client
     ADD CONSTRAINT uq_client_email_org UNIQUE (organization_id, email);
 
 
 -- ============================================
--- ÍNDICES DE RELACIONES Y CONSULTAS COMUNES
+-- ÍNDICES DE OPTIMIZACIÓN WATURNOS
 -- ============================================
 
 -- ORGANIZATION
-CREATE INDEX idx_org_status ON organization(status);
+CREATE INDEX idx_organization_status ON organization(status);
+CREATE INDEX idx_organization_active ON organization(active);
 
 -- LOCATION
-CREATE INDEX idx_location_org ON location(organization_id);
+CREATE INDEX idx_location_organization ON location(organization_id);
 CREATE INDEX idx_location_active ON location(active);
+CREATE INDEX idx_location_name ON location(name);
 
--- USER
-CREATE INDEX idx_user_email ON users(email);
-CREATE INDEX idx_user_org ON users(organization_id);
-CREATE INDEX idx_user_role ON users(role);
+-- USERS
+CREATE UNIQUE INDEX uq_users_email ON users(email); -- ya es unique, pero explícito para optimizador
+CREATE INDEX idx_users_organization ON users(organization_id);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_active ON users(active);
 
 -- PROVIDER
-CREATE INDEX idx_provider_org ON provider(organization_id);
+CREATE INDEX idx_provider_user ON provider(user_id);
 CREATE INDEX idx_provider_active ON provider(active);
+CREATE INDEX idx_provider_fullname ON provider(full_name);
+
+-- PROVIDER_ORGANIZATION
+CREATE INDEX idx_providerorg_provider ON provider_organization(provider_id);
+CREATE INDEX idx_providerorg_organization ON provider_organization(organization_id);
+CREATE INDEX idx_providerorg_location ON provider_organization(location_id);
+CREATE INDEX idx_providerorg_active ON provider_organization(active);
 
 -- SERVICE
-CREATE INDEX idx_service_provider ON service(provider_id);
+CREATE INDEX idx_service_providerorg ON service(provider_organization_id);
 CREATE INDEX idx_service_location ON service(location_id);
 CREATE INDEX idx_service_price ON service(price);
+CREATE INDEX idx_service_duration ON service(duration_minutes);
+CREATE INDEX idx_service_name ON service(name);
 
 -- CLIENT
-CREATE INDEX idx_client_org ON client(organization_id);
+CREATE INDEX idx_client_organization ON client(organization_id);
 CREATE INDEX idx_client_email ON client(email);
+CREATE INDEX idx_client_fullname ON client(full_name);
+CREATE INDEX idx_client_active ON client(email) WHERE email IS NOT NULL;
 
 -- BOOKING
-CREATE INDEX idx_booking_org ON booking(organization_id);
 CREATE INDEX idx_booking_client ON booking(client_id);
-CREATE INDEX idx_booking_provider ON booking(provider_id);
 CREATE INDEX idx_booking_service ON booking(service_id);
-CREATE INDEX idx_booking_start_time ON booking(start_time);
+CREATE INDEX idx_booking_recurrence ON booking(recurrence_id);
 CREATE INDEX idx_booking_status ON booking(status);
+CREATE INDEX idx_booking_start_time ON booking(start_time);
+CREATE INDEX idx_booking_end_time ON booking(end_time);
+CREATE INDEX idx_booking_service_status ON booking(service_id, status);
+CREATE INDEX idx_booking_time_window ON booking(start_time, end_time);
+-- Si más adelante agregás organization_id, agregar también:
+-- CREATE INDEX idx_booking_organization ON booking(organization_id);
+
+-- RECURRENCE
+CREATE INDEX idx_recurrence_service ON recurrence(service_id);
+CREATE INDEX idx_recurrence_client ON recurrence(client_id);
+CREATE INDEX idx_recurrence_pattern ON recurrence(pattern);
 
 -- PAYMENT
 CREATE INDEX idx_payment_booking ON payment(booking_id);
 CREATE INDEX idx_payment_status ON payment(status);
+CREATE INDEX idx_payment_method ON payment(method);
+CREATE INDEX idx_payment_currency ON payment(currency);
 
 -- NOTIFICATION
 CREATE INDEX idx_notification_booking ON notification(related_booking_id);
 CREATE INDEX idx_notification_channel ON notification(channel);
 CREATE INDEX idx_notification_status ON notification(status);
+CREATE INDEX idx_notification_type ON notification(type);
 
--- PROVIDER_ORGANIZATION
-CREATE INDEX idx_provider_org_provider ON provider_organization(provider_id);
-CREATE INDEX idx_provider_org_org ON provider_organization(organization_id);
-CREATE INDEX idx_provider_org_location ON provider_organization(location_id);    
+-- AVAILABILITY
+CREATE INDEX idx_availability_service ON availability(service_id);
+CREATE INDEX idx_availability_day_of_week ON availability(day_of_week);
+
+-- UNAVAILABILITY
+CREATE INDEX idx_unavailability_service ON unavailability(service_id);
+CREATE INDEX idx_unavailability_day_of_week ON unavailability(day_of_week);
+CREATE INDEX idx_unavailability_range ON unavailability(start_day, end_day);
+
+-- PROPS TABLES (claves-valor)
+CREATE INDEX idx_organizationprops_key ON organization_props(key);
+CREATE INDEX idx_serviceprops_key ON service_props(key);
+CREATE INDEX idx_usersprops_key ON users_props(key);
+CREATE INDEX idx_clientprops_key ON client_props(key);

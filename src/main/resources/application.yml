@@ -23,14 +23,14 @@ spring:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   jackson:
-    default-property-inclusion: non_null
+    default-property-inclusion: NON_NULL
 # 1. Configuración de Email (JavaMailSender)
   mail:
     host: smtp.gmail.com # O el host de tu proveedor
     port: 587             # El puerto estándar para TLS/STARTTLS
-#    username: waturnos@gmail.com # Tu cuenta de correo
-    username: nicolas.bacci@gmail.com # Tu cuenta de correo
-    password: gtmxixycmvsjdbkg # ¡Usa una contraseña de aplicación, no la principal!
+    username: waturnos@gmail.com # Tu cuenta de correo
+    password: drjp qvlr bgiw pmtv
+ # ¡Usa una contraseña de aplicación, no la principal!
     properties:
       mail:
         smtp:
