@@ -1,9 +1,11 @@
 {
 	"info": {
-		"_postman_id": "5264b9ae-ee23-408a-aa6e-ad6dd3370588",
+		"_postman_id": "cb28c346-d67d-4e32-961e-7ce1ce56f48c",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "160410",
+		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-cb28c346-d67d-4e32-961e-7ce1ce56f48c?action=share&source=collection_link&creator=160410"
 	},
 	"item": [
 		{
@@ -1068,7 +1070,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"providerId\": 1,\n  \"locationId\": 1,\n  \"name\": \"Corte de pelo\",\n  \"description\": \"Corte con lavado\",\n  \"price\": 3500,\n  \"durationMinutes\": 45,\n  \"advancePayment\": 0,\n  \"futureDays\": 30\n}"
+							"raw": "{\n    \"serviceDto\":{\n        \"providerId\": 1,\n        \"locationId\": 1,\n        \"organizationId\": 2,\n        \"name\": \"Corte de pelo\",\n        \"description\": \"Corte con lavado\",\n        \"price\": 3500,\n        \"durationMinutes\": 45,\n        \"advancePayment\": 0,\n        \"futureDays\": 30\n    },\n    \"listAvailability\":[\n        {\n            \"dayOfWeek\":1,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":2,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":3,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":4,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":5,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
