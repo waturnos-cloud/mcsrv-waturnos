@@ -8,15 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.mapstruct.AfterMapping;
+import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.waturnos.dto.beans.ServiceDTO;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.ProviderOrganization;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.AvailabilityRepository;
+import com.waturnos.repository.LocationRepository;
+import com.waturnos.repository.ProviderOrganizationRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
@@ -30,11 +36,16 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	private final ServiceRepository serviceRepository;
 	private final AvailabilityRepository availabilityRepository;
 	private final BookingService bookingService;
+	private final ProviderOrganizationRepository providerOrganizationRepository;
+	private final LocationRepository locationRepository;
 
-	public ServiceEntityServiceImpl(ServiceRepository serviceRepository, AvailabilityRepository availabilityRepository, BookingService bookingService) {
+	public ServiceEntityServiceImpl(ServiceRepository serviceRepository, AvailabilityRepository availabilityRepository, 
+			BookingService bookingService, ProviderOrganizationRepository providerOrganizationRepository, LocationRepository locationRepository) {
 		this.serviceRepository = serviceRepository;
 		this.availabilityRepository = availabilityRepository;
 		this.bookingService = bookingService; 
+		this.providerOrganizationRepository = providerOrganizationRepository;
+		this.locationRepository = locationRepository;
 	}
 
 
@@ -50,15 +61,43 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		service.setId(existing.getId());
 		return serviceRepository.save(service);
 	}
+	
+	
+
+    @AfterMapping
+    protected void loadRelations(ServiceDTO dto, @MappingTarget ServiceEntity entity) {
+        if (dto.getOrganizationId() != null) {
+        	entity.setProviderOrganization(providerOrganizationRepository
+                    .findByProviderIdAndOrganizationId(dto.getProviderId(), dto.getOrganizationId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                        "ProviderOrganization not found for providerId=" + dto.getProviderId()
+                        + " and organizationId=" + dto.getOrganizationId()
+                    )));
+        }
+        if (dto.getLocationId() != null) {
+            entity.setLocation(locationRepository.findById(dto.getLocationId())
+                .orElseThrow(() -> new EntityNotFoundException("Location not found")));
+        }
+    }
+	
+	
 
 	@Override
 	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
 	@Transactional(readOnly = false)
-	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability) {
-		Optional<ServiceEntity> service = serviceRepository.findByNameAndProviderOrganizationId(serviceEntity.getName(), serviceEntity.getProviderOrganization().getId());
+	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long providerId,
+			Long organizationId, Long locationId) {
+		
+		Optional<ProviderOrganization> providerOrganization = providerOrganizationRepository.findByProviderIdAndOrganizationId(providerId, organizationId);
+		if(!providerOrganization.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_PROVIDER_ORGANIZATION_EXCEPTION, "Provider-Organization incorrect");
+		}
+		Optional<ServiceEntity> service = serviceRepository.findByNameAndProviderOrganizationId(serviceEntity.getName(), providerOrganization.get().getId());
 		if(service.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}
+		serviceEntity.setProviderOrganization(providerOrganization.get());
+		serviceEntity.setLocation(locationRepository.findById(locationId).get());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		listAvailability.forEach(av -> {
 		    av.setServiceId(serviceEntity.getId());
@@ -106,5 +145,4 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	public List<ServiceEntity> findByProvider(Long providerId) {
 		return serviceRepository.findByProviderId(providerId);
 	}
-
 }

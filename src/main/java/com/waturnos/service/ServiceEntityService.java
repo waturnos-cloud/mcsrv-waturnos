@@ -10,7 +10,7 @@ public interface ServiceEntityService {
 
 	List<ServiceEntity> findByLocation(Long locationId);
 
-	ServiceEntity create(ServiceEntity service, List<AvailabilityEntity> listAvailability);
+	ServiceEntity create(ServiceEntity service, List<AvailabilityEntity> listAvailability, Long providerId, Long organizationId, Long locationId);
 
 	ServiceEntity update(Long id, ServiceEntity service);
 }

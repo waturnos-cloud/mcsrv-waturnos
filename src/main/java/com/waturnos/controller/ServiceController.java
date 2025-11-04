@@ -75,7 +75,8 @@ public class ServiceController {
 	@PostMapping
 	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
 		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
-				availabilityMapper.toEntityList(createService.getListAvailability()));
+				availabilityMapper.toEntityList(createService.getListAvailability()),createService.getServiceDto().getProviderId(), 
+					createService.getServiceDto().getOrganizationId(), createService.getServiceDto().getLocationId());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 

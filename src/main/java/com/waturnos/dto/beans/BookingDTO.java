@@ -13,8 +13,6 @@ public class BookingDTO {
 	private LocalDateTime endTime;
 	private BookingStatus status;
 	private String notes;
-	private Long organizationId;
 	private Long clientId;
-	private Long providerId;
 	private Long serviceId;
 }

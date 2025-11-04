@@ -14,15 +14,11 @@ import com.waturnos.entity.ServiceEntity;
 
 @Mapper(componentModel = "spring")
 public interface BookingMapper {
-	@Mappings({ @Mapping(target = "organizationId", source = "organization.id"),
-			@Mapping(target = "clientId", source = "client.id"),
-			@Mapping(target = "providerId", source = "provider.id"),
+	@Mappings({@Mapping(target = "clientId", source = "client.id"),
 			@Mapping(target = "serviceId", source = "service.id") })
 	BookingDTO toDto(Booking e);
 
-	@Mappings({ @Mapping(target = "organization", source = "organizationId", qualifiedByName = "orgFromId"),
-			@Mapping(target = "client", source = "clientId", qualifiedByName = "clientFromId"),
-			@Mapping(target = "provider", source = "providerId", qualifiedByName = "providerFromId"),
+	@Mappings({@Mapping(target = "client", source = "clientId", qualifiedByName = "clientFromId"),
 			@Mapping(target = "service", source = "serviceId", qualifiedByName = "serviceFromId") })
 	Booking toEntity(BookingDTO d);
 
