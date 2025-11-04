@@ -1,6 +1,7 @@
 package com.waturnos.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,11 +66,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 	
 	private final MessageSource messageSource;
 
-
-	@Override
-	public List<Organization> findAll() {
-		return organizationRepository.findAll();
-	}
 
 	@Override
 	public Optional<Organization> findById(Long id) {
@@ -361,5 +360,47 @@ public class OrganizationServiceImpl implements OrganizationService {
 		
 		return provider;
 
+	}
+	
+	@Override
+	public List<Organization> findAll() {
+		return organizationRepository.findByStatusOrderByNameAsc(OrganizationStatus.ACTIVE); 
+	}
+
+	/**
+	 * Find all.
+	 *
+	 * @param authentication the authentication
+	 * @return the list
+	 */
+	@Override
+	@RequireRole(value = {UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER})
+	public List<Organization> findAll(Authentication authentication) {
+		String principalRole = authentication.getAuthorities().stream()
+	            .map(GrantedAuthority::getAuthority)
+	            .findFirst() // Se asume un rol principal para la decisión
+	            .orElse("");
+		
+		// 3. Control de Roles (Lógica de acceso)
+        return switch (principalRole) {
+            case "ROLE_ADMIN" -> {
+                // El ADMIN tiene la menor restricción
+            	Sort sortByOrganizationName = Sort.by(Sort.Direction.ASC, "name");
+                yield organizationRepository.findAll(sortByOrganizationName);
+            }
+            case "ROLE_MANAGER" -> {
+                // El MANAGER tiene restricción por su organización
+            	User user = userRepository.findById(SessionUtil.getCurrentUser().getId()).get();
+                yield Arrays.asList(user.getOrganization());
+            }
+            case "ROLE_PROVIDER" -> {
+                // El PROVIDER tiene restricción por la tabla N:N
+            	Provider provider = providerRepository.findByUserId(SessionUtil.getCurrentUser().getId()).get();
+            	yield provider.getOrganizations();
+            }
+            default -> {
+                throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Usuario sin role detectado");
+            }
+        };
 	}
 }

@@ -45,7 +45,8 @@ public class AppConfig {
 					return config;
 				})).sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/swagger-ui.html",
-						"/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/auth/login").permitAll().anyRequest()
+						"/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/auth/login",
+						"/public/**").permitAll().anyRequest()
 						.authenticated())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

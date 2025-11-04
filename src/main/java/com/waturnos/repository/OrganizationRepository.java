@@ -8,7 +8,8 @@ import com.waturnos.entity.Organization;
 import com.waturnos.enums.OrganizationStatus;
 
 public interface OrganizationRepository extends JpaRepository<Organization, Long> {
-	List<Organization> findByStatus(OrganizationStatus status);
+	List<Organization> findByStatusOrderByNameAsc(OrganizationStatus status);
 
-	List<Organization> findByActiveTrue();
+	List<Organization> findByActiveTrueOrderByNameAsc();
+	
 }

@@ -3,6 +3,8 @@ package com.waturnos.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +64,10 @@ public class OrganizationController {
 	 */
 	@GetMapping
 	public ResponseEntity<List<OrganizationDTO>> getAll() {
-		return ResponseEntity.ok(service.findAll().stream().map(o -> organizationMapper.toDto(o,false)).toList());
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		return ResponseEntity.ok(service.findAll(authentication).stream().map(o -> organizationMapper.toDto(o,false)).toList());
 	}
 
 	/**

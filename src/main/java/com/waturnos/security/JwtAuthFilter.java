@@ -2,8 +2,10 @@ package com.waturnos.security;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +63,9 @@ public class JwtAuthFilter extends GenericFilter {
                 String email = jwtUtil.getEmailFromToken(token);
                 User user = userRepository.findByEmail(email).orElse(null);
                 if (user != null) {
-                    var auth = new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
+                	SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
+                	List<SimpleGrantedAuthority> authorities = Collections.singletonList(authority);
+                    var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }

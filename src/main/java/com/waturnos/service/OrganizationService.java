@@ -3,6 +3,8 @@ package com.waturnos.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.security.core.Authentication;
+
 import com.waturnos.entity.Location;
 import com.waturnos.entity.Organization;
 import com.waturnos.entity.Provider;
@@ -16,10 +18,11 @@ public interface OrganizationService {
 
 	/**
 	 * Find all.
+	 * @param authentication 
 	 *
 	 * @return the list
 	 */
-	List<Organization> findAll();
+	List<Organization> findAll(Authentication authentication);
 
 	/**
 	 * Find by id.
@@ -90,4 +93,12 @@ public interface OrganizationService {
 	 * @return the user
 	 */
 	Provider addProvider(Long id, Provider entity);
+
+	/**
+	 * Find all.
+	 *
+	 * @return the list
+	 */
+	List<Organization> findAll();
+
 }
