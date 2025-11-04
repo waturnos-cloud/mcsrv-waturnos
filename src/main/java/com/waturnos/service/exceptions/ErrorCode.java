@@ -12,6 +12,8 @@ public enum ErrorCode {
     
     ORGANIZATION_NOT_FOUND_EXCEPTION("1002", "error.message.organization.not.found"),
     
+    PASSWORD_RESET_TOKEN_EXPIRED("1003", "error.message.password.reset.expired"),
+    
     // SERVICE
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     ;

@@ -65,3 +65,13 @@ notification:
     EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER
     WHATSAPP: RESET_PASSWORD
     PUSH: APPOINTMENT_REMINDER
+    
+app:
+  baseUrl:
+  resetpassword:
+    expiration:
+      timetoken: 15 #15 minutos dura el token para reset de contraseña
+  notification:
+    WELCOME_USER: https://www.whaturnos.com/organizations/login.html
+    RESET_PASSWORD: https://www.whaturnos.com/user/resetpassword.html   
+       

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"organization"})
-public class Client {
+public class Client implements CommonUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -27,4 +27,11 @@ public class Client {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "organization_id")
 	private Organization organization;
+	
+	public static final String CLIENT = "CLIENT";
+	
+	@Override
+    public String getUserType() {
+        return CLIENT;
+    }
 }

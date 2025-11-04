@@ -247,6 +247,29 @@ CREATE TABLE unavailability (
     service_id BIGINT REFERENCES service(id)
 );
 
+-- DDL para la tabla de tokens de restablecimiento de clave
+CREATE TABLE password_reset_token (
+    id BIGSERIAL PRIMARY KEY, 
+    token VARCHAR(36) NOT NULL, 
+    expiry_date TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
+    user_id BIGINT NULL, 
+    client_id BIGINT NULL, 
+    CONSTRAINT uc_password_reset_token_token UNIQUE (token),
+    CONSTRAINT fk_password_reset_token_user_id 
+        FOREIGN KEY (user_id) 
+        REFERENCES users (id) 
+        ON DELETE CASCADE, 
+    CONSTRAINT fk_password_reset_token_client_id 
+        FOREIGN KEY (client_id) 
+        REFERENCES client (id) 
+        ON DELETE CASCADE,
+    CONSTRAINT chk_one_user_or_client 
+        CHECK (
+            (user_id IS NOT NULL AND client_id IS NULL) OR 
+            (user_id IS NULL AND client_id IS NOT NULL)
+        )
+);
+
 
 
 

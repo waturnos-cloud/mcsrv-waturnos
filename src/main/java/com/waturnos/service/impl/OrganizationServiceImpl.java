@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Sort;
@@ -65,6 +66,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 	private final NotificationFactory notificationFactory;
 	
 	private final MessageSource messageSource;
+	
+    @Value("${app.notification.WELCOME_USER}")
+    private String baseUrlWelcomeUser; 
 
 
 	@Override
@@ -133,8 +137,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		Map<String, String> properties = new HashMap<>();
         properties.put("USERNAME", manager.getFullName());
         properties.put("TEMPORAL_PASSWORD",  temporalPasswordUser);
-        properties.put("LINK",  messageSource
-				.getMessage("notification.WELCOME_USER.property.LINK", null, LocaleContextHolder.getLocale()));
+        properties.put("LINK",  baseUrlWelcomeUser);
 		return NotificationRequest
 				.builder().email(manager.getEmail()).language("ES")
 				.subject(messageSource

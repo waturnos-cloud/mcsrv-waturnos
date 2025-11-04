@@ -27,7 +27,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"organization"})
-public class User {
+public class User implements CommonUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -48,4 +48,11 @@ public class User {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "organization_id")
 	private Organization organization;
+	
+	public static final String USER = "USER";
+
+	@Override
+	public String getUserType() {
+		return USER;
+	}
 }
