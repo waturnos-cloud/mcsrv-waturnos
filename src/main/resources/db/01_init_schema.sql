@@ -1,4 +1,22 @@
 -- =============================================
+-- CONFIGURACIÓN DE ESQUEMA Y LIMPIEZA
+-- =============================================
+CREATE SCHEMA IF NOT EXISTS public;
+SET search_path TO public;
+DO
+$$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+        EXECUTE 'DROP TABLE IF EXISTS public.' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
+END
+$$;
+SHOW search_path;
+
+
+-- =============================================
 -- MODELO DE DATOS WATurnos - Generado 2025-10-20
 -- Descripción: Modelo de base de datos para sistema de turnos multiorganización y multiprofesional.
 -- Cada tabla incluye explicación de sus columnas y finalidad.
@@ -59,7 +77,7 @@ CREATE TABLE users (
     full_name VARCHAR(255), -- Nombre completo
     email VARCHAR(255) UNIQUE, -- Email único para login
     phone VARCHAR(50), -- Teléfono (opcional)
-    password_hash TEXT, -- Contraseña hasheada
+    password TEXT, -- Contraseña hasheada
     organization_id BIGINT REFERENCES organization(id), -- Organización a la que pertenece
     active BOOLEAN DEFAULT TRUE, -- Si está habilitado
     role VARCHAR(50), -- admin / manager / provider
@@ -149,7 +167,7 @@ CREATE TABLE client (
     full_name VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(50),
-    password_hash TEXT, -- Si se permite login de cliente
+    password TEXT, -- Si se permite login de cliente
     organization_id BIGINT REFERENCES organization(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha de modificacion
