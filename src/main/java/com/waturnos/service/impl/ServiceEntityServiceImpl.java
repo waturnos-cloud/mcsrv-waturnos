@@ -145,4 +145,10 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	public List<ServiceEntity> findByProvider(Long providerId) {
 		return serviceRepository.findByProviderId(providerId);
 	}
+
+
+	@Override
+	public List<ServiceEntity> findByOrganization(Long organizationId) {
+		return serviceRepository.findByOrganizationId(organizationId);
+	}
 }

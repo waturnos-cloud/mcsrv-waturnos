@@ -43,6 +43,31 @@ public class ServiceController {
 		this.serviceMapper = m;
 		this.availabilityMapper = am;
 	}
+	
+	/**
+	 * Creates the.
+	 *
+	 * @param dto the dto
+	 * @return the response entity
+	 */
+	@PostMapping
+	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
+		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
+				availabilityMapper.toEntityList(createService.getListAvailability()),createService.getServiceDto().getProviderId(), 
+					createService.getServiceDto().getOrganizationId(), createService.getServiceDto().getLocationId());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
+	}
+
+	/**
+	 * Gets the by provider.
+	 *
+	 * @param providerId the provider id
+	 * @return the by provider
+	 */
+	@GetMapping("/organization/{organizationId}")
+	public ResponseEntity<List<ServiceDTO>> getByOrganization(@PathVariable Long organizationId) {
+		return ResponseEntity.ok(service.findByOrganization(organizationId).stream().map(serviceMapper::toDTO).toList());
+	}
 
 	/**
 	 * Gets the by provider.
@@ -64,20 +89,6 @@ public class ServiceController {
 	@GetMapping("/location/{locationId}")
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
 		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
-	}
-
-	/**
-	 * Creates the.
-	 *
-	 * @param dto the dto
-	 * @return the response entity
-	 */
-	@PostMapping
-	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
-		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
-				availabilityMapper.toEntityList(createService.getListAvailability()),createService.getServiceDto().getProviderId(), 
-					createService.getServiceDto().getOrganizationId(), createService.getServiceDto().getLocationId());
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 
 	/**

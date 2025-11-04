@@ -7,6 +7,8 @@ import java.util.List;
 public interface ServiceEntityService {
 	
 	List<ServiceEntity> findByProvider(Long providerId);
+	
+	List<ServiceEntity> findByOrganization(Long organizationId);
 
 	List<ServiceEntity> findByLocation(Long locationId);
 

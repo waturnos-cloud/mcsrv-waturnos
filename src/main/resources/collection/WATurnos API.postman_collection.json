@@ -1030,31 +1030,6 @@
 			"name": "Services",
 			"item": [
 				{
-					"name": "GET /services",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"services"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "POST /services",
 					"request": {
 						"method": "POST",
@@ -1072,6 +1047,85 @@
 							"mode": "raw",
 							"raw": "{\n    \"serviceDto\":{\n        \"providerId\": {{providerId}},\n        \"locationId\": {{locationId}},\n        \"organizationId\": {{organizationId}},\n        \"name\": \"Corte de pelo\",\n        \"description\": \"Corte con lavado\",\n        \"price\": 3500,\n        \"durationMinutes\": 45,\n        \"advancePayment\": 0,\n        \"futureDays\": 30\n    },\n    \"listAvailability\":[\n        {\n            \"dayOfWeek\":1,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":2,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":3,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":4,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":5,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        }\n    ]\n}"
 						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/provider/{providerId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/provider/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"provider",
+								"{{providerId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services/organizartion/{providerId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/organizartion/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"organizartion",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /services",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
 							"protocol": "{{protocol}}",
@@ -1168,33 +1222,6 @@
 								"v1.0",
 								"services",
 								"{{serviceId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "GET /services/byProvider/{providerId}",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/byProvider/{{providerId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"services",
-								"byProvider",
-								"{{providerId}}"
 							]
 						}
 					},
