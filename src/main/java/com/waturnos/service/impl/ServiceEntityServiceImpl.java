@@ -37,10 +37,6 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		this.bookingService = bookingService; 
 	}
 
-	@Override
-	public List<ServiceEntity> findByProvider(Long providerId) {
-		return serviceRepository.findByProviderId(providerId);
-	}
 
 	@Override
 	public List<ServiceEntity> findByLocation(Long locationId) {
@@ -103,6 +99,12 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	    }
 
 	    bookingService.create(bookings);
+	}
+
+
+	@Override
+	public List<ServiceEntity> findByProvider(Long providerId) {
+		return serviceRepository.findByProviderId(providerId);
 	}
 
 }

@@ -1,11 +1,47 @@
 {
 	"info": {
-		"_postman_id": "19591058-e794-447b-be77-9806ae066d84",
+		"_postman_id": "5264b9ae-ee23-408a-aa6e-ad6dd3370588",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Organizations",
+					"item": [
+						{
+							"name": "GET /organizations",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwtToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/public/organizations",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"msvc-waturnos",
+										"v1.0",
+										"public",
+										"organizations"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
 		{
 			"name": "Auth",
 			"item": [
