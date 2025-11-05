@@ -8,12 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.mapstruct.AfterMapping;
-import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.waturnos.dto.beans.ServiceDTO;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.ProviderOrganization;
@@ -48,40 +45,6 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		this.locationRepository = locationRepository;
 	}
 
-
-	@Override
-	public List<ServiceEntity> findByLocation(Long locationId) {
-		return serviceRepository.findByLocationId(locationId);
-	}
-	
-	@Override
-	public ServiceEntity update(Long id, ServiceEntity service) {
-		ServiceEntity existing = serviceRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
-		service.setId(existing.getId());
-		return serviceRepository.save(service);
-	}
-	
-	
-
-    @AfterMapping
-    protected void loadRelations(ServiceDTO dto, @MappingTarget ServiceEntity entity) {
-        if (dto.getOrganizationId() != null) {
-        	entity.setProviderOrganization(providerOrganizationRepository
-                    .findByProviderIdAndOrganizationId(dto.getProviderId(), dto.getOrganizationId())
-                    .orElseThrow(() -> new EntityNotFoundException(
-                        "ProviderOrganization not found for providerId=" + dto.getProviderId()
-                        + " and organizationId=" + dto.getOrganizationId()
-                    )));
-        }
-        if (dto.getLocationId() != null) {
-            entity.setLocation(locationRepository.findById(dto.getLocationId())
-                .orElseThrow(() -> new EntityNotFoundException("Location not found")));
-        }
-    }
-	
-	
-
 	@Override
 	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
 	@Transactional(readOnly = false)
@@ -107,9 +70,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		return serviceEntityResponse;
 	}
 	
-	
-	
-	public void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities) {
+	private void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities) {
 	    LocalDate startDate = LocalDate.now();
 	    LocalDate endDate = startDate.plusDays(service.getFutureDays());
 
@@ -139,16 +100,38 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 
 	    bookingService.create(bookings);
 	}
-
-
+	
 	@Override
-	public List<ServiceEntity> findByProvider(Long providerId) {
-		return serviceRepository.findByProviderId(providerId);
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public ServiceEntity findById(Long id) {
+		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(id);
+		if(!serviceEntity.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+		}
+		return serviceEntity.get();
 	}
 
-
 	@Override
-	public List<ServiceEntity> findByOrganization(Long organizationId) {
-		return serviceRepository.findByOrganizationId(organizationId);
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public List<ServiceEntity> findByOrganizationProvider(Long organizationId, Long providerId) {
+		Optional<ProviderOrganization> providerOrganization = providerOrganizationRepository.findByProviderIdAndOrganizationId(providerId, organizationId);
+		if(!providerOrganization.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_PROVIDER_ORGANIZATION_EXCEPTION, "Incorrect Provider-Organization");
+		}
+		return serviceRepository.findByProviderOrganizationId(providerOrganization.get().getId());
+	}
+	
+	@Override
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public List<ServiceEntity> findByLocation(Long locationId) {
+		return serviceRepository.findByLocationId(locationId);
+	}
+	
+	@Override
+	public ServiceEntity update(Long id, ServiceEntity service) {
+		ServiceEntity existing = serviceRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
+		service.setId(existing.getId());
+		return serviceRepository.save(service);
 	}
 }

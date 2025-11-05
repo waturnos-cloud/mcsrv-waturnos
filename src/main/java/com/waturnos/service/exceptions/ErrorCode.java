@@ -17,6 +17,7 @@ public enum ErrorCode {
     // SERVICE
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     SERVICE_PROVIDER_ORGANIZATION_EXCEPTION("1101","error.message.service.provider.organization.incorrect"),
+    SERVICE_EXCEPTION("1102","error.message.service.incorrect"),
     ;
 
     private final String code;

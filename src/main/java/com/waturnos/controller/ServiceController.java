@@ -64,20 +64,9 @@ public class ServiceController {
 	 * @param providerId the provider id
 	 * @return the by provider
 	 */
-	@GetMapping("/organization/{organizationId}")
-	public ResponseEntity<List<ServiceDTO>> getByOrganization(@PathVariable Long organizationId) {
-		return ResponseEntity.ok(service.findByOrganization(organizationId).stream().map(serviceMapper::toDTO).toList());
-	}
-
-	/**
-	 * Gets the by provider.
-	 *
-	 * @param providerId the provider id
-	 * @return the by provider
-	 */
-	@GetMapping("/provider/{providerId}")
-	public ResponseEntity<List<ServiceDTO>> getByProvider(@PathVariable Long providerId) {
-		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(serviceMapper::toDTO).toList());
+	@GetMapping("/{organizationId}/{providerId}")
+	public ResponseEntity<List<ServiceDTO>> getByOrganization(@PathVariable Long organizationId, @PathVariable Long providerId) {
+		return ResponseEntity.ok(service.findByOrganizationProvider(organizationId, providerId).stream().map(serviceMapper::toDTO).toList());
 	}
 
 	/**
@@ -89,6 +78,11 @@ public class ServiceController {
 	@GetMapping("/location/{locationId}")
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
 		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
+	}
+	
+	@GetMapping("/{serviceId}")
+	public ResponseEntity<ServiceDTO> getById(@PathVariable Long serviceId) {
+		return ResponseEntity.ok(serviceMapper.toDTO(service.findById(serviceId)));
 	}
 
 	/**
