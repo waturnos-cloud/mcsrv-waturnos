@@ -61,6 +61,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}
 		serviceEntity.setLocation(locationRepository.findById(locationId).get());
+		serviceEntity.setUser(userDB.get());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		listAvailability.forEach(av -> {
 		    av.setServiceId(serviceEntity.getId());

@@ -58,14 +58,15 @@ public class ServiceController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 
+	
 	/**
-	 * Gets the by provider.
+	 * Gets the by user id.
 	 *
-	 * @param userId the provider id
-	 * @return the by provider
+	 * @param userId the user id
+	 * @return the by user id
 	 */
-	@GetMapping("/{providerId}")
-	public ResponseEntity<List<ServiceDTO>> getByOrganization(@PathVariable Long userId) {
+	@GetMapping("/user/{userId}")
+	public ResponseEntity<List<ServiceDTO>> getByUserId(@PathVariable Long userId) {
 		return ResponseEntity.ok(service.findByUser(userId).stream().map(serviceMapper::toDTO).toList());
 	}
 

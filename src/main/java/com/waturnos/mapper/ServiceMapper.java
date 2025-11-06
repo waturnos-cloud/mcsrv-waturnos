@@ -14,9 +14,11 @@ public abstract class ServiceMapper {
     @Mapping(target = "modificator", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "location", ignore = true)
+    @Mapping(target = "user", ignore = true)
     public abstract ServiceEntity toEntity(ServiceDTO dto);
 
     @Mapping(source = "location.id", target = "locationId")
+    @Mapping(source = "user.id", target = "userId")
     public abstract ServiceDTO toDTO(ServiceEntity entity);
 }
 

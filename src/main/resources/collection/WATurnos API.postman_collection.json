@@ -1,9 +1,11 @@
 {
 	"info": {
-		"_postman_id": "3ac3b426-78ac-4524-a838-a9fff78d2efe",
+		"_postman_id": "38150809-fd6e-4e7c-b0a3-f3bb4574cf27",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "160410",
+		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-38150809-fd6e-4e7c-b0a3-f3bb4574cf27?action=share&source=collection_link&creator=160410"
 	},
 	"item": [
 		{
@@ -796,7 +798,7 @@
 			"name": "Services",
 			"item": [
 				{
-					"name": "POST /services",
+					"name": "Crear Servicio - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -811,7 +813,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"serviceDto\":{\n        \"providerId\": {{providerId}},\n        \"locationId\": {{locationId}},\n        \"organizationId\": {{organizationId}},\n        \"name\": \"Corte de pelo\",\n        \"description\": \"Corte con lavado\",\n        \"price\": 3500,\n        \"durationMinutes\": 45,\n        \"advancePayment\": 0,\n        \"futureDays\": 30\n    },\n    \"listAvailability\":[\n        {\n            \"dayOfWeek\":1,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":2,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":3,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":4,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":5,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        }\n    ]\n}"
+							"raw": "{\n    \"serviceDto\":{\n        \"userId\": {{userId}},\n        \"locationId\": {{locationId}},\n        \"name\": \"Corte de pelo\",\n        \"description\": \"Corte con lavado\",\n        \"price\": 3500,\n        \"durationMinutes\": 45,\n        \"advancePayment\": 0,\n        \"futureDays\": 30\n    },\n    \"listAvailability\":[\n        {\n            \"dayOfWeek\":1,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":2,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":3,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":4,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        },\n        {\n            \"dayOfWeek\":5,\n            \"startTime\":\"08:00\",\n            \"endTime\":\"16:00\"\n        }\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
@@ -829,7 +831,7 @@
 					"response": []
 				},
 				{
-					"name": "/services/{{organizationId}}/{{providerId}}",
+					"name": "Listar Servicios por proveedor - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -839,7 +841,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/{{organizationId}}/{{providerId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/user/{{userId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -848,15 +850,15 @@
 								"msvc-waturnos",
 								"v1.0",
 								"services",
-								"{{organizationId}}",
-								"{{providerId}}"
+								"user",
+								"{{userId}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "/services/location/{{locationId}}",
+					"name": "Listar Servicios por Location - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -883,7 +885,7 @@
 					"response": []
 				},
 				{
-					"name": "GET /services/{id}",
+					"name": "Detalle de Servicio - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "GET",
 						"header": [
