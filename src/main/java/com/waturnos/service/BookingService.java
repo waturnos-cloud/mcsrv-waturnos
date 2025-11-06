@@ -10,14 +10,6 @@ import java.util.List;
 public interface BookingService {
 	
 	/**
-	 * Find by organization.
-	 *
-	 * @param organizationId the organization id
-	 * @return the list
-	 */
-	List<Booking> findByOrganization(Long organizationId);
-
-	/**
 	 * Find by status.
 	 *
 	 * @param status the status

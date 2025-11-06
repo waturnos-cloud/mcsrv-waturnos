@@ -54,7 +54,7 @@ public class User implements CommonUser {
 	@JoinColumn(name = "organization_id")
 	private Organization organization;
 	
-	@OneToMany(mappedBy = "service")
+	@OneToMany(mappedBy = "user")
 	private List<ServiceEntity> services;
 	
 	@Transient 

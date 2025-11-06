@@ -37,17 +37,6 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	/**
-	 * Find by organization.
-	 *
-	 * @param organizationId the organization id
-	 * @return the list
-	 */
-	@Override
-	public List<Booking> findByOrganization(Long organizationId) {
-		return bookingRepository.findByOrganizationId(organizationId);
-	}
-
-	/**
 	 * Find by status.
 	 *
 	 * @param status the status

@@ -43,7 +43,8 @@ public class UserController {
 	 */
 	@GetMapping("/list/{organizationId}")
 	public ResponseEntity<List<UserDTO>> getAll(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
-		return ResponseEntity.ok(service.findAll(role, organizationId).stream().map(u -> mapper.toDto(u)).toList());
+//		return ResponseEntity.ok(service.findAll(role, organizationId).stream().map(u -> mapper.toDto(u)).toList());
+		return null;
 	}
 
 	/**
@@ -79,7 +80,7 @@ public class UserController {
 	 */
 	@PutMapping
 	public ResponseEntity<ApiResponse<UserDTO>> update(@RequestBody UserDTO user) {
-		User updated = service.update(mapper.toEntity(user));
+		User updated = service.updateManager(mapper.toEntity(user));
 		return ResponseEntity.ok(new ApiResponse<>(true, "User updated", mapper.toDto(updated)));
 	}
 
@@ -91,7 +92,7 @@ public class UserController {
 	 */
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-		service.delete(id);
+		service.deleteManager(id);
 		return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
 	}
 }

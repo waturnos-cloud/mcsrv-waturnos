@@ -6,11 +6,13 @@ import java.util.List;
 
 public interface ServiceEntityService {
 	
-	List<ServiceEntity> findByProvider(Long providerId);
+	List<ServiceEntity> findByUser(Long userId);
 
 	List<ServiceEntity> findByLocation(Long locationId);
+	
+	ServiceEntity findById(Long id);
 
-	ServiceEntity create(ServiceEntity service, List<AvailabilityEntity> listAvailability);
+	ServiceEntity create(ServiceEntity service, List<AvailabilityEntity> listAvailability, Long userId, Long locationId);
 
 	ServiceEntity update(Long id, ServiceEntity service);
 }

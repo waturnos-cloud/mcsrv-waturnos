@@ -47,6 +47,4 @@ public class ServiceEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;
-    
-    private Long providerId;
 }

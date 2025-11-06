@@ -3,15 +3,12 @@ package com.waturnos.service.impl;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Organization;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
-import com.waturnos.repository.ProviderOrganizationRepository;
-import com.waturnos.repository.ProviderRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
@@ -41,17 +38,11 @@ public class UserServiceImpl implements UserService {
 	/** The user repository. */
 	private final UserRepository userRepository;
 	
-	/** The password encoder. */
-	private final PasswordEncoder passwordEncoder;
-	
 	/** The user process. */
 	private final UserProcess userProcess;
 	
 	private final SecurityAccessEntity securityAccessEntity;
 	
-	private final ProviderOrganizationRepository providerOrganizationRepository;
-	
-	private final ProviderRepository providerRepository;
 
 	/**
 	 * Find all.
@@ -61,9 +52,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.MANAGER})
 	public List<User> findManagersByOrganization(Long organizationId) {
-		if(!securityAccessEntity.hasValidAccessOrganization(organizationId)){
-			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot list users another organization");
-		}
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+
 		if (SessionUtil.getCurrentUser().getRole() == UserRole.ADMIN) {
 			return userRepository.findByOrganizationIdOrderByFullNameAsc(organizationId);
 		}
@@ -78,9 +68,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER})
 	public List<User> findProvidersByOrganization(Long organizationId) {
-		if(!securityAccessEntity.hasValidAccessOrganization(organizationId)){
-			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot list users another organization");
-		}
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		
 		if (SessionUtil.getCurrentUser().getRole() == UserRole.ADMIN) {
 			return userRepository.findByOrganizationIdOrderByFullNameAsc(organizationId);
 		}
@@ -112,15 +101,15 @@ public class UserServiceImpl implements UserService {
 	/**
 	 * Creates the.
 	 *
-	 * @param user the user
+	 * @param manager the user
 	 * @return the user
 	 */
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.MANAGER})
-	public User createManager(Long organizationId, User user) {
+	public User createManager(Long organizationId, User manager) {
 		return userProcess.createManager(Organization.builder()
 				.id(organizationId)
-				.build(), user, false);
+				.build(), manager);
 	}
 
 	/**
@@ -131,7 +120,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the user
 	 */
 	@Override
-	@RequireRole({UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER})
+	@RequireRole({UserRole.ADMIN, UserRole.MANAGER})
 	public User updateManager(User user) {
 		return userProcess.updateUser(user);
 	}
@@ -155,9 +144,9 @@ public class UserServiceImpl implements UserService {
 		if(SessionUtil.getCurrentUser().getId().equals(id)){
 			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot remove yourself as manager");
 		}
-		if(!securityAccessEntity.hasValidAccessOrganization(userDB.get().getOrganization().getId())) {
-			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot remove manager from another organization");
-		}
+		
+		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
+		
 		userRepository.deleteById(id);
 	}
 
@@ -166,7 +155,7 @@ public class UserServiceImpl implements UserService {
 	public User createProvider(Long organizationId, User provider) {
 		return userProcess.createManager(Organization.builder()
 				.id(organizationId)
-				.build(), provider, false);
+				.build(), provider);
 	}
 
 	@Override
@@ -179,8 +168,6 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER})
 	public User updateProvider(User provider) {
-		return userProcess.upManager(Organization.builder()
-				.id(organizationId)
-				.build(), provider, false);
+		return userProcess.updateUser(provider);
 	}
 }
