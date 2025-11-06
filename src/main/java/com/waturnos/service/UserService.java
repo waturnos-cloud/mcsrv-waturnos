@@ -6,8 +6,17 @@ import java.util.Optional;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
 
+/**
+ * The Interface UserService.
+ */
 public interface UserService {
 	
+	/**
+	 * Find by email.
+	 *
+	 * @param email the email
+	 * @return the optional
+	 */
 	Optional<User> findByEmail(String email);
 
 	/**
@@ -19,15 +28,33 @@ public interface UserService {
 	 */
 	User createManager(Long organizationId, User entity);
 	
+	/**
+	 * Update manager.
+	 *
+	 * @param user the user
+	 * @return the user
+	 */
 	User updateManager(User user);
 
+	/**
+	 * Delete manager.
+	 *
+	 * @param id the id
+	 */
 	void deleteManager(Long id);
 
+	/**
+	 * Find by id.
+	 *
+	 * @param id the id
+	 * @return the optional
+	 */
 	Optional<User> findById(Long id);
 
 	/**
 	 * Find all.
 	 *
+	 * @param organizationId the organization id
 	 * @return the list
 	 */
 	List<User> findManagersByOrganization(Long organizationId);
@@ -44,7 +71,7 @@ public interface UserService {
 	 * Creates the manager.
 	 *
 	 * @param organizationId the id
-	 * @param entity the entity
+	 * @param provider the provider
 	 * @return the user
 	 */
 	User createProvider(Long organizationId, User provider);

@@ -45,17 +45,6 @@ public class BookingController {
 	}
 
 	/**
-	 * Gets the by organization.
-	 *
-	 * @param orgId the org id
-	 * @return the by organization
-	 */
-	@GetMapping("/organization/{orgId}")
-	public ResponseEntity<List<BookingDTO>> getByOrganization(@PathVariable Long orgId) {
-		return ResponseEntity.ok(service.findByOrganization(orgId).stream().map(mapper::toDto).toList());
-	}
-
-	/**
 	 * Gets the by status.
 	 *
 	 * @param status the status

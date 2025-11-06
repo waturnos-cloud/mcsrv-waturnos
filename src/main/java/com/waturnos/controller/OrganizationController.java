@@ -19,7 +19,6 @@ import com.waturnos.dto.request.CreateOrganization;
 import com.waturnos.entity.Organization;
 import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.mapper.OrganizationMapper;
-import com.waturnos.mapper.ProviderMapper;
 import com.waturnos.mapper.UserMapper;
 import com.waturnos.service.OrganizationService;
 

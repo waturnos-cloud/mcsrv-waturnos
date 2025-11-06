@@ -14,10 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.AvailabilityRepository;
+import com.waturnos.repository.LocationRepository;
 import com.waturnos.repository.ServiceRepository;
+import com.waturnos.repository.UserRepository;
+import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.ServiceEntityService;
@@ -25,40 +29,38 @@ import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ServiceEntityServiceImpl implements ServiceEntityService {
 	private final ServiceRepository serviceRepository;
 	private final AvailabilityRepository availabilityRepository;
 	private final BookingService bookingService;
+	private final LocationRepository locationRepository;
+	private final SecurityAccessEntity securityAccessEntity;
+	private final UserRepository userRepository;
 
-	public ServiceEntityServiceImpl(ServiceRepository serviceRepository, AvailabilityRepository availabilityRepository, BookingService bookingService) {
-		this.serviceRepository = serviceRepository;
-		this.availabilityRepository = availabilityRepository;
-		this.bookingService = bookingService; 
-	}
-
-
-	@Override
-	public List<ServiceEntity> findByLocation(Long locationId) {
-		return serviceRepository.findByLocationId(locationId);
-	}
-	
-	@Override
-	public ServiceEntity update(Long id, ServiceEntity service) {
-		ServiceEntity existing = serviceRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
-		service.setId(existing.getId());
-		return serviceRepository.save(service);
-	}
 
 	@Override
 	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
 	@Transactional(readOnly = false)
-	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability) {
-		Optional<ServiceEntity> service = serviceRepository.findByNameAndProviderOrganizationId(serviceEntity.getName(), serviceEntity.getProviderOrganization().getId());
+	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long userId,
+			Long locationId) {
+		
+		Optional<User> userDB = userRepository.findById(userId);
+		if (!userDB.isPresent()) {
+			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
+		}
+		
+		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
+		
+		
+		Optional<ServiceEntity> service = serviceRepository.findByNameAndUserId(serviceEntity.getName(), userId);
 		if(service.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}
+		serviceEntity.setLocation(locationRepository.findById(locationId).get());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		listAvailability.forEach(av -> {
 		    av.setServiceId(serviceEntity.getId());
@@ -68,9 +70,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		return serviceEntityResponse;
 	}
 	
-	
-	
-	public void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities) {
+	private void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities) {
 	    LocalDate startDate = LocalDate.now();
 	    LocalDate endDate = startDate.plusDays(service.getFutureDays());
 
@@ -100,11 +100,39 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 
 	    bookingService.create(bookings);
 	}
-
-
+	
 	@Override
-	public List<ServiceEntity> findByProvider(Long providerId) {
-		return serviceRepository.findByProviderId(providerId);
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public ServiceEntity findById(Long id) {
+		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(id);
+		if(!serviceEntity.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+		}
+		return serviceEntity.get();
 	}
 
+	@Override
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public List<ServiceEntity> findByUser(Long userId) {
+		Optional<User> userDB = userRepository.findById(userId);
+		if (!userDB.isPresent()) {
+			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
+		}
+		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
+		return serviceRepository.findByUserId(userId);
+	}
+	
+	@Override
+	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	public List<ServiceEntity> findByLocation(Long locationId) {
+		return serviceRepository.findByLocationId(locationId);
+	}
+	
+	@Override
+	public ServiceEntity update(Long id, ServiceEntity service) {
+		ServiceEntity existing = serviceRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
+		service.setId(existing.getId());
+		return serviceRepository.save(service);
+	}
 }

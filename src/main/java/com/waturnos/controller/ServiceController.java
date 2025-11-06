@@ -43,16 +43,30 @@ public class ServiceController {
 		this.serviceMapper = m;
 		this.availabilityMapper = am;
 	}
+	
+	/**
+	 * Creates the.
+	 *
+	 * @param dto the dto
+	 * @return the response entity
+	 */
+	@PostMapping
+	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
+		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()),
+				availabilityMapper.toEntityList(createService.getListAvailability()),
+				createService.getServiceDto().getUserId(), createService.getServiceDto().getLocationId());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
+	}
 
 	/**
 	 * Gets the by provider.
 	 *
-	 * @param providerId the provider id
+	 * @param userId the provider id
 	 * @return the by provider
 	 */
-	@GetMapping("/provider/{providerId}")
-	public ResponseEntity<List<ServiceDTO>> getByProvider(@PathVariable Long providerId) {
-		return ResponseEntity.ok(service.findByProvider(providerId).stream().map(serviceMapper::toDTO).toList());
+	@GetMapping("/{providerId}")
+	public ResponseEntity<List<ServiceDTO>> getByOrganization(@PathVariable Long userId) {
+		return ResponseEntity.ok(service.findByUser(userId).stream().map(serviceMapper::toDTO).toList());
 	}
 
 	/**
@@ -65,18 +79,10 @@ public class ServiceController {
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
 		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
 	}
-
-	/**
-	 * Creates the.
-	 *
-	 * @param dto the dto
-	 * @return the response entity
-	 */
-	@PostMapping
-	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
-		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()), 
-				availabilityMapper.toEntityList(createService.getListAvailability()));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
+	
+	@GetMapping("/{serviceId}")
+	public ResponseEntity<ServiceDTO> getById(@PathVariable Long serviceId) {
+		return ResponseEntity.ok(serviceMapper.toDTO(service.findById(serviceId)));
 	}
 
 	/**

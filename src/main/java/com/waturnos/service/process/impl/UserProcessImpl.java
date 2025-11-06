@@ -135,9 +135,7 @@ public class UserProcessImpl  implements UserProcess{
 	public User updateUser(User user) {
 		User userDB = userRepository.findById(user.getId())
 				.orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found"));
-		if(!securityAccessEntity.hasValidAccessOrganization(userDB.getOrganization().getId())) {
-			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot update user from another organization");
-		}
+		securityAccessEntity.controlValidAccessOrganization(userDB.getOrganization().getId());
 		if (StringUtils.hasLength(user.getPassword())) {
 			userDB.setPassword(passwordEncoder.encode(user.getPassword()));
 		}	
