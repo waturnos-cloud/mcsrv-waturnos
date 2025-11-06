@@ -1,11 +1,9 @@
 {
 	"info": {
-		"_postman_id": "cb28c346-d67d-4e32-961e-7ce1ce56f48c",
+		"_postman_id": "3ac3b426-78ac-4524-a838-a9fff78d2efe",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "160410",
-		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-cb28c346-d67d-4e32-961e-7ce1ce56f48c?action=share&source=collection_link&creator=160410"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -121,7 +119,7 @@
 					"response": []
 				},
 				{
-					"name": "Create organization / ADMIN",
+					"name": "Create organization  Simple/ ADMIN",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -136,7 +134,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro10\",\n        \"type\": \"consultorio\",\n        \"logoUrl\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ]\n    },\n    \"simpleOrganization\": true,\n    \"manager\": {\n        \"fullName\": \"Juan Perez\",\n        \"email\": \"juan2@centromedico22.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494000002\"\n    }\n}"
+							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro10\",\n        \"type\": \"consultorio\",\n        \"logoUrl\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ],\n         \"simpleOrganization\": true\n    },\n    \"manager\": {\n        \"fullName\": \"Nicolás Bacci\",\n        \"email\": \"nicolas.bacci@gmail.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494369054\",\n        \"photoUrl\":\"http://myphoto.jpeg\",\n        \"bio\": \"Bio xyz\"\n    }\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",
@@ -154,7 +152,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Manager - ADMIN /MANAGER",
+					"name": "Create organization  Multiple / ADMIN",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -169,10 +167,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"fullName\": \"Manager Perez\",\n    \"email\": \"manager2@centromedico.com\",\n    \"phone\": \"2494000002\"\n}"
+							"raw": "{\n    \"organization\": {\n        \"name\": \"Centro Médico Del Centro Nuevo\",\n        \"type\": \"consultorio médico\",\n        \"logoUrl\": \"http://logo.jpeg\",\n        \"locations\": [\n            {\n                \"name\": \"Sede principal2\",\n                \"address\": \"San Martin 1232\",\n                \"phone\": \"2494000001\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.32629754984143,\n                \"longitude\": -59.13662015561298,\n                \"main\": false\n            },\n            {\n                \"name\": \"Sede secundaria2\",\n                \"address\": \"Sarmiento 1100\",\n                \"phone\": \"24940003333\",\n                \"email\": \"centromedicotandil2@gmail.com\",\n                \"latitude\": -37.31927617683493,\n                \"longitude\": -59.12189780501565,\n                \"main\":true\n            }\n        ],\n         \"simpleOrganization\": false\n    },\n    \"manager\": {\n        \"fullName\": \"Nicolás Bacci\",\n        \"email\": \"nicolas.bacci3@gmail.com\",\n        \"password\": \"12345\",\n        \"phone\": \"2494369054\"\n    }\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/managers/1",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -180,44 +178,7 @@
 							"path": [
 								"msvc-waturnos",
 								"v1.0",
-								"organizations",
-								"managers",
-								"1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Provider - ADMIN /MANAGER",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"Profesional2@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/providers/1",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"organizations",
-								"providers",
-								"1"
+								"organizations"
 							]
 						}
 					},
@@ -251,6 +212,17 @@
 				},
 				{
 					"name": "Update Basic Info - ADMIN/MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -265,10 +237,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \n  \"name\": \"Centro Médico Tandil (upd)\",\n  \"type\": \"consultorio médico\",\n\"logoUrl\": \"http://logo2.jpeg\"\n}"
+							"raw": "{\n  \"id\": {{organizationId}},\n  \"name\": \"Centro Médico Tandil (upd)\",\n  \"type\": \"consultorio médico\",\n  \"logoUrl\": \"http://logo2.jpeg\"\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -277,8 +249,7 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations",
-								"update",
-								"{{organizationId}}"
+								"update"
 							]
 						}
 					},
@@ -286,6 +257,18 @@
 				},
 				{
 					"name": "Activate- ADMIN",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);",
+									"pm.environment.set(\"status\", \"ACTIVE\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -303,7 +286,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}/ACTIVE",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/activate/{{organizationId}}/{{status}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -312,16 +295,28 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations",
-								"update",
+								"activate",
 								"{{organizationId}}",
-								"ACTIVE"
+								"{{status}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Deactivate - ADMIN Copy",
+					"name": "Deactivate - ADMIN",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);",
+									"pm.environment.set(\"status\", \"INACTIVE\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -339,7 +334,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/update/{{organizationId}}/INACTIVE",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/activate/{{organizationId}}/{{status}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -348,9 +343,9 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations",
-								"update",
+								"activate",
 								"{{organizationId}}",
-								"INACTIVE"
+								"{{status}}"
 							]
 						}
 					},
@@ -358,6 +353,17 @@
 				},
 				{
 					"name": "Update Locations - ADMIN/MANAGER Copy",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -372,10 +378,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \n  \"locations\": [\n        {\n            \"id\": 1,\n            \"name\": \"Sede principal\",\n            \"address\": \"San Martin 100\",\n            \"phone\": \"24940000\",\n            \"email\": \"centromedicotandil@gmail.com\",\n            \"latitude\": -37.32629891,\n            \"longitude\": -59.1366291,\n\n            \"main\": true\n        },\n        {\n            \"name\": \"Sede secundaria nueva\",\n            \"address\": \"Sarmiento 1100\",\n            \"phone\": \"24940003333444\",\n            \"email\": \"centromedicotandilsecundario@gmail.com\",\n            \"latitude\": -37.31924476,\n            \"longitude\": -59.12144898,\n            \"main\": false\n        }\n    ]\n}"
+							"raw": "{\n   \"id\":{{organizationId}}, \n  \"locations\": [\n        {\n            \"id\": 7,\n            \"name\": \"Sede principal2\",\n            \"address\": \"San Martin 1232\",\n            \"phone\": \"2494000001\",\n            \"email\": \"centromedicotandil2@gmail.com\",\n            \"latitude\": -37.326298,\n            \"longitude\": -59.13662,\n            \"main\": false\n        },\n        {\n            \"name\": \"Sede secundaria2\",\n            \"address\": \"Sarmiento 1100\",\n            \"phone\": \"24940003333\",\n            \"email\": \"centromedicotandil2@gmail.com\",\n            \"latitude\": -37.319276,\n            \"longitude\": -59.121898,\n            \"main\": true\n        }\n    ]\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/updatelocations/{{organizationId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/updatelocations",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -384,34 +390,7 @@
 								"msvc-waturnos",
 								"v1.0",
 								"organizations",
-								"updatelocations",
-								"{{organizationId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "DELETE /organizations/{id}",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/organizations/{{organizationId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"organizations",
-								"{{organizationId}}"
+								"updatelocations"
 							]
 						}
 					},
@@ -420,35 +399,21 @@
 			]
 		},
 		{
-			"name": "Users",
+			"name": "Managers",
 			"item": [
 				{
-					"name": "GET /users",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
+					"name": "Create Manager - ADMIN /MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
 							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"users"
-							]
 						}
-					},
-					"response": []
-				},
-				{
-					"name": "POST /users",
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -463,7 +428,42 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez\",\n  \"email\": \"juan@waturnos.com\",\n  \"password\": \"1234\",\n  \"role\": \"MANAGER\",\n  \"organizationId\": 1\n}"
+							"raw": "{\n    \"fullName\": \"Rodolfo Perez\",\n    \"email\": \"rodolperez@centromedico.com\",\n    \"phone\": \"2494000003\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/managers/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"managers",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Manager con cambio de password - ADMIN / MANAGER",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": 7,\n    \"fullName\": \"Rodolfo Perez\",\n    \"email\": \"rodolperez@centromedico.com\",\n    \"phone\": \"2494000005\",\n    \"password\": \"12345678\"\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
@@ -481,33 +481,7 @@
 					"response": []
 				},
 				{
-					"name": "GET /users/{id}",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"users",
-								"{{userId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PUT /users/{id}",
+					"name": "Update Manager  sin cambio de password - ADMIN / MANAGER",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -522,10 +496,46 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"fullName\": \"Juan P\\u00e9rez (upd)\",\n  \"active\": true\n}"
+							"raw": "{\n    \"id\": 7,\n    \"fullName\": \"Rodolfo Perez\",\n    \"email\": \"rodolperez44@centromedico.com\",\n    \"phone\": \"2494000003\"\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar MANAGERS ADMIN / MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/managers/{{organizationId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -534,14 +544,53 @@
 								"msvc-waturnos",
 								"v1.0",
 								"users",
-								"{{userId}}"
+								"managers",
+								"{{organizationId}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE /users/{id}",
+					"name": "Listar todos los usuarios de la organizacion",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/list/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"list",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PENDIENTE DELETE /users/{id}",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId\", 7);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -567,7 +616,7 @@
 					"response": []
 				},
 				{
-					"name": "GET /users/byOrg/{orgId}",
+					"name": "Detalle de Usuario",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -577,7 +626,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/byOrg/{{organizationId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/{{userId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -586,7 +635,57 @@
 								"msvc-waturnos",
 								"v1.0",
 								"users",
-								"byOrg",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Providers",
+			"item": [
+				{
+					"name": "Create Provider - ADMIN /MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"Profesional22@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/providers/{{organizationId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users",
+								"providers",
 								"{{organizationId}}"
 							]
 						}
@@ -594,7 +693,18 @@
 					"response": []
 				},
 				{
-					"name": "GET /users/search",
+					"name": "Listar PROVIDERS ADMIN / MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"organizationId\", 4);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -604,7 +714,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/search",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/providers/{{organizationId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -613,7 +723,68 @@
 								"msvc-waturnos",
 								"v1.0",
 								"users",
-								"search"
+								"providers",
+								"{{organizationId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar proveedor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"id\": 5,\n        \"fullName\": \"Nicolás A Bacci\",\n        \"email\": \"nicolas.bacci@gmail.com\",\n        \"phone\": \"24943690544\",\n        \"photoUrl\": \"http://myphoto2.jpeg\",\n        \"bio\": \"Bio xyzz\"\n    }"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PENDIENTE DELETE /providers/{id}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/{{organizationId}}/{{providerId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"providers",
+								"{{organizationId}}",
+								"{{providerId}}"
 							]
 						}
 					},

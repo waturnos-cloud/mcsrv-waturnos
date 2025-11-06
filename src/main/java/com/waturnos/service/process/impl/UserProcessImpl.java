@@ -79,6 +79,8 @@ public class UserProcessImpl  implements UserProcess{
 		Organization organizationDB = organizationRepository.findById(organization.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
 
+		securityAccessEntity.controlValidAccessOrganization(organizationDB.getId());
+		
 		Optional<User> user = userRepository.findByEmail(manager.getEmail());
 		if(user.isPresent()) {
 			throw new ServiceException(ErrorCode.EMAIL_ALREADY_EXIST_EXCEPTION, "Email already exists exception");
@@ -154,6 +156,8 @@ public class UserProcessImpl  implements UserProcess{
 	public User createProvider(Organization organization, User provider) {
 		Organization organizationDB = organizationRepository.findById(organization.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
+		
+		securityAccessEntity.controlValidAccessOrganization(organizationDB.getId());
 		
 		Optional<User> existUser = userRepository.findByEmail(provider.getEmail());
 		if(existUser.isPresent()) {

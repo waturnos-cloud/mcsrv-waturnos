@@ -44,11 +44,10 @@ public interface OrganizationService {
 	/**
 	 * Update basic info.
 	 *
-	 * @param id the id
 	 * @param org the org
 	 * @return the organization
 	 */
-	Organization updateBasicInfo(Long id, Organization org);
+	Organization updateBasicInfo(Organization org);
 	
 	/**
 	 * Update locations.

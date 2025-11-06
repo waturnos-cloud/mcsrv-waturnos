@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.waturnos.entity.User;
-import com.waturnos.enums.UserRole;
 
 /**
  * The Interface UserService.

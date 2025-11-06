@@ -94,10 +94,10 @@ public class OrganizationController {
 	 * @param dto the dto
 	 * @return the response entity
 	 */
-	@PutMapping("/update/{id}")
-	public ResponseEntity<ApiResponse<OrganizationDTO>> updateBasicInfo(@PathVariable Long id,
+	@PutMapping("/update")
+	public ResponseEntity<ApiResponse<OrganizationDTO>> updateBasicInfo(
 			@RequestBody OrganizationDTO dto) {
-		Organization updated = service.updateBasicInfo(id, organizationMapper.toEntity(dto));
+		Organization updated = service.updateBasicInfo(organizationMapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization updated", organizationMapper.toDto(updated,false)));
 	}
 	
@@ -108,10 +108,10 @@ public class OrganizationController {
 	 * @param dto the dto
 	 * @return the response entity
 	 */
-	@PutMapping("/updatelocations/{id}")
-	public ResponseEntity<ApiResponse<OrganizationDTO>> updateLocations(@PathVariable Long id,
+	@PutMapping("/updatelocations")
+	public ResponseEntity<ApiResponse<OrganizationDTO>> updateLocations(
 			@RequestBody OrganizationDTO dto) {
-		Organization updated = service.updateLocations(id, organizationMapper.mapLocationsToEntity(dto.getLocations()));
+		Organization updated = service.updateLocations(dto.getId(), organizationMapper.mapLocationsToEntity(dto.getLocations()));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization updated", organizationMapper.toDto(updated, true)));
 	}
 	

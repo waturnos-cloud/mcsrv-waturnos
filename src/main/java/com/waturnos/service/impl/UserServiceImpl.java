@@ -52,12 +52,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.MANAGER})
 	public List<User> findManagersByOrganization(Long organizationId) {
-		securityAccessEntity.controlValidAccessOrganization(organizationId);
-
-		if (SessionUtil.getCurrentUser().getRole() == UserRole.ADMIN) {
-			return userRepository.findByOrganizationIdOrderByFullNameAsc(organizationId);
-		}
-		return userRepository.findByOrganizationIdAndRoleOrderByFullNameAsc(organizationId, SessionUtil.getCurrentUser().getRole());
+		return this.findUsersByOrganizationPrivate(organizationId, UserRole.MANAGER);
 	}
 	
 	/**
@@ -66,15 +61,25 @@ public class UserServiceImpl implements UserService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER})
+	@RequireRole({UserRole.ADMIN, UserRole.MANAGER})
 	public List<User> findProvidersByOrganization(Long organizationId) {
+		return this.findUsersByOrganizationPrivate(organizationId, UserRole.PROVIDER);
+	}
+	
+	/**
+	 * Find users by organization private.
+	 *
+	 * @param organizationId the organization id
+	 * @param userRole the user role
+	 * @return the list
+	 */
+	private List<User> findUsersByOrganizationPrivate(Long organizationId, UserRole userRole) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		
-		if (SessionUtil.getCurrentUser().getRole() == UserRole.ADMIN) {
-			return userRepository.findByOrganizationIdOrderByFullNameAsc(organizationId);
-		}
-		return userRepository.findByOrganizationIdAndRoleOrderByFullNameAsc(organizationId, SessionUtil.getCurrentUser().getRole());
+		return userRepository.findByOrganizationIdAndRoleOrderByFullNameAsc(organizationId, userRole);
 	}
+	
+	
 
 	/**
 	 * Find by email.

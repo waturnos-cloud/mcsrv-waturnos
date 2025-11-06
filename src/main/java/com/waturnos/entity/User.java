@@ -29,7 +29,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"organization"})
+@ToString(exclude = {"organization","services"})
 public class User implements CommonUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -25,7 +25,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"locations"})
+@ToString(exclude = {"locations","users"})
 public class Organization {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

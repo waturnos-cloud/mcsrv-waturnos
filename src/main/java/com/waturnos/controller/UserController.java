@@ -1,7 +1,6 @@
 package com.waturnos.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,10 +40,19 @@ public class UserController {
 	 *
 	 * @return the all
 	 */
-	@GetMapping("/list/{organizationId}")
-	public ResponseEntity<List<UserDTO>> getAll(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
-//		return ResponseEntity.ok(service.findAll(role, organizationId).stream().map(u -> mapper.toDto(u)).toList());
-		return null;
+	@GetMapping("/providers/{organizationId}")
+	public ResponseEntity<List<UserDTO>> getProvidersByOrganization(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
+		return ResponseEntity.ok(service.findProvidersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
+	}
+	
+	/**
+	 * Gets the all.
+	 *
+	 * @return the all
+	 */
+	@GetMapping("/managers/{organizationId}")
+	public ResponseEntity<List<UserDTO>> getManagersByOrganization(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
+		return ResponseEntity.ok(service.findManagersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
 	}
 
 	/**
@@ -53,22 +61,37 @@ public class UserController {
 	 * @return the all
 	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<Optional<User>> getById(@PathVariable Long id) {
-		return ResponseEntity.ok(service.findById(id));
+	public ResponseEntity<UserDTO> getById(@PathVariable Long id) {
+		return service.findById(id).map(u -> mapper.toDto(u)).map(ResponseEntity::ok)
+				.orElse(ResponseEntity.notFound().build());
 	}
 
 	/**
-	 * Update.
+	 * Creates the manager.
 	 *
-	 * @param id the id
+	 * @param organizationId the organization id
 	 * @param manager the manager
 	 * @return the response entity
 	 */
-	@PostMapping("/managers/{id}")
-	public ResponseEntity<ApiResponse<UserDTO>> addManager(@PathVariable Long id,
-			@RequestBody UserDTO manager) {
-		User managerDB = service.createManager(id, mapper.toEntity(manager));
+	@PostMapping("/managers/{organizationId}")
+	public ResponseEntity<ApiResponse<UserDTO>> createManager(@PathVariable(required = true) Long organizationId,
+			@RequestBody(required = true) UserDTO manager) {
+		User managerDB = service.createManager(organizationId, mapper.toEntity(manager));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add manager", mapper.toDto(managerDB)));
+	}
+	
+	/**
+	 * Creates the manager.
+	 *
+	 * @param organizationId the organization id
+	 * @param provider the manager
+	 * @return the response entity
+	 */
+	@PostMapping("/providers/{organizationId}")
+	public ResponseEntity<ApiResponse<UserDTO>> createProvider(@PathVariable(required = true) Long organizationId,
+			@RequestBody(required = true) UserDTO provider) {
+		User managerDB = service.createManager(organizationId, mapper.toEntity(provider));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add provider", mapper.toDto(managerDB)));
 	}
 
 	/**

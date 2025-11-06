@@ -102,8 +102,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 */
 	@Override
 	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
-	public Organization updateBasicInfo(Long id, Organization org) {
-		Organization organizationDB = organizationRepository.findById(id).orElseThrow(
+	public Organization updateBasicInfo(Organization org) {
+		Organization organizationDB = organizationRepository.findById(org.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
 		if(SessionUtil.getRoleUser() == UserRole.PROVIDER && !organizationDB.isSimpleOrganization()) {
 			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Role provider only modified if simple organization");
