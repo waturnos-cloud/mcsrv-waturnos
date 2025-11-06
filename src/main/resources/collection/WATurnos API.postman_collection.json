@@ -1233,39 +1233,6 @@
 					"response": []
 				},
 				{
-					"name": "POST /clients",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"organizationId\": 1,\n  \"fullName\": \"Carlos L\\u00f3pez\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400000\"\n}"
-						},
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"clients"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "GET /clients/{id}",
 					"request": {
 						"method": "GET",
@@ -1292,6 +1259,79 @@
 					"response": []
 				},
 				{
+					"name": "GET /clients/search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/search?email=&phone=&name=",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"search"
+							],
+							"query": [
+								{
+									"key": "email",
+									"value": ""
+								},
+								{
+									"key": "phone",
+									"value": ""
+								},
+								{
+									"key": "name",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST /clients",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Carlos López\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400000\",\n  \"password\": \"12345\"\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "PUT /clients/{id}",
 					"request": {
 						"method": "PUT",
@@ -1307,7 +1347,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"fullName\": \"Carlos L\\u00f3pez (upd)\",\n  \"phone\": \"+54 9 249 400999\"\n}"
+							"raw": "{\n  \"fullName\": \"Carlos López (actualizado)\",\n  \"email\": \"carlos@mail.com\",\n  \"phone\": \"+54 9 249 400999\"\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}",
@@ -1350,59 +1390,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "GET /clients/byOrg/{orgId}",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/byOrg/{{organizationId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"clients",
-								"byOrg",
-								"{{organizationId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "GET /clients/search",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/search",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"clients",
-								"search"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -1410,7 +1397,7 @@
 			"name": "Bookings",
 			"item": [
 				{
-					"name": "GET /bookings",
+					"name": "GET /bookings/service/{serviceId}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1420,7 +1407,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/service/{{serviceId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -1428,7 +1415,9 @@
 							"path": [
 								"msvc-waturnos",
 								"v1.0",
-								"bookings"
+								"bookings",
+								"service",
+								"{{serviceId}}"
 							]
 						}
 					},
@@ -1450,7 +1439,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"organizationId\": 1,\n  \"clientId\": 1,\n  \"providerId\": 1,\n  \"serviceId\": 1,\n  \"startTime\": \"2025-10-26T10:00:00\",\n  \"endTime\": \"2025-10-26T10:45:00\",\n  \"status\": \"CONFIRMED\"\n}"
+							"raw": "[\n  {\n    \"clientId\": 1,\n    \"serviceId\": 1,\n    \"startTime\": \"2025-11-10T10:00:00\",\n    \"endTime\": \"2025-11-10T10:45:00\",\n    \"status\": \"CONFIRMED\",\n    \"notes\": \"Primer turno del día\"\n  }\n]"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings",
@@ -1468,35 +1457,9 @@
 					"response": []
 				},
 				{
-					"name": "GET /bookings/{id}",
+					"name": "POST /bookings/assign",
 					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"bookings",
-								"{{bookingId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PUT /bookings/{id}",
-					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -1509,10 +1472,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"notes\": \"Traer estudios previos\"\n}"
+							"raw": "{\n  \"id\": 10,\n  \"clientId\": 3\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/assign",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -1521,68 +1484,16 @@
 								"msvc-waturnos",
 								"v1.0",
 								"bookings",
-								"{{bookingId}}"
+								"assign"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "DELETE /bookings/{id}",
+					"name": "POST /bookings/cancel",
 					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"bookings",
-								"{{bookingId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "GET /bookings/history",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/history",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"bookings",
-								"history"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PUT /bookings/{id}/cancel",
-					"request": {
-						"method": "PUT",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -1595,10 +1506,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"reason\": \"El cliente no puede asistir\"\n}"
+							"raw": "{\n  \"id\": 10,\n  \"reason\": \"El cliente no puede asistir\"\n}"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/cancel",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/cancel",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -1607,36 +1518,7 @@
 								"msvc-waturnos",
 								"v1.0",
 								"bookings",
-								"{{bookingId}}",
 								"cancel"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PUT /bookings/{id}/status/{status}",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwtToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/status/CONFIRMED",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{hostname}}"
-							],
-							"path": [
-								"msvc-waturnos",
-								"v1.0",
-								"bookings",
-								"{{bookingId}}",
-								"status",
-								"CONFIRMED"
 							]
 						}
 					},

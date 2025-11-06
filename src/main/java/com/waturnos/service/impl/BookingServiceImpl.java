@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
 import com.waturnos.enums.BookingStatus;
+import com.waturnos.enums.UserRole;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.utils.DateUtils;
@@ -37,30 +39,13 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	/**
-	 * Find by status.
-	 *
-	 * @param status the status
-	 * @return the list
-	 */
-	@Override
-	public List<Booking> findByStatus(BookingStatus status) {
-		return bookingRepository.findByStatus(status);
-	}
-
-	/**
 	 * Creates the.
 	 *
-	 * @param booking the booking
-	 * @return the booking
+	 * @param list the list
 	 */
 	@Override
-	public Booking create(Booking booking) {
-		return bookingRepository.save(booking);
-	}
-	
-	@Override
-	public void create(List<Booking> list) {
-		bookingRepository.saveAll(list);
+	public List<Booking> create(List<Booking> list) {
+		return bookingRepository.saveAll(list);
 	}
 
 	/**
@@ -71,6 +56,7 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the booking
 	 */
 	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
@@ -82,7 +68,6 @@ public class BookingServiceImpl implements BookingService {
 	 * Update.
 	 *
 	 * @param id       the id
-	 * @param status   the status
 	 * @param clientId the client id
 	 * @return the booking
 	 */
@@ -110,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
 	/**
 	 * Cancel booking.
 	 *
-	 * @param id the id
+	 * @param id     the id
 	 * @param reason the reason
 	 * @return the booking
 	 */
@@ -120,24 +105,30 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-		if (!booking.getStatus().equals(BookingStatus.RESERVED) &&
-				!booking.getStatus().equals(BookingStatus.CONFIRMED))
-				 {
+		if (!booking.getStatus().equals(BookingStatus.RESERVED)
+				&& !booking.getStatus().equals(BookingStatus.CONFIRMED)) {
 			throw new EntityNotFoundException("Not valid status");
 		}
-		
+
 		// TODO modificator? otro servicio para client y admin/manager?
-		
+
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		booking.setStatus(BookingStatus.CANCELLED);
 		booking.setCancelReason(reason);
-		
+
 		return booking;
 
 	}
 
+	/**
+	 * Find by service id.
+	 *
+	 * @param serviceId the service id
+	 * @return the list
+	 */
 	@Override
-	public List<Booking> findAll() {
-		return bookingRepository.findAll();
+	public List<Booking> findByServiceId(Long serviceId) {
+		return bookingRepository.findByServiceId(serviceId);
 	}
+
 }

@@ -8,5 +8,4 @@ public class ClientDTO {
 	private String fullName;
 	private String email;
 	private String phone;
-	private Long organizationId;
 }

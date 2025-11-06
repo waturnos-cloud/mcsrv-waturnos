@@ -1,12 +1,22 @@
 package com.waturnos.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.waturnos.dto.beans.ClientDTO;
 import com.waturnos.entity.Client;
 import com.waturnos.mapper.ClientMapper;
 import com.waturnos.service.ClientService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 /**
  * The Class ClientController.
@@ -14,10 +24,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/clients")
 public class ClientController {
-	
+
 	/** The service. */
 	private final ClientService service;
-	
+
 	/** The mapper. */
 	private final ClientMapper mapper;
 
@@ -33,14 +43,42 @@ public class ClientController {
 	}
 
 	/**
-	 * Gets the by organization.
+	 * Gets the all.
 	 *
-	 * @param orgId the org id
-	 * @return the by organization
+	 * @return the all
 	 */
-	@GetMapping("/organization/{orgId}")
-	public ResponseEntity<List<ClientDTO>> getByOrganization(@PathVariable Long orgId) {
-		return ResponseEntity.ok(service.findByOrganization(orgId).stream().map(mapper::toDto).toList());
+	@GetMapping
+	public ResponseEntity<ApiResponse<List<ClientDTO>>> getAll() {
+		List<Client> clients = service.findAll();
+		return ResponseEntity.ok(new ApiResponse<>(true, "Clients retrieved", mapper.toDtoList(clients)));
+	}
+
+	/**
+	 * Gets the by id.
+	 *
+	 * @param id the id
+	 * @return the by id
+	 */
+	@GetMapping("/{id}")
+	public ResponseEntity<ApiResponse<ClientDTO>> getById(@PathVariable Long id) {
+		Client client = service.findById(id);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Client found", mapper.toDto(client)));
+	}
+
+	/**
+	 * Search.
+	 *
+	 * @param email the email
+	 * @param phone the phone
+	 * @param name the name
+	 * @return the response entity
+	 */
+	@GetMapping("/search")
+	public ResponseEntity<ApiResponse<List<ClientDTO>>> search(@RequestParam(required = false) String email,
+			@RequestParam(required = false) String phone, @RequestParam(required = false) String name) {
+
+		List<Client> clients = service.search(email, phone, name);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Clients found", mapper.toDtoList(clients)));
 	}
 
 	/**
@@ -58,7 +96,7 @@ public class ClientController {
 	/**
 	 * Update.
 	 *
-	 * @param id the id
+	 * @param id  the id
 	 * @param dto the dto
 	 * @return the response entity
 	 */
