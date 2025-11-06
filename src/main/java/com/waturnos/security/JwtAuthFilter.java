@@ -65,7 +65,7 @@ public class JwtAuthFilter extends GenericFilter {
                 if (user != null) {
                 	SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
                 	List<SimpleGrantedAuthority> authorities = Collections.singletonList(authority);
-                	user.setIdOrganization(user.getOrganization().getId());
+                	user.setIdOrganization(user.getOrganization() != null ? user.getOrganization().getId():null);
                     var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
