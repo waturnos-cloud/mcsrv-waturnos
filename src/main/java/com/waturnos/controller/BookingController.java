@@ -4,19 +4,16 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
 import com.waturnos.entity.Booking;
-import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.service.BookingService;
 
@@ -44,15 +41,16 @@ public class BookingController {
 		this.mapper = m;
 	}
 
+
 	/**
-	 * Gets the by status.
+	 * Gets the by service id.
 	 *
-	 * @param status the status
-	 * @return the by status
+	 * @param serviceId the service id
+	 * @return the by service id
 	 */
-	@GetMapping("/status/{status}")
-	public ResponseEntity<List<BookingDTO>> getByStatus(@PathVariable BookingStatus status) {
-		return ResponseEntity.ok(service.findByStatus(status).stream().map(mapper::toDto).toList());
+	@GetMapping("/service/{serviceId}")
+	public ResponseEntity<List<BookingDTO>> getByServiceId(@PathVariable Long serviceId) {
+		return ResponseEntity.ok(service.findByServiceId(serviceId).stream().map(mapper::toDto).toList());
 	}
 
 	/**
@@ -62,9 +60,9 @@ public class BookingController {
 	 * @return the response entity
 	 */
 	@PostMapping
-	public ResponseEntity<ApiResponse<BookingDTO>> create(@RequestBody BookingDTO dto) {
-		Booking created = service.create(mapper.toEntity(dto));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Booking created", mapper.toDto(created)));
+	public ResponseEntity<ApiResponse<List<BookingDTO>>> create(@RequestBody List<BookingDTO> dtos) {
+		List<Booking> bookings = service.create(mapper.toEntityList(dtos));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Bookings created", mapper.toDtoList(bookings)));
 	}
 
 
@@ -72,8 +70,7 @@ public class BookingController {
 	/**
 	 * Update status.
 	 *
-	 * @param id the id
-	 * @param status the status
+	 * @param dto the dto
 	 * @return the response entity
 	 */
 	@PostMapping("/assign")
@@ -86,8 +83,7 @@ public class BookingController {
 	/**
 	 * Update status.
 	 *
-	 * @param id the id
-	 * @param status the status
+	 * @param dto the dto
 	 * @return the response entity
 	 */
 	@PostMapping("/cancel")
@@ -97,32 +93,6 @@ public class BookingController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
 	}
 	
-	
-	
-	
-	/**
-	 * Update status.
-	 *
-	 * @param id the id
-	 * @param status the status
-	 * @return the response entity
-	 */
-	@PatchMapping("/{id}/status")
-	public ResponseEntity<ApiResponse<BookingDTO>> updateStatus(@PathVariable Long id,
-			@RequestParam BookingStatus status) {
-		Booking updated = service.updateStatus(id, status);
-		return ResponseEntity.ok(new ApiResponse<>(true, "Booking status updated", mapper.toDto(updated)));
-	}
-	
-	
-	/**
-	 * Get status.
-	 *
-	 * @return the response entity
-	 */
-	@GetMapping
-	public ResponseEntity<List<BookingDTO>>  getBookings() {
-		return ResponseEntity.ok(service.findAll().stream().map(mapper::toDto).toList());
-	}
+
 
 }

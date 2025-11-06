@@ -8,9 +8,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.waturnos.entity.Client;
 
 public interface ClientRepository extends JpaRepository<Client, Long> {
+	
 	Optional<Client> findByEmailAndOrganizationId(String email, Long organizationId);
 
 	List<Client> findByOrganizationId(Long organizationId);
-	
+
 	Optional<Client> findByEmail(String email);
+
+	List<Client> findByEmailContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrFullNameContainingIgnoreCase(String email,
+			String phone, String name);
 }
