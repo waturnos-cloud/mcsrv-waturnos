@@ -44,15 +44,17 @@ public class ProviderController {
 	}
 
 	/**
-	 * Creates the.
+	 * Creates the provider.
 	 *
-	 * @param dto the dto
+	 * @param id the id
+	 * @param provider the provider
 	 * @return the response entity
 	 */
-	@PostMapping
-	public ResponseEntity<ApiResponse<ProviderDTO>> create(@RequestBody ProviderDTO dto) {
-		Provider created = service.create(mapper.toEntity(dto));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Provider created", mapper.toDto(created)));
+	@PostMapping("/{id}")
+	public ResponseEntity<ApiResponse<ProviderDTO>> createProvider(@PathVariable Long id,
+			@RequestBody ProviderDTO provider) {
+		Provider providerDB = service.createProvider(id, mapper.toEntity(provider));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add provider", mapper.toDto(providerDB)));
 	}
 
 	/**
@@ -62,9 +64,9 @@ public class ProviderController {
 	 * @param dto the dto
 	 * @return the response entity
 	 */
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<ProviderDTO>> update(@PathVariable Long id, @RequestBody ProviderDTO dto) {
-		Provider updated = service.update(id, mapper.toEntity(dto));
+	@PutMapping
+	public ResponseEntity<ApiResponse<ProviderDTO>> update(@RequestBody ProviderDTO dto) {
+		Provider updated = service.update(mapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Provider updated", mapper.toDto(updated)));
 	}
 
@@ -74,9 +76,9 @@ public class ProviderController {
 	 * @param id the id
 	 * @return the response entity
 	 */
-	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-		service.delete(id);
+	@DeleteMapping("/{organizationId}/{id}")
+	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long organizationId, @PathVariable Long id) {
+		service.delete(id, organizationId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Provider deleted", null));
 	}
 }

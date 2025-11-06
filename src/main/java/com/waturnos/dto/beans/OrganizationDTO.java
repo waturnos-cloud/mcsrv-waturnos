@@ -16,4 +16,5 @@ public class OrganizationDTO {
 	private Boolean active;
 	private OrganizationStatus status;
 	private List<LocationDTO> locations;
+	private boolean simpleOrganization;
 }

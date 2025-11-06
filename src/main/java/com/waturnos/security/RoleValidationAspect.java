@@ -12,6 +12,7 @@ import com.waturnos.enums.UserRole;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,11 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoleValidationAspect {
 
-    private final SessionService authService;
-
     @Around("@annotation(requireRole)")
     public Object checkRole(ProceedingJoinPoint joinPoint, RequireRole requireRole) throws Throwable {
-        User currentUser = authService.getCurrentUser();
+        User currentUser = SessionUtil.getCurrentUser();
         UserRole[] requiredRoles = requireRole.value();
         if (currentUser == null) {
             throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: user not authenticated.");

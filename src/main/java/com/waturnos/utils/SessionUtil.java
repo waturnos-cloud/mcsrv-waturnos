@@ -23,6 +23,14 @@ public class SessionUtil {
         return null;
     }
     
+    public static Long getOrganizationId() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof User user) {
+            return user.getIdOrganization();
+        }
+        return null;
+    }
+    
     public static String getUserName() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof User user) {

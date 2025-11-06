@@ -1,6 +1,7 @@
 package com.waturnos.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.waturnos.enums.UserRole;
 
@@ -13,7 +14,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +38,8 @@ public class User implements CommonUser {
 	private String email;
 	private String phone;
 	private String password;
+	private String photoUrl;
+	private String bio;
 	@Enumerated(EnumType.STRING)
 	private UserRole role;
 	@Builder.Default
@@ -49,10 +54,18 @@ public class User implements CommonUser {
 	@JoinColumn(name = "organization_id")
 	private Organization organization;
 	
-	public static final String USER = "USER";
+	@OneToMany(mappedBy = "service")
+	private List<ServiceEntity> services;
+	
+	@Transient 
+    private Long idOrganization;
 
+	/** The Constant USER. */
+	public static final String USER = "USER";
+	
 	@Override
 	public String getUserType() {
 		return USER;
 	}
+	
 }

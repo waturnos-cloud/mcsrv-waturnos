@@ -1,51 +1,33 @@
 package com.waturnos.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Provider;
+import com.waturnos.entity.ProviderOrganization;
+import com.waturnos.entity.User;
+import com.waturnos.enums.UserRole;
 import com.waturnos.repository.OrganizationRepository;
+import com.waturnos.repository.ProviderOrganizationRepository;
 import com.waturnos.repository.ProviderRepository;
+import com.waturnos.repository.UserRepository;
+import com.waturnos.security.SecurityAccessEntity;
+import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.ProviderService;
-import com.waturnos.service.exceptions.EntityNotFoundException;
+import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.service.process.UserProcess;
+import com.waturnos.utils.DateUtils;
+import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ProviderServiceImpl implements ProviderService {
-	private final ProviderRepository providerRepository;
-	
-	private final OrganizationRepository organizationRepository;
 
 
-	@Override
-	public List<Provider> findByOrganization(Long organizationId) {
-		return organizationRepository.findById(organizationId).get().getProviders();
-	}
-
-	@Override
-	public Provider create(Provider provider) {
-		//Tengo que vincularle la organización
-		//Si no existe el usuario debo crearlo.
-		//El usuario que esta creando el provider tiene acceso a 1 organizacion, debe ser la misma que viene para crear.
-		
-		return providerRepository.save(provider);
-	}
-
-	@Override
-	public Provider update(Long id, Provider provider) {
-		Provider existing = providerRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Provider not found"));
-		provider.setId(existing.getId());
-		return providerRepository.save(provider);
-	}
-
-	@Override
-	public void delete(Long id) {
-		if (!providerRepository.existsById(id))
-			throw new EntityNotFoundException("Provider not found");
-		providerRepository.deleteById(id);
-	}
 }

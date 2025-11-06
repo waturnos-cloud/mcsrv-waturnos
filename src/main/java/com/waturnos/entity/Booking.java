@@ -26,7 +26,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"service","provider","organization","client"})
+@ToString(exclude = {"service","client"})
 public class Booking {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,14 +41,9 @@ public class Booking {
 	private LocalDateTime updatedAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "organization_id")
-	private Organization organization;
-	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "client_id")
 	private Client client;
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "provider_id")
-	private Provider provider;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "service_id")
 	private ServiceEntity service;

@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 
 import com.waturnos.entity.Location;
 import com.waturnos.entity.Organization;
-import com.waturnos.entity.Provider;
 import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
 
@@ -40,7 +39,7 @@ public interface OrganizationService {
 	 * @param b the b
 	 * @return the organization
 	 */
-	Organization create(Organization org, User manager, boolean b);
+	Organization create(Organization org, User manager);
 
 	/**
 	 * Update basic info.
@@ -75,24 +74,6 @@ public interface OrganizationService {
 	 * @return the organization
 	 */
 	Organization activateOrDeactivate(Long id, OrganizationStatus organizationStatus);
-
-	/**
-	 * Adds the manager.
-	 *
-	 * @param id the id
-	 * @param entity the entity
-	 * @return the user
-	 */
-	User addManager(Long id, User entity);
-	
-	/**
-	 * Adds the manager.
-	 *
-	 * @param id the id
-	 * @param entity the entity
-	 * @return the user
-	 */
-	Provider addProvider(Long id, Provider entity);
 
 	/**
 	 * Find all.

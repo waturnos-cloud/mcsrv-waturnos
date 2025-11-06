@@ -10,9 +10,11 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXIST_EXCEPTION("1000", "error.message.email.already.exist"),
     USER_NOT_FOUND("1001", "error.message.user.not.found"),
     
+    
     ORGANIZATION_NOT_FOUND_EXCEPTION("1002", "error.message.organization.not.found"),
     
     PASSWORD_RESET_TOKEN_EXPIRED("1003", "error.message.password.reset.expired"),
+    PROVIDER_NOT_FOUND("1004", "error.message.provider.not.found"),
     
     // SERVICE
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),

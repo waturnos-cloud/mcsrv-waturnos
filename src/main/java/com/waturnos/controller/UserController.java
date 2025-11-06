@@ -11,38 +11,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.waturnos.dto.beans.UserDTO;
 import com.waturnos.entity.User;
+import com.waturnos.enums.UserRole;
+import com.waturnos.mapper.UserMapper;
 import com.waturnos.service.UserService;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * The Class UserController.
  */
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 	
 	/** The service. */
 	private final UserService service;
+	
+	private final UserMapper mapper;
 
-	/**
-	 * Instantiates a new user controller.
-	 *
-	 * @param s the s
-	 */
-	public UserController(UserService s) {
-		this.service = s;
-	}
 
 	/**
 	 * Gets the all.
 	 *
 	 * @return the all
 	 */
-	@GetMapping
-	public ResponseEntity<List<User>> getAll() {
-		return ResponseEntity.ok(service.findAll());
+	@GetMapping("/list/{organizationId}")
+	public ResponseEntity<List<UserDTO>> getAll(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
+		return ResponseEntity.ok(service.findAll(role, organizationId).stream().map(u -> mapper.toDto(u)).toList());
 	}
 
 	/**
@@ -56,15 +57,17 @@ public class UserController {
 	}
 
 	/**
-	 * Creates the.
+	 * Update.
 	 *
-	 * @param user the user
+	 * @param id the id
+	 * @param manager the manager
 	 * @return the response entity
 	 */
-	@PostMapping
-	public ResponseEntity<ApiResponse<User>> create(@RequestBody User user) {
-		User created = service.create(user);
-		return ResponseEntity.ok(new ApiResponse<>(true, "User created", created));
+	@PostMapping("/managers/{id}")
+	public ResponseEntity<ApiResponse<UserDTO>> addManager(@PathVariable Long id,
+			@RequestBody UserDTO manager) {
+		User managerDB = service.createManager(id, mapper.toEntity(manager));
+		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add manager", mapper.toDto(managerDB)));
 	}
 
 	/**
@@ -74,10 +77,10 @@ public class UserController {
 	 * @param user the user
 	 * @return the response entity
 	 */
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<User>> update(@PathVariable Long id, @RequestBody User user) {
-		User updated = service.update(id, user);
-		return ResponseEntity.ok(new ApiResponse<>(true, "User updated", updated));
+	@PutMapping
+	public ResponseEntity<ApiResponse<UserDTO>> update(@RequestBody UserDTO user) {
+		User updated = service.update(mapper.toEntity(user));
+		return ResponseEntity.ok(new ApiResponse<>(true, "User updated", mapper.toDto(updated)));
 	}
 
 	/**

@@ -11,7 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -26,7 +25,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"locations","providers"})
+@ToString(exclude = {"locations"})
 public class Organization {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,11 +43,12 @@ public class Organization {
 	private String modificator;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private boolean simpleOrganization;
 
 	@OneToMany(mappedBy = "organization")
 	private List<Location> locations;
 	
-	@ManyToMany(mappedBy = "organizations")
-    private List<Provider> providers;
+	@OneToMany(mappedBy = "organization")
+    private List<User> users;
 
 }

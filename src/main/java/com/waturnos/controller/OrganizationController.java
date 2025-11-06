@@ -15,12 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.dto.beans.OrganizationDTO;
-import com.waturnos.dto.beans.ProviderDTO;
-import com.waturnos.dto.beans.UserDTO;
 import com.waturnos.dto.request.CreateOrganization;
 import com.waturnos.entity.Organization;
-import com.waturnos.entity.Provider;
-import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.mapper.OrganizationMapper;
 import com.waturnos.mapper.ProviderMapper;
@@ -54,9 +50,6 @@ public class OrganizationController {
 	/** The user mapper. */
 	private final UserMapper userMapper;
 	
-	/** The provider mapper. */
-	private final ProviderMapper providerMapper;
-
 	/**
 	 * Gets the all.
 	 *
@@ -91,7 +84,7 @@ public class OrganizationController {
 	@PostMapping
 	public ResponseEntity<ApiResponse<OrganizationDTO>> create(@RequestBody CreateOrganization createOrganization) {
 		Organization created = service.create(organizationMapper.toEntity(createOrganization.getOrganization()),
-				userMapper.toEntity(createOrganization.getManager()),createOrganization.isSimpleOrganization());
+				userMapper.toEntity(createOrganization.getManager()));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization created", organizationMapper.toDto(created,true)));
 	}
 
@@ -137,34 +130,6 @@ public class OrganizationController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization updated", organizationMapper.toDto(updated,false)));
 	}
 	
-	/**
-	 * Update.
-	 *
-	 * @param id the id
-	 * @param manager the manager
-	 * @return the response entity
-	 */
-	@PostMapping("/managers/{id}")
-	public ResponseEntity<ApiResponse<UserDTO>> addManager(@PathVariable Long id,
-			@RequestBody UserDTO manager) {
-		User managerDB = service.addManager(id, userMapper.toEntity(manager));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add manager", userMapper.toDto(managerDB)));
-	}
-	
-	/**
-	 * Update.
-	 *
-	 * @param id the id
-	 * @param provider the provider
-	 * @return the response entity
-	 */
-	@PostMapping("/providers/{id}")
-	public ResponseEntity<ApiResponse<ProviderDTO>> addProvider(@PathVariable Long id,
-			@RequestBody ProviderDTO provider) {
-		Provider providerDB = service.addProvider(id, providerMapper.toEntity(provider));
-		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add provider", providerMapper.toDto(providerDB)));
-	}
-
 	/**
 	 * Delete.
 	 *
