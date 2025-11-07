@@ -22,6 +22,7 @@ spring:
     properties:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hibernate.jdbc.time_zone: America/Argentina/Buenos_Aires
   jackson:
     default-property-inclusion: NON_NULL
 # 1. Configuración de Email (JavaMailSender)

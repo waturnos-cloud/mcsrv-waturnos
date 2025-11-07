@@ -17,8 +17,6 @@ public abstract class ServiceMapper {
     @Mapping(target = "user", ignore = true)
     public abstract ServiceEntity toEntity(ServiceDTO dto);
 
-    @Mapping(source = "location.id", target = "locationId")
-    @Mapping(source = "user.id", target = "userId")
     public abstract ServiceDTO toDTO(ServiceEntity entity);
 }
 

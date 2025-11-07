@@ -11,6 +11,6 @@ public class ServiceDTO {
 	private Double price;
 	private Integer advancePayment;
 	private Integer futureDays;
-	private Long userId;
-	private Long locationId;
+	private UserDTO user;
+	private LocationDTO location;
 }
