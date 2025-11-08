@@ -28,12 +28,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-	
+
 	/** The service. */
 	private final UserService service;
-	
-	private final UserMapper mapper;
 
+	private final UserMapper mapper;
 
 	/**
 	 * Gets the all.
@@ -41,18 +40,22 @@ public class UserController {
 	 * @return the all
 	 */
 	@GetMapping("/providers/{organizationId}")
-	public ResponseEntity<List<UserDTO>> getProvidersByOrganization(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
-		return ResponseEntity.ok(service.findProvidersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
+	public ResponseEntity<List<UserDTO>> getProvidersByOrganization(@PathVariable(required = true) Long organizationId,
+			@RequestParam(required = false) UserRole role) {
+		return ResponseEntity
+				.ok(service.findProvidersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
 	}
-	
+
 	/**
 	 * Gets the all.
 	 *
 	 * @return the all
 	 */
 	@GetMapping("/managers/{organizationId}")
-	public ResponseEntity<List<UserDTO>> getManagersByOrganization(@PathVariable(required = true) Long organizationId, @RequestParam(required = false) UserRole role) {
-		return ResponseEntity.ok(service.findManagersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
+	public ResponseEntity<List<UserDTO>> getManagersByOrganization(@PathVariable(required = true) Long organizationId,
+			@RequestParam(required = false) UserRole role) {
+		return ResponseEntity
+				.ok(service.findManagersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
 	}
 
 	/**
@@ -70,7 +73,7 @@ public class UserController {
 	 * Creates the manager.
 	 *
 	 * @param organizationId the organization id
-	 * @param manager the manager
+	 * @param manager        the manager
 	 * @return the response entity
 	 */
 	@PostMapping("/managers/{organizationId}")
@@ -79,12 +82,12 @@ public class UserController {
 		User managerDB = service.createManager(organizationId, mapper.toEntity(manager));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add manager", mapper.toDto(managerDB)));
 	}
-	
+
 	/**
 	 * Creates the manager.
 	 *
 	 * @param organizationId the organization id
-	 * @param provider the manager
+	 * @param provider       the manager
 	 * @return the response entity
 	 */
 	@PostMapping("/providers/{organizationId}")
@@ -97,7 +100,7 @@ public class UserController {
 	/**
 	 * Update.
 	 *
-	 * @param id the id
+	 * @param id   the id
 	 * @param user the user
 	 * @return the response entity
 	 */
@@ -108,14 +111,26 @@ public class UserController {
 	}
 
 	/**
-	 * Delete.
+	 * Delete manager.
 	 *
-	 * @param id the id
+	 * @param managerId the manager id
 	 * @return the response entity
 	 */
-	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
-		service.deleteManager(id);
+	@DeleteMapping("/managers/{managerId}")
+	public ResponseEntity<ApiResponse<Void>> deleteManager(@PathVariable Long managerId) {
+		service.deleteManager(managerId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
 	}
+	
+	/**
+	* Delete provider.
+	*
+	* @param providerId the id
+	* @return the response entity
+	*/
+	@DeleteMapping("/providers/{providerId}")
+	public ResponseEntity<ApiResponse<Void>> deleteProvider(@PathVariable Long providerId) {
+		service.deleteProvider(providerId);
+	 	return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
+	 }
 }

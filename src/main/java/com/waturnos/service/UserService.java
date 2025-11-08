@@ -79,9 +79,8 @@ public interface UserService {
 	 * Delete.
 	 *
 	 * @param providerId the provider id
-	 * @param organizationId the organization id
 	 */
-	void deleteProvider(Long providerId, Long organizationId);
+	void deleteProvider(Long providerId);
 
 	/**
 	 * Update.
@@ -90,4 +89,5 @@ public interface UserService {
 	 * @return the provider
 	 */
 	User updateProvider(User provider);
+	
 }

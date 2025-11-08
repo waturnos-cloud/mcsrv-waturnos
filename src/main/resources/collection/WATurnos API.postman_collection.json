@@ -1,11 +1,9 @@
 {
 	"info": {
-		"_postman_id": "38150809-fd6e-4e7c-b0a3-f3bb4574cf27",
+		"_postman_id": "353c1b01-5a1b-4389-be21-9e742c8d6c6d",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "160410",
-		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-38150809-fd6e-4e7c-b0a3-f3bb4574cf27?action=share&source=collection_link&creator=160410"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -655,7 +653,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"organizationId\", 4);"
+									"pm.environment.set(\"organizationId\", 1);"
 								],
 								"type": "text/javascript"
 							}
@@ -675,7 +673,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"Profesional22@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
+							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"ProfesionalNuevo2@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/providers/{{organizationId}}",
@@ -701,7 +699,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"organizationId\", 4);"
+									"pm.environment.set(\"organizationId\", 1);"
 								],
 								"type": "text/javascript"
 							}
@@ -766,7 +764,19 @@
 					"response": []
 				},
 				{
-					"name": "PENDIENTE DELETE /providers/{id}",
+					"name": "Eliminar proveedor ADMIN / MANAGER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"providerId\", 12);",
+									"pm.environment.set(\"organizationId\", 1);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -776,7 +786,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/providers/{{organizationId}}/{{providerId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/providers/{{providerId}}",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -784,8 +794,8 @@
 							"path": [
 								"msvc-waturnos",
 								"v1.0",
+								"users",
 								"providers",
-								"{{organizationId}}",
 								"{{providerId}}"
 							]
 						}
@@ -799,6 +809,18 @@
 			"item": [
 				{
 					"name": "Crear Servicio - ADMIN/MANAGER/PROVIDER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId\", 12);",
+									"pm.environment.set(\"locationId\", 1);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
