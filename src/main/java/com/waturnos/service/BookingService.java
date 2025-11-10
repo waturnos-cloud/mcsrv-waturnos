@@ -51,4 +51,11 @@ public interface BookingService {
 	 */
 	Booking cancelBooking(Long id, String reason);
 
+	/**
+	 * Find bookings for today.
+	 *
+	 * @return the list
+	 */
+	List<Booking> findBookingsForToday();
+
 }

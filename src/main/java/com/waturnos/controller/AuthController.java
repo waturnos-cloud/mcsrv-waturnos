@@ -1,4 +1,5 @@
 package com.waturnos.controller;
+
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
@@ -17,47 +18,79 @@ import org.springframework.web.context.request.WebRequest;
 import com.waturnos.controller.exceptions.ErrorResponse;
 import com.waturnos.dto.request.LoginRequest;
 import com.waturnos.dto.response.LoginResponse;
+import com.waturnos.entity.User;
+import com.waturnos.repository.UserRepository;
 import com.waturnos.security.JwtUtil;
 import com.waturnos.service.exceptions.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * The Class AuthController.
- */
-@RestController @RequestMapping("/auth")
+@RestController
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-  
- /** The jwt util. */
- private final JwtUtil jwtUtil; 
- 
- private final AuthenticationManager authenticationManager;
-  
- private final MessageSource messageSource;
-  
-  @PostMapping("/login")
-  public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
-  	try {
-          Authentication authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-          );
-          UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-          String email = userDetails.getUsername(); // username = email
-          String role = userDetails.getAuthorities().stream()
-                          .findFirst()
-                          .map(auth -> auth.getAuthority().replace("ROLE_", ""))
-                          .orElse("USER");
 
-          String token = jwtUtil.generateToken(email, role); // Usar tu firma real
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final MessageSource messageSource;
+    private final UserRepository userRepository; // 👈 necesario para buscar el user completo
 
-			return ResponseEntity.ok(new LoginResponse(token));
-		} catch (AuthenticationException e) {
-			ErrorResponse errorDetails = new ErrorResponse(ErrorCode.INVALID_USER_OR_PASSWORD.getCode(),
-					messageSource.getMessage(ErrorCode.INVALID_USER_OR_PASSWORD.getMessageKey(), null,
-							LocaleContextHolder.getLocale()),
-					webRequest.getDescription(false));
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
-		}
-  }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String email = userDetails.getUsername();
+
+            // Buscar el usuario real para obtener IDs
+            User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+            String role = userDetails.getAuthorities().stream()
+                .findFirst()
+                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
+                .orElse("USER");
+
+            String token = jwtUtil.generateToken(email, role);
+
+            // Determinar organizationId y providerId según el rol
+            Long organizationId = null;
+            Long providerId = null;
+
+            switch (role) {
+                case "ADMIN" -> {
+                    organizationId = null; // elige luego en el dashboard
+                }
+                case "MANAGER" -> {
+                    organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
+                }
+                case "PROVIDER" -> {
+                    organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
+                    providerId = user.getId();
+                }
+            }
+
+            // ✅ Respuesta extendida
+            LoginResponse response = new LoginResponse(
+                token,
+                user.getId(),
+                role,
+                organizationId,
+                providerId
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (AuthenticationException e) {
+            ErrorResponse errorDetails = new ErrorResponse(
+                ErrorCode.INVALID_USER_OR_PASSWORD.getCode(),
+                messageSource.getMessage(ErrorCode.INVALID_USER_OR_PASSWORD.getMessageKey(), null, LocaleContextHolder.getLocale()),
+                webRequest.getDescription(false)
+            );
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+        }
+    }
 }

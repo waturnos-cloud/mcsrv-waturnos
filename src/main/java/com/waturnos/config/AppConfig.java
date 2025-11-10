@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.waturnos.security.CustomUserDetailsService;
 import com.waturnos.security.JwtAuthFilter;
@@ -27,45 +29,43 @@ public class AppConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
+	public CorsFilter corsFilter() {
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowedOrigins(List.of("http://localhost:5173", "https://waturnos-admin.vercel.app"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		config.setAllowedHeaders(List.of("*"));
+		config.setExposedHeaders(List.of("Authorization"));
+		config.setAllowCredentials(true);
 
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+		return new CorsFilter(source);
+	}
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).cors(cors -> {
+		}) // usa el filtro CORS global
 				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.cors(cors -> cors.configurationSource(request -> {
-					CorsConfiguration config = new CorsConfiguration();
-					config.setAllowedOrigins(List.of("http://localhost:5173", // Front local
-							"http://localhost:5174", // Alternativo (si usás otro puerto)
-							"https://waturnos-admin.vercel.app" // Front desplegado
-					));
-					config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-					config.setAllowedHeaders(
-							List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
-					config.setExposedHeaders(List.of("Authorization"));
-					config.setAllowCredentials(true);
-					return config;
-				})).sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/swagger-ui.html",
-						"/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/auth/login",
-						"/public/**").permitAll().anyRequest()
-						.authenticated())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/auth/**", "/api/auth/**", "/swagger-ui.html", "/swagger-ui/**",
+								"/api-docs/**", "/v3/api-docs/**", "/public/**")
+						.permitAll().anyRequest().authenticated())
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
 
-	@SuppressWarnings("removal")
 	@Bean
 	public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder,
 			CustomUserDetailsService userDetailsService) throws Exception {
+
 		return http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(userDetailsService)
 				.passwordEncoder(passwordEncoder).and().build();
 	}
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {
-		// Crea un DelegatingPasswordEncoder con los mapeos predeterminados de Spring
-		// Security.
-		// Este reconocerá el prefijo {bcrypt} automáticamente.
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 }

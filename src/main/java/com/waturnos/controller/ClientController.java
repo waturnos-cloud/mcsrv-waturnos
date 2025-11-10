@@ -117,4 +117,16 @@ public class ClientController {
 		service.delete(id);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client deleted", null));
 	}
+	
+
+	/**
+	 * Count clients.
+	 *
+	 * @return the response entity
+	 */
+	@GetMapping("/count")
+	public ResponseEntity<ApiResponse<Long>> countClients() {
+	    long count = service.countAll();
+	    return ResponseEntity.ok(new ApiResponse<>(true, "Total clients", count));
+	}
 }

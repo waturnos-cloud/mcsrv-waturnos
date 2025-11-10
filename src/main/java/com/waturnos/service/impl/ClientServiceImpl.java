@@ -101,4 +101,14 @@ public class ClientServiceImpl implements ClientService {
 						email != null ? email : "", phone != null ? phone : "", name != null ? name : "");
 	}
 
+	/**
+	 * Count all.
+	 *
+	 * @return the long
+	 */
+	@Override
+	public long countAll() {
+	    return clientRepository.count();
+	}
+
 }
