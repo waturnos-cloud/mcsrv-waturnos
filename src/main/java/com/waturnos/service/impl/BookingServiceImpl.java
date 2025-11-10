@@ -1,5 +1,7 @@
 package com.waturnos.service.impl;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -129,6 +131,22 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	public List<Booking> findByServiceId(Long serviceId) {
 		return bookingRepository.findByServiceId(serviceId);
+	}
+
+	/**
+	 * Find bookings for today.
+	 *
+	 * @return the list
+	 */
+	@Override
+	public List<Booking> findBookingsForToday() {
+	    
+	    OffsetDateTime now = OffsetDateTime.now();
+	    LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+	    LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+	    return bookingRepository.findByStartTimeBetween(startOfDay, endOfDay);
+	    
 	}
 
 }

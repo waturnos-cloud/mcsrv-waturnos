@@ -65,5 +65,12 @@ public interface ClientService {
 	 */
 	List<Client> search(String email, String phone, String name);
 
+	/**
+	 * Count all.
+	 *
+	 * @return the long
+	 */
+	long countAll();
+
 
 }

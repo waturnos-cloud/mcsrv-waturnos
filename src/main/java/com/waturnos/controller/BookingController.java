@@ -93,6 +93,15 @@ public class BookingController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
 	}
 	
-
+	/**
+	 * Gets the today bookings.
+	 *
+	 * @return the today bookings
+	 */
+	@GetMapping("/today")
+	public ResponseEntity<ApiResponse<List<BookingDTO>>> getTodayBookings() {
+	    List<Booking> today = service.findBookingsForToday();
+	    return ResponseEntity.ok(new ApiResponse<>(true, "Bookings for today", mapper.toDtoList(today)));
+	}
 
 }
