@@ -23,6 +23,10 @@ spring:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.jdbc.time_zone: America/Argentina/Buenos_Aires
+      hibernate.jdbc.batch_size: 100
+      hibernate.order_inserts: true 
+      hibernate.order_updates: true
+      hibernate.generate_statistics: false
   jackson:
     default-property-inclusion: NON_NULL
 # 1. Configuración de Email (JavaMailSender)
@@ -63,7 +67,7 @@ springdoc:
 # El formato es: [CHANNEL_NAME]=[NOTIFICATION_TYPE_1]|[NOTIFICATION_TYPE_2]|...
 notification:
   channels:
-    EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER
+    EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER,CANCELBOOKING_BY_PROVIDER,BOOKING_ASSIGN
     WHATSAPP: RESET_PASSWORD
     PUSH: APPOINTMENT_REMINDER
     

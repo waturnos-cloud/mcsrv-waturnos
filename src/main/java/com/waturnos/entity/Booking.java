@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +30,12 @@ import lombok.ToString;
 @ToString(exclude = {"service","client"})
 public class Booking {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_sequence")
+    @SequenceGenerator(
+            name = "booking_sequence", 
+            sequenceName = "booking_id_seq", 
+            allocationSize = 100
+        )
 	private Long id;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;

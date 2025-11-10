@@ -2,14 +2,24 @@ package com.waturnos.service.impl;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
+import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
+import com.waturnos.notification.bean.NotificationRequest;
+import com.waturnos.notification.enums.NotificationType;
+import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.security.annotations.RequireRole;
@@ -17,10 +27,13 @@ import com.waturnos.service.BookingService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.utils.DateUtils;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * The Class BookingServiceImpl.
  */
 @Service
+@RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
 
 	/** The booking repository. */
@@ -28,18 +41,20 @@ public class BookingServiceImpl implements BookingService {
 
 	/** The client repository. */
 	private final ClientRepository clientRepository;
-
-	/**
-	 * Instantiates a new booking service impl.
-	 *
-	 * @param bookingRepository the booking repository
-	 * @param clientRepository  the client repository
-	 */
-	public BookingServiceImpl(BookingRepository bookingRepository, ClientRepository clientRepository) {
-		this.bookingRepository = bookingRepository;
-		this.clientRepository = clientRepository;
-	}
-
+	
+	/** The notification factory. */
+	private final NotificationFactory notificationFactory;
+	
+	/** The message source. */
+	private final MessageSource messageSource;
+	
+	/** The date forma email. */
+	@Value("${app.datetime.email-format}")
+	private String dateFormaEmail;
+	
+	@Value("${app.notification.HOME}")
+	private String urlHome;
+	
 	/**
 	 * Creates the.
 	 *
@@ -79,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-		Client client = clientRepository.findById(id)
+		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
 		if (!booking.getStatus().equals(BookingStatus.PENDING)) {
@@ -90,8 +105,30 @@ public class BookingServiceImpl implements BookingService {
 		booking.setStatus(BookingStatus.RESERVED);
 		booking.setClient(client);
 
+		notificationFactory.send(buildRequest(client, booking));
+		
 		return bookingRepository.save(booking);
 
+	}
+	
+	/**
+	 * Builds the request.
+	 *
+	 * @param client the manager
+	 * @param temporalPasswordUser 
+	 * @return the notification request
+	 */
+	private NotificationRequest buildRequest(Client client, Booking booking) {
+		Map<String, String> properties = new HashMap<>();
+		properties.put("USERNAME", client.getFullName());
+		properties.put("SERVICENAME", booking.getService().getName());
+		properties.put("DATEBOOKING", DateUtils.format(booking.getStartTime(), dateFormaEmail));
+		properties.put("URLHOME", urlHome);
+
+		return NotificationRequest.builder().email(booking.getClient().getEmail()).language("ES")
+				.subject(messageSource.getMessage("notification.subject.assign.booking", null,
+						LocaleContextHolder.getLocale()))
+				.type(NotificationType.BOOKING_ASSIGN).properties(properties).build();
 	}
 
 	/**
