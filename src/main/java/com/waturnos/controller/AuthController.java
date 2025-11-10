@@ -51,7 +51,8 @@ public class AuthController {
 
 			String token = jwtUtil.generateToken(email, role);
 
-			return ResponseEntity.ok(new LoginResponse(token, userDetails.getId(), role));
+			return ResponseEntity.ok(new LoginResponse(token, userDetails.getId(), userDetails.getOrganizationId(),
+					userDetails.getOrganizationName(), role, userDetails.getSimpleOrganization()));
 
 		} catch (AuthenticationException e) {
 			ErrorResponse errorDetails = new ErrorResponse(ErrorCode.INVALID_USER_OR_PASSWORD.getCode(),

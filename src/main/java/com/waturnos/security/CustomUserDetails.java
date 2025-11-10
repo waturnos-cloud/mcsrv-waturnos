@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.waturnos.entity.User;
+import com.waturnos.enums.UserRole;
 
 import lombok.Getter;
 
@@ -18,6 +19,9 @@ public class CustomUserDetails implements UserDetails {
 	private final Long id;
     private final String email;
     private final String password;
+    private Long organizationId;
+    private String organizationName;
+    private Boolean simpleOrganization;
     private final Collection<? extends GrantedAuthority> authorities;
     private final boolean active;
 
@@ -27,6 +31,11 @@ public class CustomUserDetails implements UserDetails {
         this.password = user.getPassword();
         this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
         this.active = user.getActive();
+        if(UserRole.MANAGER.equals(user.getRole()) || UserRole.PROVIDER.equals(user.getRole())) {
+        	this.organizationName = user.getOrganization().getName();
+        	this.organizationId = user.getOrganization().getId();
+        	this.simpleOrganization = user.getOrganization().isSimpleOrganization();
+        }
     }
 
     @Override

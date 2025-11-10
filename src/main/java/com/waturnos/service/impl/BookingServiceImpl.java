@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
-import com.waturnos.entity.ServiceEntity;
-import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.notification.bean.NotificationRequest;

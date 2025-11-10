@@ -8,5 +8,8 @@ import lombok.Data;
 public class LoginResponse {
 	private String token;
 	private Long userId;
+	private Long organizationId;
+	private String organizationName;
 	private String role;
+	private Boolean simpleOrganization;
 }
