@@ -20,5 +20,6 @@ import lombok.NoArgsConstructor;
 public class CreateService {
 	private ServiceDTO serviceDto;
 	private List<AvailabilityDTO> listAvailability;
+	private boolean workInHollidays;
 
 }

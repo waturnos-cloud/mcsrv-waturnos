@@ -51,13 +51,14 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @param listAvailability the list availability
 	 * @param userId           the user id
 	 * @param locationId       the location id
+	 * @param workInHollidays  the work in hollidays
 	 * @return the service entity
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@Transactional(readOnly = false)
 	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long userId,
-			Long locationId) {
+			Long locationId, boolean workInHollidays) {
 
 		Optional<User> userDB = userRepository.findById(userId);
 		if (!userDB.isPresent()) {
@@ -78,7 +79,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			availabilityRepository.save(av);
 		});
 
-		generateBookings(serviceEntity, listAvailability, unavailabilityService.getHolidays());
+		generateBookings(serviceEntity, listAvailability, workInHollidays ? unavailabilityService.getHolidays() : null);
 		return serviceEntityResponse;
 	}
 
@@ -100,7 +101,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			final LocalDate currentDate = date;
 			DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 
-			if (!unavailabilities.contains(currentDate)) {
+			if (unavailabilities == null || !unavailabilities.contains(currentDate)) {
 
 				// Filtrás las disponibilidades que coincidan con ese día
 				availabilities.stream().filter(a -> a.getDayOfWeek() == dayOfWeek.getValue()).forEach(a -> {
