@@ -110,5 +110,10 @@ public class ClientServiceImpl implements ClientService {
 	public long countAll() {
 	    return clientRepository.count();
 	}
+	
+	
+	public List<Client> findByProviderId(Long providerId) {
+	    return clientRepository.findByProviderId(providerId);
+	}
 
 }

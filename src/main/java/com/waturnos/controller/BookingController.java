@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.dto.beans.BookingDTO;
@@ -99,9 +100,19 @@ public class BookingController {
 	 * @return the today bookings
 	 */
 	@GetMapping("/today")
-	public ResponseEntity<ApiResponse<List<BookingDTO>>> getTodayBookings() {
-	    List<Booking> today = service.findBookingsForToday();
-	    return ResponseEntity.ok(new ApiResponse<>(true, "Bookings for today", mapper.toDtoList(today)));
+	public ResponseEntity<ApiResponse<List<BookingDTO>>> getTodayBookings(
+	        @RequestParam(name = "providerId", required = false) Long providerId) {
+
+	    List<Booking> today;
+	    if (providerId != null) {
+	        today = service.findBookingsForTodayByProvider(providerId);
+	    } else {
+	        today = service.findBookingsForToday();
+	    }
+
+	    return ResponseEntity.ok(
+	        new ApiResponse<>(true, "Bookings for today", mapper.toDtoList(today))
+	    );
 	}
 
 }

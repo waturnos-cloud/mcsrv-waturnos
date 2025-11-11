@@ -72,5 +72,13 @@ public interface ClientService {
 	 */
 	long countAll();
 
+	/**
+	 * Find by provider id.
+	 *
+	 * @param providerId the provider id
+	 * @return the list
+	 */
+	List<Client> findByProviderId(Long providerId);
+
 
 }

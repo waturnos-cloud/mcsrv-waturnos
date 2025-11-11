@@ -54,6 +54,18 @@ public class ClientController {
 	}
 
 	/**
+	 * Gets the all by provider.
+	 *
+	 * @param providerId the provider id
+	 * @return the all by provider
+	 */
+	@GetMapping("/provider/{providerId}")
+	public ResponseEntity<ApiResponse<List<ClientDTO>>> getByProvider(@PathVariable Long providerId) {
+	    List<Client> clients = service.findByProviderId(providerId);
+	    return ResponseEntity.ok(new ApiResponse<>(true, "Clients by provider", mapper.toDtoList(clients)));
+	}
+
+	/**
 	 * Gets the by id.
 	 *
 	 * @param id the id
@@ -70,7 +82,7 @@ public class ClientController {
 	 *
 	 * @param email the email
 	 * @param phone the phone
-	 * @param name the name
+	 * @param name  the name
 	 * @return the response entity
 	 */
 	@GetMapping("/search")
@@ -117,7 +129,6 @@ public class ClientController {
 		service.delete(id);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client deleted", null));
 	}
-	
 
 	/**
 	 * Count clients.
@@ -126,7 +137,7 @@ public class ClientController {
 	 */
 	@GetMapping("/count")
 	public ResponseEntity<ApiResponse<Long>> countClients() {
-	    long count = service.countAll();
-	    return ResponseEntity.ok(new ApiResponse<>(true, "Total clients", count));
+		long count = service.countAll();
+		return ResponseEntity.ok(new ApiResponse<>(true, "Total clients", count));
 	}
 }

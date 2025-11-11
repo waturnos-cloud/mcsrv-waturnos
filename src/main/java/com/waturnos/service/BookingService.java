@@ -58,4 +58,6 @@ public interface BookingService {
 	 */
 	List<Booking> findBookingsForToday();
 
+	List<Booking> findBookingsForTodayByProvider(Long providerId);
+
 }

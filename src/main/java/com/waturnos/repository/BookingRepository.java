@@ -22,4 +22,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
 	List<Booking> findByStartTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
+	@Query("SELECT b FROM Booking b WHERE b.service.user.id = :providerId AND b.startTime BETWEEN :start AND :end")
+	List<Booking> findByProviderAndStartTimeBetween(
+	        @Param("providerId") Long providerId,
+	        @Param("start") LocalDateTime start,
+	        @Param("end") LocalDateTime end);
 }

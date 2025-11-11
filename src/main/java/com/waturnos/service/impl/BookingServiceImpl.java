@@ -1,6 +1,8 @@
 package com.waturnos.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -149,4 +151,11 @@ public class BookingServiceImpl implements BookingService {
 	    
 	}
 
+	
+	public List<Booking> findBookingsForTodayByProvider(Long providerId) {
+	    LocalDate today = LocalDate.now();
+	    LocalDateTime startOfDay = today.atStartOfDay();
+	    LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+	    return bookingRepository.findByProviderAndStartTimeBetween(providerId, startOfDay, endOfDay);
+	}
 }
