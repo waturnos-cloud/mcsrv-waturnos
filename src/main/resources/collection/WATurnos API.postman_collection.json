@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "353c1b01-5a1b-4389-be21-9e742c8d6c6d",
+		"_postman_id": "52b71561-75c4-4209-a211-e4a1657c0890",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -1208,6 +1208,47 @@
 								"bookings",
 								"service",
 								"{{serviceId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count BOOKING ADMIN /MANAGER / PROVIDER",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/count?fromDate=2025-11-06&toDate=2025-12-11&providerId=5",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"count"
+							],
+							"query": [
+								{
+									"key": "fromDate",
+									"value": "2025-11-06"
+								},
+								{
+									"key": "toDate",
+									"value": "2025-12-11",
+									"description": "Opcional, si no se envia calcula del día con fromdate"
+								},
+								{
+									"key": "providerId",
+									"value": "5"
+								}
 							]
 						}
 					},
