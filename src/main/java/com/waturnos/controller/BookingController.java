@@ -1,5 +1,6 @@
 package com.waturnos.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
+import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.service.BookingService;
@@ -114,5 +116,24 @@ public class BookingController {
 	        new ApiResponse<>(true, "Bookings for today", mapper.toDtoList(today))
 	    );
 	}
+	
+	/**
+     * Obtiene el conteo de reservas por estado (CANCELLED, RESERVED, COMPLETED, PENDING) 
+     * para un día o rango de días específico y un Provider ID.
+     */
+    @GetMapping("/count")
+    public ResponseEntity<List<CountBookingDTO>> getCountBookings(
+            @RequestParam(name = "fromDate", required = true) LocalDate fromDate,
+            @RequestParam(name = "toDate", required = false) LocalDate toDate,
+            @RequestParam(name = "providerId", required = true) Long providerId) {
+
+        List<CountBookingDTO> counts = service.countBookingsByDateRangeAndProvider(
+                fromDate, 
+                toDate != null ? toDate : fromDate, 
+                providerId
+        );
+
+        return ResponseEntity.ok(counts);
+    }
 
 }
