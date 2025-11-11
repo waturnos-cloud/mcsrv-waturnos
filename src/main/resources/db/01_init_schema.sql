@@ -316,3 +316,6 @@ BEGIN
         );
     END LOOP;
 END $$;
+
+--Se actualiza secuencia para que en los inserts de booking haga de a 100 el insert 
+ALTER SEQUENCE booking_id_seq INCREMENT BY 100;

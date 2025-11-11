@@ -1,34 +1,22 @@
 package com.waturnos.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.waturnos.entity.Booking;
 import com.waturnos.entity.Organization;
-import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
-import com.waturnos.notification.bean.NotificationRequest;
-import com.waturnos.notification.enums.NotificationType;
-import com.waturnos.notification.factory.NotificationFactory;
-import com.waturnos.repository.BookingRepository;
-import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.UserService;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.service.process.BatchProcessor;
 import com.waturnos.service.process.UserProcess;
-import com.waturnos.utils.DateUtils;
 import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -56,25 +44,8 @@ public class UserServiceImpl implements UserService {
 
 	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
-
-	/** The service repository. */
-	private final ServiceRepository serviceRepository;
-
-	/** The booking repository. */
-	private final BookingRepository bookingRepository;
-
-	/** The notification factory. */
-	private final NotificationFactory notificationFactory;
-
-	/** The message source. */
-	private final MessageSource messageSource;
-
-	/** The date forma email. */
-	@Value("${app.datetime.email-format}")
-	private String dateFormaEmail;
-
-	@Value("${app.notification.HOME}")
-	private String urlHome;
+	
+	private final BatchProcessor batchProcessor;
 
 	/**
 	 * Find all.
@@ -187,9 +158,6 @@ public class UserServiceImpl implements UserService {
 		}
 
 		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
-
-		userRepository.deleteById(userId);
-
 	}
 
 	/**
@@ -201,7 +169,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
 	public User createProvider(Long organizationId, User provider) {
-		return userProcess.createManager(Organization.builder().id(organizationId).build(), provider);
+		return userProcess.createProvider(Organization.builder().id(organizationId).build(), provider);
 	}
 
 	/**
@@ -215,40 +183,7 @@ public class UserServiceImpl implements UserService {
 	public void deleteProvider(Long providerId) {
 		validateCommons(providerId, UserRole.PROVIDER);
 
-		List<ServiceEntity> servicesToDelete = serviceRepository.findByUserId(providerId);
-
-		servicesToDelete.forEach(service -> {
-			List<Booking> bookingsToDelete = bookingRepository.findByServiceId(service.getId());
-
-			bookingsToDelete.stream().filter(booking -> booking.getClient() != null) // Solo si hay cliente
-					.forEach(booking -> {
-						notificationFactory.send(buildRequest(booking, service.getName()));
-					});
-			bookingRepository.deleteAllByServiceId(service.getId());
-		});
-
-		serviceRepository.deleteAllByUserId(providerId);
-		userRepository.deleteById(providerId);
-	}
-
-	/**
-	 * Builds the request.
-	 *
-	 * @param booking     the booking
-	 * @param serviceName the service name
-	 * @return the notification request
-	 */
-	private NotificationRequest buildRequest(Booking booking, String serviceName) {
-		Map<String, String> properties = new HashMap<>();
-		properties.put("USERNAME", booking.getClient().getFullName());
-		properties.put("SERVICENAME", serviceName);
-		properties.put("DATEBOOKING", DateUtils.format(booking.getStartTime(), dateFormaEmail));
-		properties.put("URLHOME", urlHome);
-
-		return NotificationRequest.builder().email(booking.getClient().getEmail()).language("ES")
-				.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", null,
-						LocaleContextHolder.getLocale()))
-				.type(NotificationType.CANCELBOOKING_BY_PROVIDER).properties(properties).build();
+		batchProcessor.deleteProviderAsync(providerId);
 	}
 
 	@Override

@@ -93,7 +93,7 @@ public class UserController {
 	@PostMapping("/providers/{organizationId}")
 	public ResponseEntity<ApiResponse<UserDTO>> createProvider(@PathVariable(required = true) Long organizationId,
 			@RequestBody(required = true) UserDTO provider) {
-		User managerDB = service.createManager(organizationId, mapper.toEntity(provider));
+		User managerDB = service.createProvider(organizationId, mapper.toEntity(provider));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization add provider", mapper.toDto(managerDB)));
 	}
 
