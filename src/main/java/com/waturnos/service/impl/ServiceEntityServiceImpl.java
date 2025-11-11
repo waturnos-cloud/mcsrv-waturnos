@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.ServiceEntityService;
+import com.waturnos.service.UnavailabilityService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
@@ -40,80 +42,99 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	private final LocationRepository locationRepository;
 	private final SecurityAccessEntity securityAccessEntity;
 	private final UserRepository userRepository;
+	private final UnavailabilityService unavailabilityService;
 
-
+	/**
+	 * Creates the.
+	 *
+	 * @param serviceEntity    the service entity
+	 * @param listAvailability the list availability
+	 * @param userId           the user id
+	 * @param locationId       the location id
+	 * @return the service entity
+	 */
 	@Override
-	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@Transactional(readOnly = false)
 	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long userId,
 			Long locationId) {
-		
+
 		Optional<User> userDB = userRepository.findById(userId);
 		if (!userDB.isPresent()) {
 			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
 		}
-		
+
 		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
-		
-		
+
 		Optional<ServiceEntity> service = serviceRepository.findByNameAndUserId(serviceEntity.getName(), userId);
-		if(service.isPresent()) {
+		if (service.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}
 		serviceEntity.setLocation(locationRepository.findById(locationId).get());
 		serviceEntity.setUser(userDB.get());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		listAvailability.forEach(av -> {
-		    av.setServiceId(serviceEntity.getId());
-		    availabilityRepository.save(av);
+			av.setServiceId(serviceEntity.getId());
+			availabilityRepository.save(av);
 		});
-		generateBookings(serviceEntity, listAvailability);
+
+		generateBookings(serviceEntity, listAvailability, unavailabilityService.getHolidays());
 		return serviceEntityResponse;
 	}
-	
-	private void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities) {
-	    LocalDate startDate = LocalDate.now();
-	    LocalDate endDate = startDate.plusDays(service.getFutureDays());
 
-	    List<Booking> bookings = new ArrayList<>();
+	/**
+	 * Generate bookings.
+	 *
+	 * @param service          the service
+	 * @param availabilities   the availabilities
+	 * @param unavailabilities the unavailabilities
+	 */
+	private void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities,
+			Set<LocalDate> unavailabilities) {
+		LocalDate startDate = LocalDate.now();
+		LocalDate endDate = startDate.plusDays(service.getFutureDays());
 
-	    for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-	    	final LocalDate currentDate = date;
-	    	DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
+		List<Booking> bookings = new ArrayList<>();
 
-	        // Filtrás las disponibilidades que coincidan con ese día
-	        availabilities.stream()
-	            .filter(a -> a.getDayOfWeek() == dayOfWeek.getValue())
-	            .forEach(a -> {
-	                LocalTime currentTime = a.getStartTime();
-	                while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
-	                    Booking booking = new Booking();
-	                    booking.setStartTime(LocalDateTime.of(currentDate, currentTime));
-	                    booking.setEndTime(LocalDateTime.of(currentDate, currentTime.plusMinutes(service.getDurationMinutes())));
-	                    booking.setStatus(BookingStatus.PENDING);
-	                    booking.setService(service);
+		for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+			final LocalDate currentDate = date;
+			DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 
-	                    bookings.add(booking);
-	                    currentTime = currentTime.plusMinutes(service.getDurationMinutes());
-	                }
-	            });
-	    }
+			if (!unavailabilities.contains(currentDate)) {
 
-	    bookingService.create(bookings);
+				// Filtrás las disponibilidades que coincidan con ese día
+				availabilities.stream().filter(a -> a.getDayOfWeek() == dayOfWeek.getValue()).forEach(a -> {
+					LocalTime currentTime = a.getStartTime();
+					while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
+						Booking booking = new Booking();
+						booking.setStartTime(LocalDateTime.of(currentDate, currentTime));
+						booking.setEndTime(
+								LocalDateTime.of(currentDate, currentTime.plusMinutes(service.getDurationMinutes())));
+						booking.setStatus(BookingStatus.PENDING);
+						booking.setService(service);
+
+						bookings.add(booking);
+						currentTime = currentTime.plusMinutes(service.getDurationMinutes());
+					}
+				});
+			}
+		}
+
+		bookingService.create(bookings);
 	}
-	
+
 	@Override
-	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public ServiceEntity findById(Long id) {
 		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(id);
-		if(!serviceEntity.isPresent()) {
+		if (!serviceEntity.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
 		}
 		return serviceEntity.get();
 	}
 
 	@Override
-	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public List<ServiceEntity> findByUser(Long userId) {
 		Optional<User> userDB = userRepository.findById(userId);
 		if (!userDB.isPresent()) {
@@ -122,13 +143,13 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
 		return serviceRepository.findByUserId(userId);
 	}
-	
+
 	@Override
-	@RequireRole({UserRole.ADMIN,UserRole.MANAGER,UserRole.PROVIDER})
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public List<ServiceEntity> findByLocation(Long locationId) {
 		return serviceRepository.findByLocationId(locationId);
 	}
-	
+
 	@Override
 	public ServiceEntity update(Long id, ServiceEntity service) {
 		ServiceEntity existing = serviceRepository.findById(id)
