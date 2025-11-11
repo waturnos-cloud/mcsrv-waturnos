@@ -81,7 +81,7 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-		Client client = clientRepository.findById(id)
+		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
 		if (!booking.getStatus().equals(BookingStatus.PENDING)) {
@@ -120,7 +120,8 @@ public class BookingServiceImpl implements BookingService {
 		booking.setStatus(BookingStatus.CANCELLED);
 		booking.setCancelReason(reason);
 
-		return booking;
+		return bookingRepository.save(booking);
+
 
 	}
 
