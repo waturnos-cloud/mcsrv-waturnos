@@ -88,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
-		if (!booking.getStatus().equals(BookingStatus.PENDING)) {
+		if (!booking.getStatus().equals(BookingStatus.FREE)) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
@@ -113,8 +113,7 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-		if (!booking.getStatus().equals(BookingStatus.RESERVED)
-				&& !booking.getStatus().equals(BookingStatus.CONFIRMED)) {
+		if (!booking.getStatus().equals(BookingStatus.RESERVED)) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
@@ -206,17 +205,20 @@ public class BookingServiceImpl implements BookingService {
             Long countLong = (Long) row[2];
             int count = countLong.intValue();
             switch (status) {
-                case CANCELLED:
-                    dto.setCountCanceled(count);
+                case NO_SHOW:
+                    dto.setCountNoShow(count);
                     break;
                 case RESERVED:
                     dto.setCountReserved(count);
                     break;
+                case CANCELLED:
+                    dto.setCountReserved(count);
+                    break;                    
                 case COMPLETED:
                     dto.setCountCompleted(count);
                     break;
-                case PENDING:
-                    dto.setCountPending(count);
+                case FREE:
+                    dto.setCountFree(count);
                     break;
 			default:
 				break;
