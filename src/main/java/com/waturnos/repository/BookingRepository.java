@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.extended.BookingReminder;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -63,4 +64,29 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         @Param("startDate") LocalDate startDate, 
         @Param("endDate") LocalDate endDate, 
         @Param("providerId") Long providerId);
+    
+    /**
+     * Consulta que retorna las reservas confirmadas para el día de mañana.
+     * La conversión de fechas se realiza a nivel de base de datos usando NOW().
+     */
+    @Query(value = """
+    	SELECT
+            c.full_name AS fullName,
+            c.email AS email,
+            b.start_time AS startTime,
+            s.name AS serviceName
+        FROM
+            booking b
+        JOIN
+            client c ON b.client_id = c.id
+        JOIN
+            service s ON b.service_id = s.id
+        WHERE
+            b.status = 'RESERVED'
+            AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
+            AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
+        ORDER BY
+            b.start_time
+    """, nativeQuery = true) 
+    List<BookingReminder> findBookingsForTomorrow();    
 }

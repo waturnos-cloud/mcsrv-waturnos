@@ -67,7 +67,7 @@ springdoc:
 # El formato es: [CHANNEL_NAME]=[NOTIFICATION_TYPE_1]|[NOTIFICATION_TYPE_2]|...
 notification:
   channels:
-    EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER,CANCELBOOKING_BY_PROVIDER,BOOKING_ASSIGN
+    EMAIL: RESET_PASSWORD,APPOINTMENT_REMINDER,WELCOME_USER,CANCELBOOKING_BY_PROVIDER,BOOKING_ASSIGN,REMINDER_BOOKING
     WHATSAPP: RESET_PASSWORD
     PUSH: APPOINTMENT_REMINDER
     
@@ -81,5 +81,8 @@ app:
     RESET_PASSWORD: https://www.whaturnos.com/user/resetpassword.html
     HOME: https://www.whaturnos.com
   datetime: 
-    email-format: d 'de' MMMM 'de las' HH 'hs'       
-       
+    email-format: d 'de' MMMM 'de las' HH 'hs'
+  scheduling: 
+    notify-clients-cron: "0 0 8 * * *"
+    #PARA PRUEBAS USAR ESTA notify-clients-cron: "0 */1 * * * *"
+    add-free-bookings-cron: "0 0 1 * * *"
