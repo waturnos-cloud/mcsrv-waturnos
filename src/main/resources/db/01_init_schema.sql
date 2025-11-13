@@ -233,6 +233,27 @@ CREATE TABLE password_reset_token (
 );
 
 
+
+-- ===========================================================
+--   TABLE: categories
+--   Estructura jerárquica para Categoría / Subcategoría
+-- ===========================================================
+
+DROP TABLE IF EXISTS categories CASCADE;
+
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    slug VARCHAR(120),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Índice único por nombre + padre
+CREATE UNIQUE INDEX uk_category_name_parent
+ON categories (name, parent_id);
+
+
 -- ============================================
 -- ÍNDICES DE OPTIMIZACIÓN WATurnos
 -- ============================================
