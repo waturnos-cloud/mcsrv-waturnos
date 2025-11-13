@@ -24,10 +24,10 @@ import com.waturnos.service.ServiceEntityService;
 @RestController
 @RequestMapping("/services")
 public class ServiceController {
-	
+
 	/** The service. */
 	private final ServiceEntityService service;
-	
+
 	/** The mapper. */
 	private final ServiceMapper serviceMapper;
 	private final AvailabilityMapper availabilityMapper;
@@ -43,7 +43,7 @@ public class ServiceController {
 		this.serviceMapper = m;
 		this.availabilityMapper = am;
 	}
-	
+
 	/**
 	 * Creates the.
 	 *
@@ -54,11 +54,11 @@ public class ServiceController {
 	public ResponseEntity<ApiResponse<ServiceDTO>> create(@RequestBody CreateService createService) {
 		ServiceEntity created = service.create(serviceMapper.toEntity(createService.getServiceDto()),
 				availabilityMapper.toEntityList(createService.getListAvailability()),
-				createService.getServiceDto().getUser().getId(), createService.getServiceDto().getLocation().getId());
+				createService.getServiceDto().getUser().getId(), createService.getServiceDto().getLocation().getId(),
+				createService.isWorkInHollidays());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 
-	
 	/**
 	 * Gets the by user id.
 	 *
@@ -80,7 +80,7 @@ public class ServiceController {
 	public ResponseEntity<List<ServiceDTO>> getByLocation(@PathVariable Long locationId) {
 		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
 	}
-	
+
 	@GetMapping("/{serviceId}")
 	public ResponseEntity<ServiceDTO> getById(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(serviceMapper.toDTO(service.findById(serviceId)));
@@ -89,7 +89,7 @@ public class ServiceController {
 	/**
 	 * Update.
 	 *
-	 * @param id the id
+	 * @param id  the id
 	 * @param dto the dto
 	 * @return the response entity
 	 */
