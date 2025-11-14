@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "0433b498-8c84-440e-9552-a17cf5309f4b",
+		"_postman_id": "e44fb794-4a19-42ed-9b0a-886a3637b2a9",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "160410",
-		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-0433b498-8c84-440e-9552-a17cf5309f4b?action=share&source=collection_link&creator=160410"
+		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-e44fb794-4a19-42ed-9b0a-886a3637b2a9?action=share&source=collection_link&creator=160410"
 	},
 	"item": [
 		{
@@ -937,7 +937,7 @@
 					"response": []
 				},
 				{
-					"name": "PUT /services/{id}",
+					"name": "Actualizar Servicio - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -952,10 +952,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"price\": 3900,\n  \"durationMinutes\": 50\n}"
+							"raw": "{\n        \"id\": 3,\n        \"name\": \"Corte de barba\",\n        \"description\": \"afeitado\",\n        \"durationMinutes\": 30,\n        \"price\": 1500.0,\n        \"advancePayment\": 20,\n        \"futureDays\": 15,\n        \"user\": {\n            \"id\": 5,\n            \"fullName\": \"Nicolás A Bacci\",\n            \"email\": \"nicolas.bacci@gmail.com\",\n            \"phone\": \"24943690544\",\n            \"password\": \"{bcrypt}$2a$10$r7wQ69A6c2/sRFScfAMrteY3fm0B6vEood5PqSHwjqN/ds0cidqWy\",\n            \"role\": \"PROVIDER\",\n            \"photoUrl\": \"http://myphoto2.jpeg\",\n            \"bio\": \"Bio xyzz\"\n        },\n        \"location\": {\n            \"id\": 1,\n            \"name\": \"Sede principal2\",\n            \"address\": \"San Martin 1232\",\n            \"phone\": \"2494000001\",\n            \"email\": \"centromedicotandil2@gmail.com\",\n            \"latitude\": -37.326298,\n            \"longitude\": -59.13662,\n            \"main\": false\n        }\n    }"
 						},
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/{{serviceId}}",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -963,8 +963,7 @@
 							"path": [
 								"msvc-waturnos",
 								"v1.0",
-								"services",
-								"{{serviceId}}"
+								"services"
 							]
 						}
 					},
@@ -1362,79 +1361,87 @@
 			]
 		},
 		{
-  "name": "Categories",
-  "item": [
-    {
-      "name": "GET /categories (padres)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{jwtToken}}"
-          }
-        ],
-        "url": {
-          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories",
-          "protocol": "{{protocol}}",
-          "host": ["{{hostname}}"],
-          "path": [
-            "msvc-waturnos",
-            "v1.0",
-            "categories"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /categories/{parentId} (hijas)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{jwtToken}}"
-          }
-        ],
-        "url": {
-          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/{{parentId}}/children",
-          "protocol": "{{protocol}}",
-          "host": ["{{hostname}}"],
-          "path": [
-            "msvc-waturnos",
-            "v1.0",
-            "categories",
-            "{{parentId}}",
-            "childern"
-            
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /categories/tree (árbol completo)",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{jwtToken}}"
-          }
-        ],
-        "url": {
-          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/tree",
-          "protocol": "{{protocol}}",
-          "host": ["{{hostname}}"],
-          "path": [
-            "msvc-waturnos",
-            "v1.0",
-            "categories",
-            "tree"
-          ]
-        }
-      }
-    }
-  ]
-}
+			"name": "Categories",
+			"item": [
+				{
+					"name": "GET /categories (padres)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /categories/{parentId} (hijas)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/{{parentId}}/childern",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"categories",
+								"{{parentId}}",
+								"childern"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /categories/tree (árbol completo)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/tree",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"categories",
+								"tree"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
 	]
 }
