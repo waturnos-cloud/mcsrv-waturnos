@@ -2,6 +2,8 @@ package com.waturnos.controller;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +18,10 @@ import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
 import com.waturnos.dto.response.CountBookingDTO;
+import com.waturnos.dto.response.ServiceListWithBookingDTO;
+import com.waturnos.dto.response.ServiceListWithBookingDTO.BookingExtendedDTO;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.service.BookingService;
 
@@ -102,19 +107,31 @@ public class BookingController {
 	 * @return the today bookings
 	 */
 	@GetMapping("/today")
-	public ResponseEntity<ApiResponse<List<BookingDTO>>> getTodayBookings(
-	        @RequestParam(name = "providerId", required = false) Long providerId) {
-
-	    List<Booking> today;
-	    if (providerId != null) {
-	        today = service.findBookingsForTodayByProvider(providerId);
-	    } else {
-	        today = service.findBookingsForToday();
-	    }
-
-	    return ResponseEntity.ok(
-	        new ApiResponse<>(true, "Bookings for today", mapper.toDtoList(today))
-	    );
+	public ResponseEntity<ApiResponse<List<?>>> getTodayBookings(
+			@RequestParam(name = "providerId", required = true) Long providerId) {
+		
+        Map<Long, List<BookingSummaryDetail>> groupedMap = 
+        		service.findBookingsForTodayByProvider(providerId);
+        
+        List<ServiceListWithBookingDTO> result = groupedMap.entrySet().stream()
+            .map(entry -> {
+                List<BookingSummaryDetail> bookingsForService = entry.getValue();
+                
+                List<BookingExtendedDTO> extendedBookings = 
+                		mapper.toExtendedDTOList(bookingsForService);
+                
+                BookingSummaryDetail firstBooking = bookingsForService.get(0);
+                
+                ServiceListWithBookingDTO serviceGroup = new ServiceListWithBookingDTO();
+                serviceGroup.setId(entry.getKey());            
+                serviceGroup.setName(firstBooking.getServiceName()); 
+                serviceGroup.setList(extendedBookings);
+                return serviceGroup;
+            })
+            .collect(Collectors.toList());
+            
+			return ResponseEntity.ok(new ApiResponse<>(true, "Bookings for today",
+					result));
 	}
 	
 	/**

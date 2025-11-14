@@ -1,11 +1,13 @@
 package com.waturnos.service;
 
-import com.waturnos.dto.response.CountBookingDTO;
-import com.waturnos.entity.Booking;
-import com.waturnos.enums.BookingStatus;
-
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+
+import com.waturnos.dto.response.CountBookingDTO;
+import com.waturnos.entity.Booking;
+import com.waturnos.entity.extended.BookingSummaryDetail;
+import com.waturnos.enums.BookingStatus;
 
 /**
  * The Interface BookingService.
@@ -61,7 +63,13 @@ public interface BookingService {
 	 */
 	List<Booking> findBookingsForToday();
 
-	List<Booking> findBookingsForTodayByProvider(Long providerId);
+	/**
+	 * Find bookings for today by provider.
+	 *
+	 * @param providerId the provider id
+	 * @return the list
+	 */
+	Map<Long, List<BookingSummaryDetail>> findBookingsForTodayByProvider(Long providerId);
 
 	/**
 	 * Count bookings by date range and provider.

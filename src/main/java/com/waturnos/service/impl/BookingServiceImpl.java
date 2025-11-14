@@ -9,12 +9,14 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
+import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.BookingRepository;
@@ -156,11 +158,17 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	
-	public List<Booking> findBookingsForTodayByProvider(Long providerId) {
+	public Map<Long, List<BookingSummaryDetail>> findBookingsForTodayByProvider(Long providerId) {
 	    LocalDate today = LocalDate.now();
 	    LocalDateTime startOfDay = today.atStartOfDay();
 	    LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
-	    return bookingRepository.findByProviderAndStartTimeBetween(providerId, startOfDay, endOfDay);
+	    List<BookingSummaryDetail> bookings = bookingRepository.findByProviderAndStartTimeBetween(providerId, startOfDay, endOfDay);
+	    
+	    return 
+	    		bookings.stream()
+	                .collect(Collectors.groupingBy(BookingSummaryDetail::getServiceId));
+	    
+	    
 	}
 
 	@Override

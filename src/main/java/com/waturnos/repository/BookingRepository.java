@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingReminder;
+import com.waturnos.entity.extended.BookingSummaryDetail;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -24,8 +25,21 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
 	List<Booking> findByStartTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
-	@Query("SELECT b FROM Booking b WHERE b.service.user.id = :providerId AND b.startTime BETWEEN :start AND :end")
-	List<Booking> findByProviderAndStartTimeBetween(
+	@Query("SELECT b.id AS id, " +
+	           "b.service.name AS serviceName, " +
+	           "b.client.fullName AS clientName, " +
+	           "b.startTime AS startTime, " +
+	           "b.endTime AS endTime, " +
+	           "b.client.id AS clientId, " +
+	           "b.service.id AS serviceId, " +
+	           "b.status AS status, " +
+	           "b.notes AS notes, " +
+	           "b.cancelReason AS cancelReason " +
+	           "FROM Booking b " +
+	           "WHERE b.service.user.id = :providerId " +
+	           "AND b.startTime BETWEEN :start AND :end " +
+			   "ORDER BY b.service.name ASC, b.startTime ASC")
+	List<BookingSummaryDetail> findByProviderAndStartTimeBetween(
 	        @Param("providerId") Long providerId,
 	        @Param("start") LocalDateTime start,
 	        @Param("end") LocalDateTime end);
