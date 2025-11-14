@@ -3,15 +3,22 @@
  */
 package com.waturnos.mapper;
 
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import com.waturnos.dto.beans.LocationDTO;
 import com.waturnos.dto.beans.ServiceDTO;
+import com.waturnos.dto.beans.UserDTO;
+import com.waturnos.entity.Location;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.User;
 
 @Mapper(componentModel = "spring")
 public abstract class ServiceMapper {
 
+	
 	/**
 	 * To entity.
 	 *
@@ -33,5 +40,29 @@ public abstract class ServiceMapper {
 	 * @return the service DTO
 	 */
 	public abstract ServiceDTO toDTO(ServiceEntity entity);
+	
+	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "creator", ignore = true)
+	@Mapping(target = "modificator", ignore = true)
+	@Mapping(target = "updatedAt", ignore = true)
+	public ServiceEntity toEntity(ServiceDTO dto, boolean full) {
+		ServiceEntity serviceEntity = toEntity(dto);
+		if (full) {
+			serviceEntity.setLocation(mapLocationsToEntity(dto.getLocation()));
+			serviceEntity.setUser(toEntity(dto.getUser()));
+		}
+		return serviceEntity;
+	}
+	
+	public abstract List<LocationDTO> mapLocations(List<Location> locationEntity);
+	
+	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "creator", ignore = true)
+	@Mapping(target = "modificator", ignore = true)
+	@Mapping(target = "updatedAt", ignore = true)
+	@Mapping(target = "organization", ignore = true)
+	public abstract Location mapLocationsToEntity(LocationDTO dto);
+	
+	public abstract User toEntity(UserDTO d);
 
 }

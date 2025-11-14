@@ -50,9 +50,8 @@ public interface ServiceEntityService {
 	/**
 	 * Update.
 	 *
-	 * @param id the id
 	 * @param service the service
 	 * @return the service entity
 	 */
-	ServiceEntity update(Long id, ServiceEntity service);
+	ServiceEntity update(ServiceEntity service);
 }

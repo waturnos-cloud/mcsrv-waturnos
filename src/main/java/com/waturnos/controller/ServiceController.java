@@ -92,17 +92,15 @@ public class ServiceController {
 		return ResponseEntity.ok(serviceMapper.toDTO(service.findById(serviceId)));
 	}
 
-	
 	/**
 	 * Update.
 	 *
-	 * @param id the id
 	 * @param serviceDto the service dto
 	 * @return the response entity
 	 */
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<ServiceDTO>> update(@PathVariable Long id, @RequestBody ServiceDTO serviceDto) {
-		ServiceEntity updated = service.update(id, serviceMapper.toEntity(serviceDto));
+	@PutMapping
+	public ResponseEntity<ApiResponse<ServiceDTO>> update(@RequestBody ServiceDTO serviceDto) {
+		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
 }

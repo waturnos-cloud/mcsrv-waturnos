@@ -39,25 +39,25 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ServiceEntityServiceImpl implements ServiceEntityService {
-	
+
 	/** The service repository. */
 	private final ServiceRepository serviceRepository;
-	
+
 	/** The availability repository. */
 	private final AvailabilityRepository availabilityRepository;
-	
+
 	/** The booking service. */
 	private final BookingService bookingService;
-	
+
 	/** The location repository. */
 	private final LocationRepository locationRepository;
-	
+
 	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
-	
+
 	/** The user repository. */
 	private final UserRepository userRepository;
-	
+
 	/** The unavailability service. */
 	private final UnavailabilityService unavailabilityService;
 
@@ -191,17 +191,17 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	/**
 	 * Update.
 	 *
-	 * @param id the id
+	 * @param id      the id
 	 * @param service the service
 	 * @return the service entity
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@Transactional(readOnly = false)
-	public ServiceEntity update(Long id, ServiceEntity service) {
-		
-		Optional<ServiceEntity> serviceDB = serviceRepository.findById(id);
-		if(!serviceDB.isPresent()) {
+	public ServiceEntity update(ServiceEntity service) {
+
+		Optional<ServiceEntity> serviceDB = serviceRepository.findById(service.getId());
+		if (!serviceDB.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
 		}
 		if (!serviceDB.get().getUser().getId().equals(service.getUser().getId())) {
@@ -214,7 +214,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		serviceDB.get().setAdvancePayment(service.getAdvancePayment());
 		serviceDB.get().setLocation(service.getLocation());
 		serviceDB.get().setPrice(service.getPrice());
-		
+
 		return serviceRepository.save(service);
 	}
 }
