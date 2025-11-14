@@ -29,6 +29,7 @@ import com.waturnos.service.ServiceEntityService;
 import com.waturnos.service.UnavailabilityService;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.service.process.BatchProcessor;
 import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,9 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 
 	/** The unavailability service. */
 	private final UnavailabilityService unavailabilityService;
+
+	/** The batch processor. */
+	private final BatchProcessor batchProcessor;
 
 	/**
 	 * Creates the.
@@ -216,5 +220,21 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		serviceDB.get().setPrice(service.getPrice());
 
 		return serviceRepository.save(service);
+	}
+
+	/**
+	 * Delete.
+	 *
+	 * @param serviceId the service id
+	 */
+	@Override
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	public void delete(Long serviceId) {
+		Optional<ServiceEntity> serviceDB = serviceRepository.findById(serviceId);
+		if (!serviceDB.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+		}
+		batchProcessor.deleteServiceAsync(serviceDB.get().getId(), serviceDB.get().getName(), true);
+
 	}
 }

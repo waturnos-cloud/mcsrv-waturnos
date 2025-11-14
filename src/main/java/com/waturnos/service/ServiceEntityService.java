@@ -54,4 +54,13 @@ public interface ServiceEntityService {
 	 * @return the service entity
 	 */
 	ServiceEntity update(ServiceEntity service);
+	
+	/**
+	 * Delete.
+	 *
+	 * @param serviceId the service id
+	 */
+	void delete(Long serviceId);
+	
+	
 }

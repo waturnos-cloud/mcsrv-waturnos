@@ -970,7 +970,7 @@
 					"response": []
 				},
 				{
-					"name": "DELETE /services/{id}",
+					"name": "Eliminar Servicio - ADMIN/MANAGER/PROVIDER",
 					"request": {
 						"method": "DELETE",
 						"header": [

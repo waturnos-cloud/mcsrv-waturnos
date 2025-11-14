@@ -3,6 +3,7 @@ package com.waturnos.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -102,5 +103,11 @@ public class ServiceController {
 	public ResponseEntity<ApiResponse<ServiceDTO>> update(@RequestBody ServiceDTO serviceDto) {
 		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
+	}
+	
+	@DeleteMapping("/{serviceId}")
+	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long serviceId) {
+		service.delete(serviceId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
 	}
 }
