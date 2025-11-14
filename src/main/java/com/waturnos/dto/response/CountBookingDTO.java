@@ -11,9 +11,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CountBookingDTO {
     private String date; // Formato yyyy-MM-dd para el DatePicker
-    private int countCanceled;
+    private int countCancelled;
     private int countReserved;
     private int countCompleted;
-    private int countPending; 
+    private int countFree;
+    private int countNoShow;
 
 }

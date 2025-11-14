@@ -1360,6 +1360,81 @@
 					"response": []
 				}
 			]
-		}
+		},
+		{
+  "name": "Categories",
+  "item": [
+    {
+      "name": "GET /categories (padres)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories",
+          "protocol": "{{protocol}}",
+          "host": ["{{hostname}}"],
+          "path": [
+            "msvc-waturnos",
+            "v1.0",
+            "categories"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET /categories/{parentId} (hijas)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/{{parentId}}/children",
+          "protocol": "{{protocol}}",
+          "host": ["{{hostname}}"],
+          "path": [
+            "msvc-waturnos",
+            "v1.0",
+            "categories",
+            "{{parentId}}",
+            "childern"
+            
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET /categories/tree (árbol completo)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/categories/tree",
+          "protocol": "{{protocol}}",
+          "host": ["{{hostname}}"],
+          "path": [
+            "msvc-waturnos",
+            "v1.0",
+            "categories",
+            "tree"
+          ]
+        }
+      }
+    }
+  ]
+}
 	]
 }

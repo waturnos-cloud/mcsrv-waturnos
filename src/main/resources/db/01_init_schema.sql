@@ -162,7 +162,7 @@ CREATE TABLE booking (
     id BIGSERIAL PRIMARY KEY,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('PENDING','RESERVED','CONFIRMED','COMPLETED','CANCELLED')),
+    status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','RESERVED','NO_SHOW','COMPLETED','CANCELLED')),
     notes TEXT,
     client_id BIGINT REFERENCES client(id) ON DELETE SET NULL,
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,
@@ -231,6 +231,27 @@ CREATE TABLE password_reset_token (
         (user_id IS NULL AND client_id IS NOT NULL)
     )
 );
+
+
+
+-- ===========================================================
+--   TABLE: categories
+--   Estructura jerárquica para Categoría / Subcategoría
+-- ===========================================================
+
+DROP TABLE IF EXISTS categories CASCADE;
+
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    slug VARCHAR(120),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Índice único por nombre + padre
+CREATE UNIQUE INDEX uk_category_name_parent
+ON categories (name, parent_id);
 
 
 -- ============================================

@@ -130,7 +130,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 						booking.setStartTime(LocalDateTime.of(currentDate, currentTime));
 						booking.setEndTime(
 								LocalDateTime.of(currentDate, currentTime.plusMinutes(service.getDurationMinutes())));
-						booking.setStatus(BookingStatus.PENDING);
+						booking.setStatus(BookingStatus.FREE);
 						booking.setService(service);
 
 						bookings.add(booking);
