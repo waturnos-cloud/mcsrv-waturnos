@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package com.waturnos.mapper;
 
 import org.mapstruct.Mapper;
@@ -9,14 +12,26 @@ import com.waturnos.entity.ServiceEntity;
 @Mapper(componentModel = "spring")
 public abstract class ServiceMapper {
 
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "creator", ignore = true)
-    @Mapping(target = "modificator", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "location", ignore = true)
-    @Mapping(target = "user", ignore = true)
-    public abstract ServiceEntity toEntity(ServiceDTO dto);
+	/**
+	 * To entity.
+	 *
+	 * @param dto the dto
+	 * @return the service entity
+	 */
+	@Mapping(target = "createdAt", ignore = true)
+	@Mapping(target = "creator", ignore = true)
+	@Mapping(target = "modificator", ignore = true)
+	@Mapping(target = "updatedAt", ignore = true)
+	@Mapping(target = "location", ignore = true)
+	@Mapping(target = "user", ignore = true)
+	public abstract ServiceEntity toEntity(ServiceDTO dto);
 
-    public abstract ServiceDTO toDTO(ServiceEntity entity);
+	/**
+	 * To DTO.
+	 *
+	 * @param entity the entity
+	 * @return the service DTO
+	 */
+	public abstract ServiceDTO toDTO(ServiceEntity entity);
+
 }
-

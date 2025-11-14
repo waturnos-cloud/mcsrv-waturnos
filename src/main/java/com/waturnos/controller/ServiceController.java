@@ -47,7 +47,7 @@ public class ServiceController {
 	/**
 	 * Creates the.
 	 *
-	 * @param dto the dto
+	 * @param createService the create service
 	 * @return the response entity
 	 */
 	@PostMapping
@@ -81,21 +81,28 @@ public class ServiceController {
 		return ResponseEntity.ok(service.findByLocation(locationId).stream().map(serviceMapper::toDTO).toList());
 	}
 
+	/**
+	 * Gets the by id.
+	 *
+	 * @param serviceId the service id
+	 * @return the by id
+	 */
 	@GetMapping("/{serviceId}")
 	public ResponseEntity<ServiceDTO> getById(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(serviceMapper.toDTO(service.findById(serviceId)));
 	}
 
+	
 	/**
 	 * Update.
 	 *
-	 * @param id  the id
-	 * @param dto the dto
+	 * @param id the id
+	 * @param serviceDto the service dto
 	 * @return the response entity
 	 */
 	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<ServiceDTO>> update(@PathVariable Long id, @RequestBody ServiceDTO dto) {
-		ServiceEntity updated = service.update(id, serviceMapper.toEntity(dto));
+	public ResponseEntity<ApiResponse<ServiceDTO>> update(@PathVariable Long id, @RequestBody ServiceDTO serviceDto) {
+		ServiceEntity updated = service.update(id, serviceMapper.toEntity(serviceDto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
 }

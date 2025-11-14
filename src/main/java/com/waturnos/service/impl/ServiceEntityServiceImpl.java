@@ -27,21 +27,38 @@ import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.ServiceEntityService;
 import com.waturnos.service.UnavailabilityService;
-import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * The Class ServiceEntityServiceImpl.
+ */
 @Service
 @RequiredArgsConstructor
 public class ServiceEntityServiceImpl implements ServiceEntityService {
+	
+	/** The service repository. */
 	private final ServiceRepository serviceRepository;
+	
+	/** The availability repository. */
 	private final AvailabilityRepository availabilityRepository;
+	
+	/** The booking service. */
 	private final BookingService bookingService;
+	
+	/** The location repository. */
 	private final LocationRepository locationRepository;
+	
+	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
+	
+	/** The user repository. */
 	private final UserRepository userRepository;
+	
+	/** The unavailability service. */
 	private final UnavailabilityService unavailabilityService;
 
 	/**
@@ -73,6 +90,8 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		}
 		serviceEntity.setLocation(locationRepository.findById(locationId).get());
 		serviceEntity.setUser(userDB.get());
+		serviceEntity.setCreator(SessionUtil.getUserName());
+		serviceEntity.setCreatedAt(LocalDateTime.now());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		listAvailability.forEach(av -> {
 			av.setServiceId(serviceEntity.getId());
@@ -124,6 +143,12 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		bookingService.create(bookings);
 	}
 
+	/**
+	 * Find by id.
+	 *
+	 * @param id the id
+	 * @return the service entity
+	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public ServiceEntity findById(Long id) {
@@ -134,6 +159,12 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		return serviceEntity.get();
 	}
 
+	/**
+	 * Find by user.
+	 *
+	 * @param userId the user id
+	 * @return the list
+	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public List<ServiceEntity> findByUser(Long userId) {
@@ -145,17 +176,45 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		return serviceRepository.findByUserId(userId);
 	}
 
+	/**
+	 * Find by location.
+	 *
+	 * @param locationId the location id
+	 * @return the list
+	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public List<ServiceEntity> findByLocation(Long locationId) {
 		return serviceRepository.findByLocationId(locationId);
 	}
 
+	/**
+	 * Update.
+	 *
+	 * @param id the id
+	 * @param service the service
+	 * @return the service entity
+	 */
 	@Override
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@Transactional(readOnly = false)
 	public ServiceEntity update(Long id, ServiceEntity service) {
-		ServiceEntity existing = serviceRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
-		service.setId(existing.getId());
+		
+		Optional<ServiceEntity> serviceDB = serviceRepository.findById(id);
+		if(!serviceDB.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+		}
+		if (!serviceDB.get().getUser().getId().equals(service.getUser().getId())) {
+			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
+		}
+		serviceDB.get().setUpdatedAt(LocalDateTime.now());
+		serviceDB.get().setModificator(SessionUtil.getUserName());
+		serviceDB.get().setName(service.getName());
+		serviceDB.get().setDescription(service.getDescription());
+		serviceDB.get().setAdvancePayment(service.getAdvancePayment());
+		serviceDB.get().setLocation(service.getLocation());
+		serviceDB.get().setPrice(service.getPrice());
+		
 		return serviceRepository.save(service);
 	}
 }
