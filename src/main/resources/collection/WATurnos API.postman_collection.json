@@ -1,11 +1,9 @@
 {
 	"info": {
-		"_postman_id": "e44fb794-4a19-42ed-9b0a-886a3637b2a9",
+		"_postman_id": "c83b1b9a-ee66-4871-8a5d-2e2853695b41",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "160410",
-		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-e44fb794-4a19-42ed-9b0a-886a3637b2a9?action=share&source=collection_link&creator=160410"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
@@ -1248,6 +1246,38 @@
 									"value": "2025-12-11",
 									"description": "Opcional, si no se envia calcula del día con fromdate"
 								},
+								{
+									"key": "providerId",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Todays",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/today?providerId=5",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"today"
+							],
+							"query": [
 								{
 									"key": "providerId",
 									"value": "5"
