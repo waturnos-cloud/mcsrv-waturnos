@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.dto.beans.ServiceDTO;
+import com.waturnos.dto.beans.UnavailabilityDTO;
 import com.waturnos.dto.request.CreateService;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.mapper.AvailabilityMapper;
@@ -104,10 +105,22 @@ public class ServiceController {
 		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
-	
+
 	@DeleteMapping("/{serviceId}")
 	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long serviceId) {
 		service.delete(serviceId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "User deleted", null));
+	}
+
+	/**
+	 * Lock calendar.
+	 *
+	 * @param unavailableDto the unavailable dto
+	 * @return the response entity
+	 */
+	@PostMapping("/calendar/lock")
+	public ResponseEntity<ApiResponse<Void>> lockCalendar(@RequestBody UnavailabilityDTO unavailableDto) {
+		service.lockCalendar(unavailableDto.getStartTime(), unavailableDto.getEndTime(), unavailableDto.getServiceId());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Lock calendar", null));
 	}
 }

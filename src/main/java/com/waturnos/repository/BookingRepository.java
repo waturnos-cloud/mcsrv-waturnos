@@ -25,82 +25,90 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
 	List<Booking> findByStartTimeBetween(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
-	@Query("SELECT b.id AS id, " +
-	           "b.service.name AS serviceName, " +
-	           "b.client.fullName AS clientName, " +
-	           "b.startTime AS startTime, " +
-	           "b.endTime AS endTime, " +
-	           "b.client.id AS clientId, " +
-	           "b.service.id AS serviceId, " +
-	           "b.status AS status, " +
-	           "b.notes AS notes, " +
-	           "b.cancelReason AS cancelReason " +
-	           "FROM Booking b " +
-	           "WHERE b.service.user.id = :providerId " +
-	           "AND b.startTime BETWEEN :start AND :end " +
-			   "ORDER BY b.service.name ASC, b.startTime ASC")
-	List<BookingSummaryDetail> findByProviderAndStartTimeBetween(
-	        @Param("providerId") Long providerId,
-	        @Param("start") LocalDateTime start,
-	        @Param("end") LocalDateTime end);
-	
-	
+	@Query("SELECT b.id AS id, " + "b.service.name AS serviceName, " + "b.client.fullName AS clientName, "
+			+ "b.startTime AS startTime, " + "b.endTime AS endTime, " + "b.client.id AS clientId, "
+			+ "b.service.id AS serviceId, " + "b.status AS status, " + "b.notes AS notes, "
+			+ "b.cancelReason AS cancelReason " + "FROM Booking b " + "WHERE b.service.user.id = :providerId "
+			+ "AND b.startTime BETWEEN :start AND :end " + "ORDER BY b.service.name ASC, b.startTime ASC")
+	List<BookingSummaryDetail> findByProviderAndStartTimeBetween(@Param("providerId") Long providerId,
+			@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
 	/**
-     * Consulta SQL Nativa para obtener el conteo de reservas agrupadas por fecha 
-     * (CAST del start_time a DATE) y estado, filtrando por el Provider ID 
-     * dentro de un rango de fechas.
-     * * @param startDate Fecha de inicio del rango (inclusivo).
-     * @param endDate Fecha de fin del rango (exclusivo, debe ser toDate.plusDays(1)).
-     * @param providerId ID del Proveedor.
-     * @return List<Object[]> donde cada Object[] contiene [Fecha, Estado, Conteo].
-     */
-    @Query(value = """
-        SELECT
-            CAST(b.start_time AS DATE) AS booking_date,
-            b.status,
-            COUNT(b.id) AS count
-        FROM 
-            booking b
-        JOIN 
-            service s ON b.service_id = s.id
-        WHERE 
-            s.user_id = :providerId
-            -- Filtro por fecha, usando el timestamp
-            AND b.start_time >= CAST(:startDate AS timestamp)
-            AND b.start_time < CAST(:endDate AS timestamp) 
-        GROUP BY 
-            CAST(b.start_time AS DATE), b.status
-    	ORDER BY
-            booking_date ASC,  -- Ordena por día ascendente (el día más antiguo primero)
-            b.status
-        """, nativeQuery = true)
-    List<Object[]> countBookingsByDayAndStatus(
-        @Param("startDate") LocalDate startDate, 
-        @Param("endDate") LocalDate endDate, 
-        @Param("providerId") Long providerId);
-    
-    /**
-     * Consulta que retorna las reservas confirmadas para el día de mañana.
-     * La conversión de fechas se realiza a nivel de base de datos usando NOW().
-     */
-    @Query(value = """
-    	SELECT
-            c.full_name AS fullName,
-            c.email AS email,
-            b.start_time AS startTime,
-            s.name AS serviceName
-        FROM
-            booking b
-        JOIN
-            client c ON b.client_id = c.id
-        JOIN
-            service s ON b.service_id = s.id
-        WHERE
-            b.status = 'RESERVED'
-            AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
-            AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
-        ORDER BY
-            b.start_time
-    """, nativeQuery = true) 
-    List<BookingReminder> findBookingsForTomorrow();    
+	 * Consulta SQL Nativa para obtener el conteo de reservas agrupadas por fecha
+	 * (CAST del start_time a DATE) y estado, filtrando por el Provider ID dentro de
+	 * un rango de fechas. * @param startDate Fecha de inicio del rango (inclusivo).
+	 * 
+	 * @param endDate    Fecha de fin del rango (exclusivo, debe ser
+	 *                   toDate.plusDays(1)).
+	 * @param providerId ID del Proveedor.
+	 * @return List<Object[]> donde cada Object[] contiene [Fecha, Estado, Conteo].
+	 */
+	@Query(value = """
+			   SELECT
+			       CAST(b.start_time AS DATE) AS booking_date,
+			       b.status,
+			       COUNT(b.id) AS count
+			   FROM
+			       booking b
+			   JOIN
+			       service s ON b.service_id = s.id
+			   WHERE
+			       s.user_id = :providerId
+			       -- Filtro por fecha, usando el timestamp
+			       AND b.start_time >= CAST(:startDate AS timestamp)
+			       AND b.start_time < CAST(:endDate AS timestamp)
+			   GROUP BY
+			       CAST(b.start_time AS DATE), b.status
+			ORDER BY
+			       booking_date ASC,  -- Ordena por día ascendente (el día más antiguo primero)
+			       b.status
+			   """, nativeQuery = true)
+	List<Object[]> countBookingsByDayAndStatus(@Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate, @Param("providerId") Long providerId);
+
+	/**
+	 * Consulta que retorna las reservas confirmadas para el día de mañana. La
+	 * conversión de fechas se realiza a nivel de base de datos usando NOW().
+	 */
+	@Query(value = """
+				SELECT
+			        c.full_name AS fullName,
+			        c.email AS email,
+			        b.start_time AS startTime,
+			        s.name AS serviceName
+			    FROM
+			        booking b
+			    JOIN
+			        client c ON b.client_id = c.id
+			    JOIN
+			        service s ON b.service_id = s.id
+			    WHERE
+			        b.status = 'RESERVED'
+			        AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
+			        AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
+			    ORDER BY
+			        b.start_time
+			""", nativeQuery = true)
+	List<BookingReminder> findBookingsForTomorrow();
+
+	@Query("""
+			    SELECT b FROM Booking b
+			    WHERE b.startTime >= :start
+			      AND b.endTime <= :end
+			      AND b.client IS NOT NULL
+			      AND b.status = 'RESERVED'
+			      AND b.service.id = :serviceId
+			""")
+	List<Booking> findReservedWithClientAndServiceBetween(@Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end, @Param("serviceId") Long serviceId);
+
+	@Modifying
+	@Query("""
+			    DELETE FROM Booking b
+			    WHERE b.startTime >= :start
+			      AND b.endTime <= :end
+			      AND b.service.id = :serviceId
+			""")
+	void deleteBookingsBetweenDates(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end,
+			@Param("serviceId") Long serviceId);
 }
