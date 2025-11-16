@@ -18,7 +18,6 @@ import com.waturnos.entity.User;
 @Mapper(componentModel = "spring")
 public abstract class ServiceMapper {
 
-	
 	/**
 	 * To entity.
 	 *
@@ -40,7 +39,7 @@ public abstract class ServiceMapper {
 	 * @return the service DTO
 	 */
 	public abstract ServiceDTO toDTO(ServiceEntity entity);
-	
+
 	@Mapping(target = "createdAt", ignore = true)
 	@Mapping(target = "creator", ignore = true)
 	@Mapping(target = "modificator", ignore = true)
@@ -53,16 +52,16 @@ public abstract class ServiceMapper {
 		}
 		return serviceEntity;
 	}
-	
+
 	public abstract List<LocationDTO> mapLocations(List<Location> locationEntity);
-	
+
 	@Mapping(target = "createdAt", ignore = true)
 	@Mapping(target = "creator", ignore = true)
 	@Mapping(target = "modificator", ignore = true)
 	@Mapping(target = "updatedAt", ignore = true)
 	@Mapping(target = "organization", ignore = true)
 	public abstract Location mapLocationsToEntity(LocationDTO dto);
-	
+
 	public abstract User toEntity(UserDTO d);
 
 }

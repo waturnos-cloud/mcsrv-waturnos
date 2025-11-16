@@ -37,4 +37,18 @@ public class UnavailabilityServiceImpl implements UnavailabilityService {
 				.collect(Collectors.toSet());
 	}
 
+	/**
+	 * Creates the.
+	 *
+	 * @param unavailabilityEntity the unavailability entity
+	 * @return the unavailability entity
+	 */
+	@Override
+	public UnavailabilityEntity create(UnavailabilityEntity unavailabilityEntity) {
+		
+		return unavailabilityRepository.save(unavailabilityEntity);
+	}
+	
+	
+
 }

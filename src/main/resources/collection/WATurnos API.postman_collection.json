@@ -1,9 +1,11 @@
 {
 	"info": {
-		"_postman_id": "c83b1b9a-ee66-4871-8a5d-2e2853695b41",
+		"_postman_id": "8614599a-c6b7-4a49-8b32-3142690965d7",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29311595",
+		"_collection_link": "https://warped-crescent-210926.postman.co/workspace/waturnos~259d7df1-992b-49bf-be19-8dedf14f9213/collection/29311595-8614599a-c6b7-4a49-8b32-3142690965d7?action=share&source=collection_link&creator=29311595"
 	},
 	"item": [
 		{
@@ -992,6 +994,55 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Bloquear agenda - MANAGER/PROVIDER",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId\", 12);",
+									"pm.environment.set(\"locationId\", 1);"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"startTime\":\"2025-11-18T08:00:00\",\n    \"endTime\": \"2025-11-22T12:00:00\",\n    \"serviceId\": {{serviceId}}\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/services/calendar/lock",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"services",
+								"calendar",
+								"lock"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1281,6 +1332,46 @@
 								{
 									"key": "providerId",
 									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bookings by Provider Service and Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/range?providerId=30&startDate=2025-11-10&endDate=2025-11-25",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"range"
+							],
+							"query": [
+								{
+									"key": "providerId",
+									"value": "30"
+								},
+								{
+									"key": "startDate",
+									"value": "2025-11-10"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-11-25"
 								}
 							]
 						}

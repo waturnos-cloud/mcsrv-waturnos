@@ -1,8 +1,10 @@
 package com.waturnos.service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.ServiceEntity;
-import java.util.List;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -61,6 +63,15 @@ public interface ServiceEntityService {
 	 * @param serviceId the service id
 	 */
 	void delete(Long serviceId);
+	
+	/**
+	 * Lock calendar.
+	 *
+	 * @param startDate the start date
+	 * @param endDate the end date
+	 * @param serviceId the service id
+	 */
+	void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId);
 	
 	
 }

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.UnavailabilityEntity;
 import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
@@ -236,5 +237,26 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		}
 		batchProcessor.deleteServiceAsync(serviceDB.get().getId(), serviceDB.get().getName(), true);
 
+	}
+
+	/**
+	 * Lock calendar.
+	 *
+	 * @param startDate the start date
+	 * @param endDate   the end date
+	 * @param serviceId the service id
+	 */
+	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.PROVIDER })
+	public void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId) {
+		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(serviceId);
+		if (!serviceEntity.isPresent()) {
+			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+		}
+		unavailabilityService.create(UnavailabilityEntity.builder().startDay(startDate.toLocalDate())
+				.startTime(startDate.toLocalTime()).endDay(endDate.toLocalDate()).endTime(endDate.toLocalTime())
+				.service(ServiceEntity.builder().id(serviceId).build()).build());
+		
+		batchProcessor.deleteBookings(startDate, endDate, serviceEntity.get());
 	}
 }

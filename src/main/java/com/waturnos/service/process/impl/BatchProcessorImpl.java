@@ -1,5 +1,7 @@
 package com.waturnos.service.process.impl;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,6 @@ import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
 
-
 /**
  * The Class UserProcessImpl.
  */
@@ -33,29 +34,28 @@ import lombok.RequiredArgsConstructor;
 /**
  * Instantiates a new user process impl.
  *
- * @param userRepository the user repository
- * @param passwordEncoder the password encoder
- * @param providerRepository the provider repository
- * @param organizationRepository the organization repository
+ * @param userRepository                 the user repository
+ * @param passwordEncoder                the password encoder
+ * @param providerRepository             the provider repository
+ * @param organizationRepository         the organization repository
  * @param providerOrganizationRepository the provider organization repository
  */
 @RequiredArgsConstructor
 
-public class BatchProcessorImpl  implements BatchProcessor{
-	
-	
+public class BatchProcessorImpl implements BatchProcessor {
+
 	/** The booking repository. */
 	private final BookingRepository bookingRepository;
-	
+
 	/** The service repository. */
 	private final ServiceRepository serviceRepository;
-	
+
 	/** The user repository. */
 	private final UserRepository userRepository;
-	
+
 	/** The notification factory. */
 	private final NotificationFactory notificationFactory;
-	
+
 	/** The message source. */
 	private final MessageSource messageSource;
 
@@ -65,7 +65,6 @@ public class BatchProcessorImpl  implements BatchProcessor{
 
 	@Value("${app.notification.HOME}")
 	private String urlHome;
-
 
 	/**
 	 * Delete bookings async.
@@ -83,9 +82,9 @@ public class BatchProcessorImpl  implements BatchProcessor{
 					notificationFactory.send(buildRequest(booking, serviceName));
 				});
 		bookingRepository.deleteAllByServiceId(serviceId);
-		if(deleteService) {
+		if (deleteService) {
 			serviceRepository.deleteById(serviceId);
-		}	
+		}
 	}
 
 	/**
@@ -104,7 +103,6 @@ public class BatchProcessorImpl  implements BatchProcessor{
 		serviceRepository.deleteAllByUserId(providerId);
 		userRepository.deleteById(providerId);
 
-		
 	}
 
 	/**
@@ -125,6 +123,27 @@ public class BatchProcessorImpl  implements BatchProcessor{
 				.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", null,
 						LocaleContextHolder.getLocale()))
 				.type(NotificationType.CANCELBOOKING_BY_PROVIDER).properties(properties).build();
+	}
+
+	/**
+	 * Delete bookings.
+	 *
+	 * @param startDate     the start date
+	 * @param endDate       the end date
+	 * @param serviceEntity the service entity
+	 */
+	@Override
+	@Async
+	@Transactional(readOnly = false)
+	public void deleteBookings(LocalDateTime startDate, LocalDateTime endDate, ServiceEntity serviceEntity) {
+
+		List<Booking> bookingList = bookingRepository.findReservedWithClientAndServiceBetween(startDate, endDate,
+				serviceEntity.getId());
+
+		bookingList.stream().forEach(booking -> {
+			notificationFactory.send(buildRequest(booking, serviceEntity.getName()));
+		});
+		bookingRepository.deleteBookingsBetweenDates(startDate, endDate, serviceEntity.getId());
 	}
 
 }

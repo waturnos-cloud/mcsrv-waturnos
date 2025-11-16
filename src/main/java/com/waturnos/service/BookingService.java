@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.waturnos.dto.response.CountBookingDTO;
+import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
@@ -26,6 +27,7 @@ public interface BookingService {
 	 * Creates the.
 	 *
 	 * @param list the list
+	 * @return the list
 	 */
 	List<Booking> create(List<Booking> list);
 
@@ -82,5 +84,19 @@ public interface BookingService {
 	List<CountBookingDTO> countBookingsByDateRangeAndProvider( LocalDate fromDate, 
             LocalDate toDate, 
             Long providerId);
+
+
+
+	/**
+	 * Find by provider between dates.
+	 *
+	 * @param providerId the provider id
+	 * @param start the start
+	 * @param end the end
+	 * @return the map
+	 */
+
+	Map<LocalDate, List<ServiceWithBookingsDTO>> findByRange(Long providerId, LocalDate start, LocalDate end,
+			Long serviceId);
 
 }

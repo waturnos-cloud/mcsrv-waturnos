@@ -8,7 +8,8 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import com.waturnos.dto.beans.BookingDTO;
-import com.waturnos.dto.response.ServiceListWithBookingDTO.BookingExtendedDTO;
+import com.waturnos.dto.response.BookingExtendedDTO;
+
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
@@ -35,26 +36,23 @@ public interface BookingMapper {
 	 * @return the list
 	 */
 	List<BookingDTO> toDtoList(List<Booking> entities);
-	
-    /**
-     * To extended DTO.
-     *
-     * @param source the source
-     * @return the booking extended DTO
-     */
-    @Mappings({
-        @Mapping(source = "clientName", target = "clientName"),
-    })
-    BookingExtendedDTO toExtendedDTO(BookingSummaryDetail source);
 
-    /**
-     * To extended DTO list.
-     *
-     * @param sourceList the source list
-     * @return the list
-     */
-    List<BookingExtendedDTO> toExtendedDTOList(List<BookingSummaryDetail> sourceList);
-	
+	/**
+	 * To extended DTO.
+	 *
+	 * @param source the source
+	 * @return the booking extended DTO
+	 */
+	@Mappings({ @Mapping(source = "clientName", target = "clientName"), })
+	BookingExtendedDTO toExtendedDTO(BookingSummaryDetail source);
+
+	/**
+	 * To extended DTO list.
+	 *
+	 * @param sourceList the source list
+	 * @return the list
+	 */
+	List<BookingExtendedDTO> toExtendedDTOList(List<BookingSummaryDetail> sourceList);
 
 	/**
 	 * To dto.
@@ -105,4 +103,12 @@ public interface BookingMapper {
 		s.setId(id);
 		return s;
 	}
+
+	/**
+	 * To extended DTO list from day.
+	 *
+	 * @param value the value
+	 * @return the list
+	 */
+	List<BookingExtendedDTO> toExtendedDTOListFromDay(List<Booking> value);
 }
