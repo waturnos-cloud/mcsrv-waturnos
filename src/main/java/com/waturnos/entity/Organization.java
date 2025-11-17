@@ -33,7 +33,7 @@ public class Organization {
 	private String name;
 	private String logoUrl;
 	private String timezone;
-	private String type;
+	private Long type;
 	private String defaultLanguage;
 	@Builder.Default
 	private Boolean active = true;

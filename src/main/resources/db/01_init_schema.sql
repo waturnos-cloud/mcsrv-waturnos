@@ -22,13 +22,28 @@ SHOW search_path;
 -- MODELO DE DATOS WATurnos
 -- =============================================
 
+
+-- ===========================================================
+--   TABLE: categories
+--   Estructura jerárquica para Categoría / Subcategoría
+-- ===========================================================
+
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    slug VARCHAR(120),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
+);
+
+
 -- Tabla: organization
 CREATE TABLE organization (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
     logo_url TEXT,
     timezone VARCHAR(100),
-    type VARCHAR(100),
+    type BIGINT REFERENCES categories(id),
     default_language VARCHAR(10),
     active BOOLEAN DEFAULT TRUE,
     simple_organization BOOLEAN DEFAULT TRUE,
@@ -101,6 +116,7 @@ CREATE TABLE service (
     description TEXT,
     duration_minutes INT,
     price DECIMAL(10,2),
+    type BIGINT REFERENCES categories(id),
     advance_payment INT CHECK (advance_payment BETWEEN 0 AND 100),
     future_days INT,
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -233,21 +249,6 @@ CREATE TABLE password_reset_token (
 );
 
 
-
--- ===========================================================
---   TABLE: categories
---   Estructura jerárquica para Categoría / Subcategoría
--- ===========================================================
-
-DROP TABLE IF EXISTS categories CASCADE;
-
-CREATE TABLE categories (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(120) NOT NULL,
-    slug VARCHAR(120),
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
-);
 
 -- Índice único por nombre + padre
 CREATE UNIQUE INDEX uk_category_name_parent
