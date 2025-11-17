@@ -77,7 +77,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the service entity
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
 	@Transactional(readOnly = false)
 	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long userId,
 			Long locationId, boolean workInHollidays) {
@@ -155,7 +155,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the service entity
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
 	public ServiceEntity findById(Long id) {
 		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(id);
 		if (!serviceEntity.isPresent()) {
@@ -171,7 +171,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
 	public List<ServiceEntity> findByUser(Long userId) {
 		Optional<User> userDB = userRepository.findById(userId);
 		if (!userDB.isPresent()) {
@@ -188,7 +188,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
 	public List<ServiceEntity> findByLocation(Long locationId) {
 		return serviceRepository.findByLocationId(locationId);
 	}

@@ -20,6 +20,14 @@ public enum ErrorCode {
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     SERVICE_PROVIDER_ORGANIZATION_EXCEPTION("1101","error.message.service.provider.organization.incorrect"),
     SERVICE_EXCEPTION("1102","error.message.service.incorrect"),
+    
+    //BOOKING
+    BOOKING_NOT_FOUND("1200","error.message.booking.not.found"),
+    BOOKING_INVALID_STATUS("1201","error.message.booking.invalid.status"),
+    
+    
+    //CLIENT
+    CLIENT_NOT_FOUND("1300","error.message.client.not.exist"),
     ;
 
     private final String code;

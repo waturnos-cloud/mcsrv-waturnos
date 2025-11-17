@@ -68,7 +68,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 * @return the organization
 	 */
 	@Override
-	@RequireRole({UserRole.ADMIN})
+	@RequireRole({UserRole.ADMIN, UserRole.SELLER})
 	@Transactional(readOnly = false)
 	public Organization create(Organization org, User user) {
 		
@@ -101,7 +101,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 * @return the organization
 	 */
 	@Override
-	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
+	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.SELLER })
 	public Organization updateBasicInfo(Organization org) {
 		Organization organizationDB = organizationRepository.findById(org.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
@@ -125,7 +125,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 * @return the organization
 	 */
 	@Override
-	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER})
+	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.SELLER})
 	@Transactional(readOnly = false)
 	public Organization updateLocations(Long id, List<Location> locations) {
 		Organization existing = organizationRepository.findById(id)
@@ -232,7 +232,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole(value = {UserRole.ADMIN, UserRole.MANAGER})
+	@RequireRole(value = {UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER})
 	public List<Organization> findAll(Authentication authentication) {
 		String principalRole = authentication.getAuthorities().stream()
 	            .map(GrantedAuthority::getAuthority)

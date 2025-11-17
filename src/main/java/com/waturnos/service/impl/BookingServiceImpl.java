@@ -29,6 +29,8 @@ import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
+import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
 import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -96,16 +98,17 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the booking
 	 */
 	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
 	public Booking assignBookingToClient(Long id, Long clientId) {
-
+		
 		Booking booking = bookingRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND,"Booking not found"));
 
 		Client client = clientRepository.findById(clientId)
-				.orElseThrow(() -> new EntityNotFoundException("Client not found"));
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND,"Client not found"));
 
 		if (!booking.getStatus().equals(BookingStatus.FREE)) {
-			throw new EntityNotFoundException("Not valid status");
+			throw new ServiceException(ErrorCode.BOOKING_INVALID_STATUS, "Not valid status");
 		}
 
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());

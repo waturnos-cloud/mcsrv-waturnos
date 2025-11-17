@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
 	public List<User> findManagersByOrganization(Long organizationId) {
 		return this.findUsersByOrganizationPrivate(organizationId, UserRole.MANAGER);
 	}
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
 	public List<User> findProvidersByOrganization(Long organizationId) {
 		return this.findUsersByOrganizationPrivate(organizationId, UserRole.PROVIDER);
 	}
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the user
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
 	public User createManager(Long organizationId, User manager) {
 		return userProcess.createManager(Organization.builder().id(organizationId).build(), manager);
 	}
@@ -167,7 +167,7 @@ public class UserServiceImpl implements UserService {
 	 * @param provider       the provider
 	 * @return the user
 	 */
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
 	public User createProvider(Long organizationId, User provider) {
 		return userProcess.createProvider(Organization.builder().id(organizationId).build(), provider);
 	}
