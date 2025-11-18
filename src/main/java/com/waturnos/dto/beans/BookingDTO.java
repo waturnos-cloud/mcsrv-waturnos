@@ -13,6 +13,6 @@ public class BookingDTO {
 	protected LocalDateTime endTime;
 	protected BookingStatus status;
 	protected String notes;
-	protected Long clientId;
 	protected Long serviceId;
+	protected Integer freeSlots;
 }

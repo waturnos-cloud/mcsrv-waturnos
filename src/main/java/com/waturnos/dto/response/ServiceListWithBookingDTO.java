@@ -8,5 +8,6 @@ import lombok.Data;
 public class ServiceListWithBookingDTO {
 	private String name; 
     private Long id;     
+    private Integer capacity;
     private List<BookingExtendedDTO> list;
 }

@@ -125,7 +125,9 @@ CREATE TABLE service (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
-    modificator VARCHAR(100)
+    modificator VARCHAR(100),
+    capacity INTEGER NOT NULL,
+    CHECK (capacity > 0)
 );
 
 -- Tabla: service_props
@@ -180,14 +182,16 @@ CREATE TABLE booking (
     end_time TIMESTAMPTZ NOT NULL,
     status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','RESERVED','NO_SHOW','COMPLETED','CANCELLED')),
     notes TEXT,
-    client_id BIGINT REFERENCES client(id) ON DELETE SET NULL,
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,
     recurrence_id BIGINT REFERENCES recurrence(id) ON DELETE SET NULL,
     organization_id BIGINT REFERENCES organization(id) ON DELETE CASCADE,
     cancel_reason TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
+    free_slots INTEGER NOT NULL,
+    CHECK (free_slots >= 0),
     CONSTRAINT chk_booking_times CHECK (start_time < end_time)
+    
 );
 
 -- Tabla: payment
@@ -248,7 +252,27 @@ CREATE TABLE password_reset_token (
     )
 );
 
-
+-- Tabla: booking_client
+CREATE TABLE booking_client (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    client_id BIGINT NOT NULL,
+    
+    -- Restricción para asegurar que un cliente no se reserve dos veces en el mismo booking
+    CONSTRAINT uk_booking_client UNIQUE (booking_id, client_id), 
+    
+    -- Definición de la clave foránea a booking
+    CONSTRAINT fk_booking_client_booking 
+        FOREIGN KEY (booking_id) 
+        REFERENCES booking (id) 
+        ON DELETE CASCADE, -- Si se borra el booking, se borran las entradas aquí
+        
+    -- Definición de la clave foránea a client
+    CONSTRAINT fk_booking_client_client
+        FOREIGN KEY (client_id) 
+        REFERENCES client (id) 
+        ON DELETE CASCADE -- Si se borra el cliente, se borran las entradas aquí
+);
 
 -- Índice único por nombre + padre
 CREATE UNIQUE INDEX uk_category_name_parent

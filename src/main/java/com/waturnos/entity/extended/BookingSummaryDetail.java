@@ -12,9 +12,11 @@ public interface BookingSummaryDetail {
 	Long getId();
 	Long getClientId();
 	Long getServiceId();
+	Integer getServiceCapacity();
 	LocalDateTime getStartTime();
 	LocalDateTime getEndTime();
 	BookingStatus getStatus();
+	Integer getFreeSlots();
 	String getNotes();
 	String getCancelReason();
 	String getClientName();

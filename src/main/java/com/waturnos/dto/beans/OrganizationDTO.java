@@ -11,7 +11,7 @@ public class OrganizationDTO {
 	private String name;
 	private String logoUrl;
 	private String timezone;
-	private Long type;
+	private CategoryTreeDTO type;
 	private String defaultLanguage;
 	private Boolean active;
 	private OrganizationStatus status;

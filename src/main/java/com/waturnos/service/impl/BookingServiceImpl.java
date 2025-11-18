@@ -13,10 +13,12 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.extended.BookingSummaryDetail;
@@ -90,33 +92,76 @@ public class BookingServiceImpl implements BookingService {
 		return bookingRepository.save(existing);
 	}
 
+//	/**
+//	 * Update.
+//	 *
+//	 * @param id       the id
+//	 * @param clientId the client id
+//	 * @return the booking
+//	 */
+//	@Override
+//	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
+//	public Booking assignBookingToClient(Long id, Long clientId) {
+//		
+//		Booking booking = bookingRepository.findById(id)
+//				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND,"Booking not found"));
+//
+//		Client client = clientRepository.findById(clientId)
+//				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND,"Client not found"));
+//
+//		if (!booking.getStatus().equals(BookingStatus.FREE)) {
+//			throw new ServiceException(ErrorCode.BOOKING_INVALID_STATUS, "Not valid status");
+//		}
+//
+//		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+//		booking.setStatus(BookingStatus.RESERVED);
+//		booking.setClient(client);
+//
+//		return bookingRepository.save(booking);
+//
+//	}
+	
+	// Asume que BookingClientRepository ha sido inyectado en la clase de servicio
+	// @Autowired
+	// private BookingClientRepository bookingClientRepository; 
+
 	/**
-	 * Update.
+	 * AssignBookingToClient (Inscribe a un cliente en un booking multi-plaza).
 	 *
-	 * @param id       the id
+	 * @param bookingId the id del Booking
 	 * @param clientId the client id
-	 * @return the booking
+	 * @return the updated Booking
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
-	public Booking assignBookingToClient(Long id, Long clientId) {
-		
-		Booking booking = bookingRepository.findById(id)
-				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND,"Booking not found"));
+	@Transactional(readOnly = false)
+	public Booking assignBookingToClient(Long bookingId, Long clientId) {
+	    
+	    Booking booking = bookingRepository.findById(bookingId)
+	            .orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
 
-		Client client = clientRepository.findById(clientId)
-				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND,"Client not found"));
+	    Client client = clientRepository.findById(clientId)
+	            .orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
+	    
+	    if (booking.getFreeSlots() <= 0) {
+	        throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
+	    }
 
-		if (!booking.getStatus().equals(BookingStatus.FREE)) {
-			throw new ServiceException(ErrorCode.BOOKING_INVALID_STATUS, "Not valid status");
-		}
+	    if (booking.getBookingClients().stream()
+	                .anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
+	        throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT, "Client is already registered for this booking.");
+	    }
+	    
+	    BookingClient bookingClient = BookingClient.builder()
+	            .booking(booking)
+	            .client(client)
+	            .build();
+	    
+	    booking.addBookingClient(bookingClient);
 
-		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		booking.setStatus(BookingStatus.RESERVED);
-		booking.setClient(client);
-
-		return bookingRepository.save(booking);
-
+	    booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+	    
+	    return bookingRepository.save(booking);
 	}
 
 	/**

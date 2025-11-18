@@ -12,6 +12,11 @@ spring:
     username: neondb_owner
     password: npg_cpViMu5TF2Jx
     driver-class-name: org.postgresql.Driver
+    hikari:
+      max-lifetime: 1800000      # 30 min
+      idle-timeout: 600000       # 10 min
+      connection-timeout: 30000  # 30 seg
+      keepalive-time: 300000     # 5 min	
   messages:
     basename: messages
     encoding: UTF-8        

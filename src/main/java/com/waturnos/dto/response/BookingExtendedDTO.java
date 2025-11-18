@@ -19,6 +19,8 @@ public class BookingExtendedDTO {
     private String clientEmail;
 
     private String status; // FREE, RESERVED, CANCELLED, COMPLETED, NO-SHOW
+    
+    private String freeSlots;
 
     private String startTime; // ISO 8601 string
     private String endTime;

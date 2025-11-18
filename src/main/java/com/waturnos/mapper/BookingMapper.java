@@ -60,7 +60,7 @@ public interface BookingMapper {
 	 * @param e the e
 	 * @return the booking DTO
 	 */
-	@Mappings({ @Mapping(target = "clientId", source = "client.id"),
+	@Mappings({
 			@Mapping(target = "serviceId", source = "service.id") })
 	BookingDTO toDto(Booking e);
 
@@ -70,7 +70,7 @@ public interface BookingMapper {
 	 * @param d the d
 	 * @return the booking
 	 */
-	@Mappings({ @Mapping(target = "client", source = "clientId", qualifiedByName = "clientFromId"),
+	@Mappings({
 			@Mapping(target = "service", source = "serviceId", qualifiedByName = "serviceFromId") })
 	Booking toEntity(BookingDTO d);
 

@@ -122,6 +122,7 @@ public class BookingController {
 			serviceGroup.setId(entry.getKey());
 			serviceGroup.setName(firstBooking.getServiceName());
 			serviceGroup.setList(extendedBookings);
+			serviceGroup.setCapacity(firstBooking.getServiceCapacity());
 			return serviceGroup;
 		}).collect(Collectors.toList());
 

@@ -13,4 +13,6 @@ public class ServiceDTO {
 	private Integer futureDays;
 	private UserDTO user;
 	private LocationDTO location;
+	private CategoryTreeDTO type;
+	private Integer capacity;
 }

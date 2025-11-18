@@ -19,9 +19,11 @@ import com.waturnos.controller.exceptions.ErrorResponse;
 import com.waturnos.dto.request.LoginRequest;
 import com.waturnos.dto.response.LoginResponse;
 import com.waturnos.entity.User;
+import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.JwtUtil;
 import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,67 +32,66 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-    private final MessageSource messageSource;
-    private final UserRepository userRepository; // 👈 necesario para buscar el user completo
+	private final JwtUtil jwtUtil;
+	private final AuthenticationManager authenticationManager;
+	private final MessageSource messageSource;
+	private final UserRepository userRepository; // 👈 necesario para buscar el user completo
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
+		try {
+			Authentication authentication = authenticationManager
+					.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String email = userDetails.getUsername();
+			UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+			String email = userDetails.getUsername();
 
-            // Buscar el usuario real para obtener IDs
-            User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+			// Buscar el usuario real para obtener IDs
+			User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-            String role = userDetails.getAuthorities().stream()
-                .findFirst()
-                .map(auth -> auth.getAuthority().replace("ROLE_", ""))
-                .orElse("USER");
+			String role = userDetails.getAuthorities().stream().findFirst()
+					.map(auth -> auth.getAuthority().replace("ROLE_", "")).orElse("USER");
 
-            String token = jwtUtil.generateToken(email, role);
+			String token = jwtUtil.generateToken(email, role);
 
-            // Determinar organizationId y providerId según el rol
-            Long organizationId = null;
-            Long providerId = null;
+			// Determinar organizationId y providerId según el rol
+			Long organizationId = null;
+			Long providerId = null;
+			boolean checkStatus = true;
+			switch (role) {
+			case "ADMIN" -> {
+				organizationId = null; // elige luego en el dashboard
+				checkStatus = false;
+				break;
+			}
+			case "MANAGER" -> {
+				organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
+				break;
+			}
+			case "PROVIDER" -> {
+				organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
+				providerId = user.getId();
+				break;
+			}
+			}
+			if (checkStatus && user.getOrganization().getStatus() != OrganizationStatus.ACTIVE) {
+				throw new ServiceException(ErrorCode.ORGANIZATION_NOT_ACTIVE, "Organization not active");
+			}
+			// ✅ Respuesta extendida
+			LoginResponse response = new LoginResponse(token, user.getId(), role, organizationId, providerId);
 
-            switch (role) {
-                case "ADMIN" -> {
-                    organizationId = null; // elige luego en el dashboard
-                }
-                case "MANAGER" -> {
-                    organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
-                }
-                case "PROVIDER" -> {
-                    organizationId = user.getOrganization() != null ? user.getOrganization().getId() : null;
-                    providerId = user.getId();
-                }
-            }
+			return ResponseEntity.ok(response);
 
-            // ✅ Respuesta extendida
-            LoginResponse response = new LoginResponse(
-                token,
-                user.getId(),
-                role,
-                organizationId,
-                providerId
-            );
-
-            return ResponseEntity.ok(response);
-
-        } catch (AuthenticationException e) {
-            ErrorResponse errorDetails = new ErrorResponse(
-                ErrorCode.INVALID_USER_OR_PASSWORD.getCode(),
-                messageSource.getMessage(ErrorCode.INVALID_USER_OR_PASSWORD.getMessageKey(), null, LocaleContextHolder.getLocale()),
-                webRequest.getDescription(false)
-            );
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
-        }
-    }
+		} catch (AuthenticationException e) {
+			ErrorResponse errorDetails = new ErrorResponse(ErrorCode.INVALID_USER_OR_PASSWORD.getCode(),
+					messageSource.getMessage(ErrorCode.INVALID_USER_OR_PASSWORD.getMessageKey(), null,
+							LocaleContextHolder.getLocale()),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+		} catch (ServiceException e) {
+			ErrorResponse errorDetails = new ErrorResponse(e.getErrorCode().getCode(), e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+		}
+	}
 }

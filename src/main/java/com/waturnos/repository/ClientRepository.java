@@ -20,7 +20,10 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 	List<Client> findByEmailContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrFullNameContainingIgnoreCase(String email,
 			String phone, String name);
 
-	@Query("SELECT DISTINCT c FROM Client c JOIN Booking b ON b.client.id = c.id WHERE b.service.user.id = :providerId")
-	List<Client> findByProviderId(@Param("providerId") Long providerId);
+	@Query("SELECT DISTINCT c FROM Client c " +
+		       "JOIN BookingClient bc ON bc.client = c " + 
+		       "JOIN bc.booking b " +                      
+		       "WHERE b.service.user.id = :providerId")
+		List<Client> findByProviderId(@Param("providerId") Long providerId);
 	
 }
