@@ -122,7 +122,7 @@ public class ClientController {
 	 * @param dto the dto
 	 * @return the response entity
 	 */
-	@PostMapping
+	@PostMapping("{clientId}/{organizationId}")
 	public ResponseEntity<ApiResponse<Void>> assignClientToOrganization(@PathVariable Long clientId,
 			@PathVariable Long organizationId) {
 		service.assignClientToOrganization(clientId, organizationId);
