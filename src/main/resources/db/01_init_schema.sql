@@ -22,6 +22,21 @@ SHOW search_path;
 -- MODELO DE DATOS WATurnos
 -- =============================================
 
+
+-- ===========================================================
+--   TABLE: categories
+--   Estructura jerárquica para Categoría / Subcategoría
+-- ===========================================================
+
+CREATE TABLE categories (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    slug VARCHAR(120),
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
+);
+
+
 -- Tabla: organization
 CREATE TABLE organization (
     id BIGSERIAL PRIMARY KEY,
@@ -259,21 +274,6 @@ CREATE TABLE booking_client (
         FOREIGN KEY (client_id) 
         REFERENCES client (id) 
         ON DELETE CASCADE -- Si se borra el cliente, se borran las entradas aquí
-);
-
--- ===========================================================
---   TABLE: categories
---   Estructura jerárquica para Categoría / Subcategoría
--- ===========================================================
-
-DROP TABLE IF EXISTS categories CASCADE;
-
-CREATE TABLE categories (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(120) NOT NULL,
-    slug VARCHAR(120),
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL
 );
 
 -- Índice único por nombre + padre
