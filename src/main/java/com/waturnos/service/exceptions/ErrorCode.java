@@ -12,9 +12,9 @@ public enum ErrorCode {
     
     
     ORGANIZATION_NOT_FOUND_EXCEPTION("1002", "error.message.organization.not.found"),
-    
     PASSWORD_RESET_TOKEN_EXPIRED("1003", "error.message.password.reset.expired"),
     PROVIDER_NOT_FOUND("1004", "error.message.provider.not.found"),
+    ORGANIZATION_NOT_ACTIVE("1005", "error.message.organization.not.active"),
     
     // SERVICE
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
@@ -26,6 +26,7 @@ public enum ErrorCode {
     BOOKING_INVALID_STATUS("1201","error.message.booking.invalid.status"),
     BOOKING_FULL("1202","error.message.booking.full"),
     BOOKING_ALREADY_RESERVED_BYCLIENT("1203","error.message.booking.already.reserved"),
+    
     
     
     //CLIENT
