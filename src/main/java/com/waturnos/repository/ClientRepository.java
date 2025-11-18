@@ -17,9 +17,13 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
 	Optional<Client> findByEmail(String email);
 
-	List<Client> findByEmailContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrFullNameContainingIgnoreCase(String email,
-			String phone, String name);
-
+	@Query("SELECT c FROM Client c WHERE " + 
+				"(:email IS NOT NULL AND c.email = :email) OR " + 
+		       "(:phone IS NOT NULL AND c.phone = :phone) OR " + 
+		       "(:dni IS NOT NULL AND c.dni = :dni)")
+	Optional<Client> findByEmailOrPhoneOrDni(@Param("email") String email, @Param("phone") String phone,
+			@Param("dni") String dni);
+	
 	@Query("SELECT DISTINCT c FROM Client c " +
 		       "JOIN BookingClient bc ON bc.client = c " + 
 		       "JOIN bc.booking b " +                      

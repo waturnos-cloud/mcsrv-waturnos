@@ -1,11 +1,14 @@
 package com.waturnos.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.Client;
+import com.waturnos.enums.UserRole;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 
@@ -88,17 +91,10 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
-	public List<Client> search(String email, String phone, String name) {
-		// Si todos los filtros son nulos, devuelve todos
-		if ((email == null || email.isBlank()) && (phone == null || phone.isBlank())
-				&& (name == null || name.isBlank())) {
-			return clientRepository.findAll();
-		}
-
-		// Busca por coincidencias parciales en cualquiera de los campos
+	@RequireRole(value = {UserRole.ADMIN,UserRole.MANAGER, UserRole.PROVIDER})
+	public Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni) {
 		return clientRepository
-				.findByEmailContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrFullNameContainingIgnoreCase(
-						email != null ? email : "", phone != null ? phone : "", name != null ? name : "");
+				.findByEmailOrPhoneOrDni(email,phone,dni);
 	}
 
 	/**

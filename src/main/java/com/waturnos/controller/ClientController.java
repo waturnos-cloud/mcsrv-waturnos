@@ -1,7 +1,9 @@
 package com.waturnos.controller;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +54,7 @@ public class ClientController {
 		List<Client> clients = service.findAll();
 		return ResponseEntity.ok(new ApiResponse<>(true, "Clients retrieved", mapper.toDtoList(clients)));
 	}
-
+	
 	/**
 	 * Gets the all by provider.
 	 *
@@ -85,12 +87,21 @@ public class ClientController {
 	 * @param name  the name
 	 * @return the response entity
 	 */
-	@GetMapping("/search")
-	public ResponseEntity<ApiResponse<List<ClientDTO>>> search(@RequestParam(required = false) String email,
-			@RequestParam(required = false) String phone, @RequestParam(required = false) String name) {
+	@GetMapping("/findBy")
+	public ResponseEntity<ApiResponse<ClientDTO>> search(@RequestParam(required = false) String email,
+			@RequestParam(required = false) String phone, 
+			@RequestParam(required = false) String dni) {
 
-		List<Client> clients = service.search(email, phone, name);
-		return ResponseEntity.ok(new ApiResponse<>(true, "Clients found", mapper.toDtoList(clients)));
+		Optional<Client> clientOptional = service.findByEmailOrPhoneOrDni(email, phone, dni);
+
+	    if (clientOptional.isPresent()) {
+	        ClientDTO clientDTO = mapper.toDto(clientOptional.get());
+	        return ResponseEntity.ok(new ApiResponse<>(true, "Client found successfully.", clientDTO));
+	    } else {
+	        return ResponseEntity
+	                .status(HttpStatus.NOT_FOUND)
+	                .body(new ApiResponse<>(false, "Client not found with the provided criteria.", null));
+	    }	
 	}
 
 	/**

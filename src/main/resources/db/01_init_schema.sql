@@ -129,13 +129,15 @@ CREATE TABLE client (
     full_name VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(50),
+    dni VARCHAR(20),
     password TEXT,
     organization_id BIGINT REFERENCES organization(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
     modificator VARCHAR(100),
-    CONSTRAINT uq_client_email_org UNIQUE (organization_id, email)
+    CONSTRAINT uq_client_email_org UNIQUE (organization_id, email),
+    CONSTRAINT uq_client_dni UNIQUE (dni)
 );
 
 -- Tabla: client_props
@@ -165,7 +167,7 @@ CREATE TABLE booking (
     id BIGSERIAL PRIMARY KEY,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','RESERVED','NO_SHOW','COMPLETED','CANCELLED')),
+    status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','PARTIALLY_RESERVED','RESERVED','NO_SHOW','COMPLETED','CANCELLED')),
     notes TEXT,
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,
     recurrence_id BIGINT REFERENCES recurrence(id) ON DELETE SET NULL,
