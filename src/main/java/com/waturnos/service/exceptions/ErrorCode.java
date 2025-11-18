@@ -27,10 +27,9 @@ public enum ErrorCode {
     BOOKING_FULL("1202","error.message.booking.full"),
     BOOKING_ALREADY_RESERVED_BYCLIENT("1203","error.message.booking.already.reserved"),
     
-    
-    
     //CLIENT
     CLIENT_NOT_FOUND("1300","error.message.client.not.exist"),
+    CLIENT_EXISTS("1301","error.message.client.exist"),
     ;
 
     private final String code;

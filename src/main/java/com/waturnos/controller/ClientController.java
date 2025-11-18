@@ -88,7 +88,7 @@ public class ClientController {
 	 * @return the response entity
 	 */
 	@GetMapping("/findBy")
-	public ResponseEntity<ApiResponse<ClientDTO>> search(@RequestParam(required = false) String email,
+	public ResponseEntity<ApiResponse<ClientDTO>> findBy(@RequestParam(required = false) String email,
 			@RequestParam(required = false) String phone, 
 			@RequestParam(required = false) String dni) {
 
@@ -114,6 +114,19 @@ public class ClientController {
 	public ResponseEntity<ApiResponse<ClientDTO>> create(@RequestBody ClientDTO dto) {
 		Client created = service.create(mapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client created", mapper.toDto(created)));
+	}
+	
+	/**
+	 * Creates the.
+	 *
+	 * @param dto the dto
+	 * @return the response entity
+	 */
+	@PostMapping
+	public ResponseEntity<ApiResponse<Void>> assignClientToOrganization(@PathVariable Long clientId,
+			@PathVariable Long organizationId) {
+		service.assignClientToOrganization(clientId, organizationId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Client vinculated", null));
 	}
 
 	/**

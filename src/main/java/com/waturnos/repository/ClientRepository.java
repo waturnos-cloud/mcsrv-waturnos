@@ -29,5 +29,15 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 		       "JOIN bc.booking b " +                      
 		       "WHERE b.service.user.id = :providerId")
 		List<Client> findByProviderId(@Param("providerId") Long providerId);
+
+	
+	@Query("SELECT c FROM Client c WHERE " +
+	           "(:email IS NOT NULL AND c.email = :email) OR " + 
+	           "(:dni IS NOT NULL AND c.dni = :dni) OR " +
+	           "(:phone IS NOT NULL AND c.phone = :phone)")
+	    Optional<Client> findExistingClientByUniqueFields(
+	            @Param("email") String email,
+	            @Param("dni") String dni,
+	            @Param("phone") String phone);
 	
 }

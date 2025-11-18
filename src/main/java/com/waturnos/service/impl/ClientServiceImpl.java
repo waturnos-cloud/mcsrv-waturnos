@@ -4,31 +4,32 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.waturnos.entity.Client;
+import com.waturnos.entity.Organization;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.repository.OrganizationRepository;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
+import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * The Class ClientServiceImpl.
  */
 @Service
+@RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
 	/** The client repository. */
 	private final ClientRepository clientRepository;
-
-	/**
-	 * Instantiates a new client service impl.
-	 *
-	 * @param clientRepository the client repository
-	 */
-	public ClientServiceImpl(ClientRepository clientRepository) {
-		this.clientRepository = clientRepository;
-	}
+	
+	private final OrganizationRepository organizationRepository;
 
 	/**
 	 * Find by organization.
@@ -49,6 +50,29 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	public Client create(Client client) {
+	
+	    final String email = StringUtils.hasLength(client.getEmail()) ? client.getEmail().trim() : null;
+	    final String dni = StringUtils.hasLength(client.getDni()) ? client.getDni().trim() : null;
+	    final String phone = StringUtils.hasLength(client.getPhone()) ? client.getPhone().trim() : null;
+	    
+	    Optional<Client> clientDB = clientRepository.findExistingClientByUniqueFields(email, dni, phone);
+
+	    if (clientDB.isPresent()) {
+	        Client existingClient = clientDB.get();
+	        String errorMessage = "Client already exists.";
+	        
+	        if (email != null && email.equals(existingClient.getEmail())) {
+	            errorMessage = "Email already exists exception in client";
+	        } 
+	        else if (dni != null && dni.equals(existingClient.getDni())) {
+	            errorMessage = "DNI already exists exception in client";
+	        } 
+	        else if (phone != null && phone.equals(existingClient.getPhone())) {
+	            errorMessage = "Phone already exists exception in client";
+	        }
+	        throw new ServiceException(ErrorCode.CLIENT_EXISTS, errorMessage);
+	    }
+		
 		return clientRepository.save(client);
 	}
 
@@ -110,6 +134,19 @@ public class ClientServiceImpl implements ClientService {
 	
 	public List<Client> findByProviderId(Long providerId) {
 	    return clientRepository.findByProviderId(providerId);
+	}
+
+	@Override
+	public void assignClientToOrganization(Long clientId, Long organizationId) {
+		Optional<Client> clientDB = clientRepository.findById(clientId);
+		if (!clientDB.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
+		}
+		Optional<Organization> organizationDB = organizationRepository.findById(clientId);
+		if (!organizationDB.isPresent()) {
+			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found");
+		}	
+		
 	}
 
 }

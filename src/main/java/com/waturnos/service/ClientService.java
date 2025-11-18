@@ -74,5 +74,7 @@ public interface ClientService {
 
 	Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni);
 
+	void assignClientToOrganization(Long clientId, Long organizationId);
+
 
 }
