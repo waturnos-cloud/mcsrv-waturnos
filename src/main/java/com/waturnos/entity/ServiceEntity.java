@@ -51,4 +51,6 @@ public class ServiceEntity {
     @ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "type")
 	private Category type;
+    
+    private Integer capacity;
 }

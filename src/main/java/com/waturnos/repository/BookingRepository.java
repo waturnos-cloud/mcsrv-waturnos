@@ -13,19 +13,10 @@ import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingReminder;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface BookingRepository.
  */
 public interface BookingRepository extends JpaRepository<Booking, Long> {
-
-	/**
-	 * Find by client id.
-	 *
-	 * @param clientId the client id
-	 * @return the list
-	 */
-	List<Booking> findByClientId(Long clientId);
 
 	/**
 	 * Find by service id.
@@ -61,13 +52,22 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	 * @param end        the end
 	 * @return the list
 	 */
-	@Query("SELECT b.id AS id, " + "b.service.name AS serviceName, " + "b.client.fullName AS clientName, "
-			+ "b.startTime AS startTime, " + "b.endTime AS endTime, " + "b.client.id AS clientId, "
-			+ "b.service.id AS serviceId, " + "b.status AS status, " + "b.notes AS notes, "
-			+ "b.cancelReason AS cancelReason " + "FROM Booking b " + "WHERE b.service.user.id = :providerId "
-			+ "AND b.startTime BETWEEN :start AND :end " + "ORDER BY b.service.name ASC, b.startTime ASC")
-	List<BookingSummaryDetail> findByProviderAndStartTimeBetween(@Param("providerId") Long providerId,
-			@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+	@Query("SELECT b.id AS id, " + 
+		       "b.service.name AS serviceName, " +
+		       "b.service.capacity AS serviceCapacity, " +
+		       "b.startTime AS startTime, " + 
+		       "b.endTime AS endTime, " + 
+		       "b.service.id AS serviceId, " + 
+		       "b.status AS status, " + 
+		       "b.notes AS notes, " + 
+		       "b.freeSlots AS freeSlots, " + 
+		       "b.cancelReason AS cancelReason " + 
+		       "FROM Booking b " + 
+		       "WHERE b.service.user.id = :providerId " + 
+		       "AND b.startTime BETWEEN :start AND :end " + 
+		       "ORDER BY b.service.name ASC, b.startTime ASC")
+		List<BookingSummaryDetail> findByProviderAndStartTimeBetween(@Param("providerId") Long providerId,
+		        @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 	/**
 	 * Consulta SQL Nativa para obtener el conteo de reservas agrupadas por fecha
@@ -110,25 +110,27 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	 * @return the list
 	 */
 	@Query(value = """
-				SELECT
-			        c.full_name AS fullName,
-			        c.email AS email,
-			        b.start_time AS startTime,
-			        s.name AS serviceName
-			    FROM
-			        booking b
-			    JOIN
-			        client c ON b.client_id = c.id
-			    JOIN
-			        service s ON b.service_id = s.id
-			    WHERE
-			        b.status = 'RESERVED'
-			        AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
-			        AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
-			    ORDER BY
-			        b.start_time
-			""", nativeQuery = true)
-	List<BookingReminder> findBookingsForTomorrow();
+            SELECT
+                c.full_name AS fullName,
+                c.email AS email,
+                b.start_time AS startTime,
+                s.name AS serviceName
+            FROM
+                booking b
+            JOIN
+                booking_client bc ON b.id = bc.booking_id  -- Nuevo JOIN a la tabla N:N
+            JOIN
+                client c ON bc.client_id = c.id          -- JOIN al cliente a través de bc
+            JOIN
+                service s ON b.service_id = s.id
+            WHERE
+                (b.status = 'RESERVED' or b.status = 'FREE' AND b.freeSlots < b.service.capacity) 
+                AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
+                AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
+            ORDER BY
+                b.start_time
+        """, nativeQuery = true)
+List<BookingReminder> findBookingsForTomorrow();
 
 	/**
 	 * Find reserved with client and service between.
@@ -139,15 +141,15 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	 * @return the list
 	 */
 	@Query("""
-			    SELECT b FROM Booking b
-			    WHERE b.startTime >= :start
-			      AND b.endTime <= :end
-			      AND b.client IS NOT NULL
-			      AND b.status = 'RESERVED'
-			      AND b.service.id = :serviceId
-			""")
+	        SELECT b FROM Booking b
+	        WHERE b.startTime >= :start
+	          AND b.endTime <= :end
+	          AND b.bookingClients IS NOT EMPTY 
+	          AND b.status NOT IN ('CANCELLED', 'COMPLETED') 
+	          AND b.service.id = :serviceId
+	        """)
 	List<Booking> findReservedWithClientAndServiceBetween(@Param("start") LocalDateTime start,
-			@Param("end") LocalDateTime end, @Param("serviceId") Long serviceId);
+	        @Param("end") LocalDateTime end, @Param("serviceId") Long serviceId);
 
 	/**
 	 * Delete bookings between dates.

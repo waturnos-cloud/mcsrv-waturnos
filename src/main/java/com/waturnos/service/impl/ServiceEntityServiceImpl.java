@@ -137,7 +137,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 								LocalDateTime.of(currentDate, currentTime.plusMinutes(service.getDurationMinutes())));
 						booking.setStatus(BookingStatus.FREE);
 						booking.setService(service);
-
+						booking.setFreeSlots(service.getCapacity());
 						bookings.add(booking);
 						currentTime = currentTime.plusMinutes(service.getDurationMinutes());
 					}
@@ -205,22 +205,23 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	@Transactional(readOnly = false)
 	public ServiceEntity update(ServiceEntity service) {
 
-		Optional<ServiceEntity> serviceDB = serviceRepository.findById(service.getId());
-		if (!serviceDB.isPresent()) {
+		Optional<ServiceEntity> serviceDBExists = serviceRepository.findById(service.getId());
+		if (!serviceDBExists.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
 		}
-		if (!serviceDB.get().getUser().getId().equals(service.getUser().getId())) {
+		if (!serviceDBExists.get().getUser().getId().equals(service.getUser().getId())) {
 			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
 		}
-		serviceDB.get().setUpdatedAt(LocalDateTime.now());
-		serviceDB.get().setModificator(SessionUtil.getUserName());
-		serviceDB.get().setName(service.getName());
-		serviceDB.get().setDescription(service.getDescription());
-		serviceDB.get().setAdvancePayment(service.getAdvancePayment());
-		serviceDB.get().setLocation(service.getLocation());
-		serviceDB.get().setPrice(service.getPrice());
+		ServiceEntity serviceDB = serviceDBExists.get();
+		serviceDB.setUpdatedAt(LocalDateTime.now());
+		serviceDB.setModificator(SessionUtil.getUserName());
+		serviceDB.setName(service.getName());
+		serviceDB.setDescription(service.getDescription());
+		serviceDB.setAdvancePayment(service.getAdvancePayment());
+		serviceDB.setLocation(service.getLocation());
+		serviceDB.setPrice(service.getPrice());
 
-		return serviceRepository.save(service);
+		return serviceRepository.save(serviceDB);
 	}
 
 	/**

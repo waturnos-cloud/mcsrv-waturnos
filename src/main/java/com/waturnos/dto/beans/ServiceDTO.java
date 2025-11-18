@@ -14,4 +14,5 @@ public class ServiceDTO {
 	private UserDTO user;
 	private LocationDTO location;
 	private CategoryTreeDTO type;
+	private Integer capacity;
 }

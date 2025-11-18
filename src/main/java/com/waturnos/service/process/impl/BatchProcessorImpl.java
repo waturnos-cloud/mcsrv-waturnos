@@ -1,7 +1,6 @@
 package com.waturnos.service.process.impl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
@@ -75,16 +75,19 @@ public class BatchProcessorImpl implements BatchProcessor {
 	@Async
 	@Transactional(readOnly = false)
 	public void deleteServiceAsync(long serviceId, String serviceName, boolean deleteService) {
-		List<Booking> bookingsToDelete = bookingRepository.findByServiceId(serviceId);
+	    List<Booking> bookingsToDelete = bookingRepository.findByServiceId(serviceId);
 
-		bookingsToDelete.stream().filter(booking -> booking.getClient() != null) // Solo si hay cliente
-				.forEach(booking -> {
-					notificationFactory.send(buildRequest(booking, serviceName));
-				});
-		bookingRepository.deleteAllByServiceId(serviceId);
-		if (deleteService) {
-			serviceRepository.deleteById(serviceId);
-		}
+	    bookingsToDelete.forEach(booking -> {
+	        
+	        if (booking.getBookingClients() != null && !booking.getBookingClients().isEmpty()) {
+	            
+	            booking.getBookingClients().stream()
+	                .map(bookingClient -> bookingClient.getClient())
+	                .forEach(client -> {
+	                    notificationFactory.send(buildRequest(booking, client, serviceName));
+	                });
+	        }
+	    });
 	}
 
 	/**
@@ -112,14 +115,14 @@ public class BatchProcessorImpl implements BatchProcessor {
 	 * @param serviceName the service name
 	 * @return the notification request
 	 */
-	private NotificationRequest buildRequest(Booking booking, String serviceName) {
+	private NotificationRequest buildRequest(Booking booking, Client client, String serviceName) {
 		Map<String, String> properties = new HashMap<>();
-		properties.put("USERNAME", booking.getClient().getFullName());
+		properties.put("USERNAME", client.getFullName());
 		properties.put("SERVICENAME", serviceName);
 		properties.put("DATEBOOKING", DateUtils.format(booking.getStartTime(), dateFormaEmail));
 		properties.put("URLHOME", urlHome);
 
-		return NotificationRequest.builder().email(booking.getClient().getEmail()).language("ES")
+		return NotificationRequest.builder().email(client.getEmail()).language("ES")
 				.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", null,
 						LocaleContextHolder.getLocale()))
 				.type(NotificationType.CANCELBOOKING_BY_PROVIDER).properties(properties).build();
@@ -140,8 +143,16 @@ public class BatchProcessorImpl implements BatchProcessor {
 		List<Booking> bookingList = bookingRepository.findReservedWithClientAndServiceBetween(startDate, endDate,
 				serviceEntity.getId());
 
-		bookingList.stream().forEach(booking -> {
-			notificationFactory.send(buildRequest(booking, serviceEntity.getName()));
+		bookingList.forEach(booking -> {
+            
+            if (booking.getBookingClients() != null && !booking.getBookingClients().isEmpty()) {
+                
+                booking.getBookingClients().stream()
+                    .map(bookingClient -> bookingClient.getClient())
+                    .forEach(client -> {
+                        notificationFactory.send(buildRequest(booking, client, serviceEntity.getName()));
+                    });
+            }
 		});
 		bookingRepository.deleteBookingsBetweenDates(startDate, endDate, serviceEntity.getId());
 	}

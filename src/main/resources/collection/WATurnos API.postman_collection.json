@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "f13edabf-14c1-41f3-a25a-b36608728c28",
+		"_postman_id": "f62c12f3-adcd-43dd-a03b-4b302243edf0",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "160410",
-		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-f13edabf-14c1-41f3-a25a-b36608728c28?action=share&source=collection_link&creator=160410"
+		"_exporter_id": "7769840",
+		"_collection_link": "https://grey-comet-154504.postman.co/workspace/Varios~8c8c47c8-76ad-449d-b4b1-631d803d7503/collection/7769840-f62c12f3-adcd-43dd-a03b-4b302243edf0?action=share&source=collection_link&creator=7769840"
 	},
 	"item": [
 		{

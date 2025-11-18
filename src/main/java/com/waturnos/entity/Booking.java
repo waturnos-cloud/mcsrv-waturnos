@@ -1,9 +1,13 @@
 package com.waturnos.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.waturnos.enums.BookingStatus;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -27,7 +32,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"service","client"})
+@ToString(exclude = {"service", "bookingClients"})
 public class Booking {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_sequence")
@@ -47,9 +52,55 @@ public class Booking {
 	private LocalDateTime updatedAt;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "client_id")
-	private Client client;
-	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "service_id")
 	private ServiceEntity service;
+	
+    @Column(nullable = false)
+    private Integer freeSlots;
+    
+    @OneToMany(
+        mappedBy = "booking", 
+        cascade = CascadeType.ALL,
+        fetch = FetchType.LAZY,
+        orphanRemoval = true 
+    )
+    @Builder.Default 
+    private Set<BookingClient> bookingClients = new HashSet<>();
+    
+    
+    /**
+     * Añade una inscripción de cliente, decrementa freeSlots y actualiza el estado 
+     * solo si se llenó completamente el turno.
+     */
+    public void addBookingClient(BookingClient bookingClient) {
+        
+        this.bookingClients.add(bookingClient);
+        this.freeSlots--;
+        
+        if (bookingClient.getBooking() != this) {
+            bookingClient.setBooking(this);
+        }
+
+        if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
+            if (this.freeSlots <= 0) {
+                this.status = BookingStatus.RESERVED; 
+            } 
+        }
+    }
+
+    /**
+     * Elimina una inscripción de cliente, incrementa freeSlots y actualiza el estado 
+     * solo si pasa de lleno a libre.
+     */
+    public void removeBookingClient(BookingClient bookingClient) {
+        
+        this.bookingClients.remove(bookingClient);
+        this.freeSlots++;
+        
+        if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
+            if (this.freeSlots > 0 && this.status == BookingStatus.RESERVED) {
+                this.status = BookingStatus.FREE; 
+            }
+        }
+    }
 }

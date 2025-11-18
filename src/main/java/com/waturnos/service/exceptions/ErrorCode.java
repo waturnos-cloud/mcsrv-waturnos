@@ -24,6 +24,8 @@ public enum ErrorCode {
     //BOOKING
     BOOKING_NOT_FOUND("1200","error.message.booking.not.found"),
     BOOKING_INVALID_STATUS("1201","error.message.booking.invalid.status"),
+    BOOKING_FULL("1202","error.message.booking.full"),
+    BOOKING_ALREADY_RESERVED_BYCLIENT("1203","error.message.booking.already.reserved"),
     
     
     //CLIENT
