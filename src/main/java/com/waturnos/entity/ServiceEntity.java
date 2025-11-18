@@ -47,4 +47,8 @@ public class ServiceEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
     private Location location;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "type")
+	private Category type;
 }
