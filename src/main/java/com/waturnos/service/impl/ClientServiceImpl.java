@@ -185,7 +185,7 @@ public class ClientServiceImpl implements ClientService {
 		if (!clientDB.isPresent()) {
 			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
 		}
-		Optional<Organization> organizationDB = organizationRepository.findById(clientId);
+		Optional<Organization> organizationDB = organizationRepository.findById(organizationId);
 		if (!organizationDB.isPresent()) {
 			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found");
 		}	
