@@ -30,6 +30,7 @@ public enum ErrorCode {
     //CLIENT
     CLIENT_NOT_FOUND("1300","error.message.client.not.exist"),
     CLIENT_EXISTS("1301","error.message.client.exist"),
+    CLIENT_NOT_EXISTS_IN_ORGANIZATION("1302","error.message.client.not.exist.in.organization"),
     ;
 
     private final String code;

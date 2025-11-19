@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.waturnos.config.NotificationChannelConfig;
@@ -76,6 +77,15 @@ public class NotificationFactory {
      * Este es el método que llamarás desde tu UserService.
      */
     public void send(NotificationRequest request) {
+       this.sendPrivate(request);
+    }
+    
+    /**
+     * Send private.
+     *
+     * @param request the request
+     */
+    private void sendPrivate(NotificationRequest request) {
         NotificationType type = request.getType();
         
         List<NotificationService> services = subscriptions.getOrDefault(type, Collections.emptyList());
@@ -93,5 +103,15 @@ public class NotificationFactory {
             // y cada servicio (Email/WhatsApp) tomará solo los campos que necesita.
             service.sendNotification(request);
         }
+    }
+    
+    
+    /**
+     * Envía la notificación a TODOS los canales suscritos para ese tipo de notificación.
+     * Este es el método que llamarás desde tu UserService.
+     */
+    @Async
+    public void sendAsync(NotificationRequest request) {
+    	 this.sendPrivate(request);
     }
 }

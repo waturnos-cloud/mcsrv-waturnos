@@ -6,12 +6,16 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +24,17 @@ import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
+import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.mapper.ServiceBookingMapper;
+import com.waturnos.notification.bean.NotificationRequest;
+import com.waturnos.notification.enums.NotificationType;
+import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
+import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
@@ -60,11 +69,30 @@ public class BookingServiceImpl implements BookingService {
 
 	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
+	
+	/** The client organization repository. */
+	private final ClientOrganizationRepository clientOrganizationRepository;
+	
+	/** The notification factory. */
+	private final NotificationFactory notificationFactory;
 
 	/** The Constant DATE_FORMATTER. */
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /** The mapper. */
     private final ServiceBookingMapper mapper; 
+    
+    /** The message source. */
+    private final MessageSource messageSource;
+    
+    
+	/** The date forma email. */
+	@Value("${app.datetime.email-format}")
+	private String dateFormaEmail;
+
+	/** The url home. */
+	@Value("${app.notification.HOME}")
+	private String urlHome;
 	/**
 	 * Creates the.
 	 *
@@ -104,11 +132,19 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = false)
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
 	    
-	    Booking booking = bookingRepository.findById(bookingId)
+		
+		Booking booking = bookingRepository.findById(bookingId)
 	            .orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
 
+		ClientOrganization clientOrganization = clientOrganizationRepository
+				.findByClientIdAndOrganizationId(clientId, booking.getService().getUser().getOrganization().getId())
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Booking not found"));
+		
+		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
+		
 	    Client client = clientRepository.findById(clientId)
 	            .orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
+
 	    
 	    if (booking.getFreeSlots() <= 0) {
 	        throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
@@ -128,7 +164,31 @@ public class BookingServiceImpl implements BookingService {
 
 	    booking.setUpdatedAt(DateUtils.getCurrentDateTime());
 	    
+	    notificationFactory.sendAsync(buildRequest(booking,client));
+	    
 	    return bookingRepository.save(booking);
+	}
+	
+	
+	/**
+	 * Builds the request.
+	 *
+	 * @param booking     the booking
+	 * @param client the client
+	 * @param serviceName the service name
+	 * @return the notification request
+	 */
+	private NotificationRequest buildRequest(Booking booking, Client client) {
+		Map<String, String> properties = new HashMap<>();
+		properties.put("USERNAME", client.getFullName());
+		properties.put("SERVICENAME", booking.getService().getName());
+		properties.put("DATEBOOKING", DateUtils.format(booking.getStartTime(), dateFormaEmail));
+		properties.put("URLHOME", urlHome);
+
+		return NotificationRequest.builder().email(client.getEmail()).language("ES")
+				.subject(messageSource.getMessage("notification.subject.assign.booking", null,
+						LocaleContextHolder.getLocale()))
+				.type(NotificationType.BOOKING_ASSIGN).properties(properties).build();
 	}
 
 	/**
@@ -214,8 +274,6 @@ public class BookingServiceImpl implements BookingService {
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public List<CountBookingDTO> countBookingsByDateRangeAndProvider(LocalDate fromDate, LocalDate toDate,
 			Long providerId) {
-
-		securityAccessEntity.controlValidAccessOrganization(providerId);
 
 		LocalDate exclusiveEndDate = toDate.plusDays(1);
 

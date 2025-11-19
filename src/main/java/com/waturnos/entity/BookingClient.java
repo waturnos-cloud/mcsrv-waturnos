@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -21,6 +22,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"booking", "client"})
+@EqualsAndHashCode(exclude = {"booking", "client"})
 public class BookingClient {
 
     @Id
