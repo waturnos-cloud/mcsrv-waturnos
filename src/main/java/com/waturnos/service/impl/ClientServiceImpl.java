@@ -1,31 +1,44 @@
 package com.waturnos.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.waturnos.entity.Client;
+import com.waturnos.entity.ClientOrganization;
+import com.waturnos.entity.Organization;
+import com.waturnos.enums.UserRole;
+import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.repository.OrganizationRepository;
+import com.waturnos.security.SecurityAccessEntity;
+import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
+import com.waturnos.service.exceptions.ErrorCode;
+import com.waturnos.service.exceptions.ServiceException;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * The Class ClientServiceImpl.
  */
 @Service
+@RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
 	/** The client repository. */
 	private final ClientRepository clientRepository;
-
-	/**
-	 * Instantiates a new client service impl.
-	 *
-	 * @param clientRepository the client repository
-	 */
-	public ClientServiceImpl(ClientRepository clientRepository) {
-		this.clientRepository = clientRepository;
-	}
+	
+	/** The client organization repository. */
+	private final ClientOrganizationRepository clientOrganizationRepository;
+	
+	/** The organization repository. */
+	private final OrganizationRepository organizationRepository;
+	
+	private final SecurityAccessEntity securityAccessEntity;
 
 	/**
 	 * Find by organization.
@@ -35,7 +48,8 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	public List<Client> findByOrganization(Long organizationId) {
-		return clientRepository.findByOrganizationId(organizationId);
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		return clientOrganizationRepository.findClientsByOrganization(organizationId);
 	}
 
 	/**
@@ -46,6 +60,29 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	public Client create(Client client) {
+	
+	    final String email = StringUtils.hasLength(client.getEmail()) ? client.getEmail().trim() : null;
+	    final String dni = StringUtils.hasLength(client.getDni()) ? client.getDni().trim() : null;
+	    final String phone = StringUtils.hasLength(client.getPhone()) ? client.getPhone().trim() : null;
+	    
+	    Optional<Client> clientDB = clientRepository.findExistingClientByUniqueFields(email, dni, phone);
+
+	    if (clientDB.isPresent()) {
+	        Client existingClient = clientDB.get();
+	        String errorMessage = "Client already exists.";
+	        
+	        if (email != null && email.equals(existingClient.getEmail())) {
+	            errorMessage = "Email already exists exception in client";
+	        } 
+	        else if (dni != null && dni.equals(existingClient.getDni())) {
+	            errorMessage = "DNI already exists exception in client";
+	        } 
+	        else if (phone != null && phone.equals(existingClient.getPhone())) {
+	            errorMessage = "Phone already exists exception in client";
+	        }
+	        throw new ServiceException(ErrorCode.CLIENT_EXISTS, errorMessage);
+	    }
+		
 		return clientRepository.save(client);
 	}
 
@@ -76,29 +113,41 @@ public class ClientServiceImpl implements ClientService {
 		clientRepository.deleteById(id);
 	}
 
+	/**
+	 * Find all.
+	 *
+	 * @return the list
+	 */
 	@Override
 	public List<Client> findAll() {
 		return clientRepository.findAll();
 	}
 
+	/**
+	 * Find by id.
+	 *
+	 * @param id the id
+	 * @return the client
+	 */
 	@Override
 	public Client findById(Long id) {
 		return clientRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + id));
 	}
 
+	/**
+	 * Find by email or phone or dni.
+	 *
+	 * @param email the email
+	 * @param phone the phone
+	 * @param dni the dni
+	 * @return the optional
+	 */
 	@Override
-	public List<Client> search(String email, String phone, String name) {
-		// Si todos los filtros son nulos, devuelve todos
-		if ((email == null || email.isBlank()) && (phone == null || phone.isBlank())
-				&& (name == null || name.isBlank())) {
-			return clientRepository.findAll();
-		}
-
-		// Busca por coincidencias parciales en cualquiera de los campos
+	@RequireRole(value = {UserRole.ADMIN,UserRole.MANAGER, UserRole.PROVIDER})
+	public Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni) {
 		return clientRepository
-				.findByEmailContainingIgnoreCaseOrPhoneContainingIgnoreCaseOrFullNameContainingIgnoreCase(
-						email != null ? email : "", phone != null ? phone : "", name != null ? name : "");
+				.findByEmailOrPhoneOrDni(email,phone,dni);
 	}
 
 	/**
@@ -112,8 +161,39 @@ public class ClientServiceImpl implements ClientService {
 	}
 	
 	
+	/**
+	 * Find by provider id.
+	 *
+	 * @param providerId the provider id
+	 * @return the list
+	 */
 	public List<Client> findByProviderId(Long providerId) {
 	    return clientRepository.findByProviderId(providerId);
+	}
+
+	/**
+	 * Assign client to organization.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId the organization id
+	 */
+	@Override
+	public void assignClientToOrganization(Long clientId, Long organizationId) {
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		Optional<Client> clientDB = clientRepository.findById(clientId);
+		if (!clientDB.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
+		}
+		Optional<Organization> organizationDB = organizationRepository.findById(organizationId);
+		if (!organizationDB.isPresent()) {
+			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found");
+		}	
+		
+		clientOrganizationRepository.save(ClientOrganization.builder()
+				.client(clientDB.get())
+				.organization(organizationDB.get())
+				.build());
+		
 	}
 
 }

@@ -84,6 +84,8 @@ public class Booking {
         if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
             if (this.freeSlots <= 0) {
                 this.status = BookingStatus.RESERVED; 
+            }else {
+                this.status = BookingStatus.PARTIALLY_RESERVED; 
             } 
         }
     }
@@ -92,14 +94,16 @@ public class Booking {
      * Elimina una inscripción de cliente, incrementa freeSlots y actualiza el estado 
      * solo si pasa de lleno a libre.
      */
-    public void removeBookingClient(BookingClient bookingClient) {
+    public void removeBookingClient(BookingClient bookingClient, Integer serviceCapacity) {
         
         this.bookingClients.remove(bookingClient);
         this.freeSlots++;
         
         if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
-            if (this.freeSlots > 0 && this.status == BookingStatus.RESERVED) {
+            if (this.freeSlots.equals(serviceCapacity)) {
                 this.status = BookingStatus.FREE; 
+            }else {
+            	this.status = BookingStatus.PARTIALLY_RESERVED;
             }
         }
     }

@@ -124,7 +124,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             JOIN
                 service s ON b.service_id = s.id
             WHERE
-                (b.status = 'RESERVED' or b.status = 'FREE' AND b.freeSlots < b.service.capacity) 
+                (b.status = 'RESERVED' or b.status = 'PARTIALLY_RESERVED' ) 
                 AND b.start_time >= (CURRENT_DATE + INTERVAL '1 day')
                 AND b.start_time < (CURRENT_DATE + INTERVAL '2 days')
             ORDER BY

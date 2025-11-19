@@ -1,7 +1,10 @@
 package com.waturnos.controller;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,7 +55,7 @@ public class ClientController {
 		List<Client> clients = service.findAll();
 		return ResponseEntity.ok(new ApiResponse<>(true, "Clients retrieved", mapper.toDtoList(clients)));
 	}
-
+	
 	/**
 	 * Gets the all by provider.
 	 *
@@ -85,12 +88,21 @@ public class ClientController {
 	 * @param name  the name
 	 * @return the response entity
 	 */
-	@GetMapping("/search")
-	public ResponseEntity<ApiResponse<List<ClientDTO>>> search(@RequestParam(required = false) String email,
-			@RequestParam(required = false) String phone, @RequestParam(required = false) String name) {
+	@GetMapping("/findBy")
+	public ResponseEntity<ApiResponse<ClientDTO>> findBy(@RequestParam(required = false) String email,
+			@RequestParam(required = false) String phone, 
+			@RequestParam(required = false) String dni) {
 
-		List<Client> clients = service.search(email, phone, name);
-		return ResponseEntity.ok(new ApiResponse<>(true, "Clients found", mapper.toDtoList(clients)));
+		Optional<Client> clientOptional = service.findByEmailOrPhoneOrDni(email, phone, dni);
+
+	    if (clientOptional.isPresent()) {
+	        ClientDTO clientDTO = mapper.toDto(clientOptional.get());
+	        return ResponseEntity.ok(new ApiResponse<>(true, "Client found successfully.", clientDTO));
+	    } else {
+	        return ResponseEntity
+	                .status(HttpStatus.NOT_FOUND)
+	                .body(new ApiResponse<>(false, "Client not found with the provided criteria.", null));
+	    }	
 	}
 
 	/**
@@ -104,6 +116,40 @@ public class ClientController {
 		Client created = service.create(mapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client created", mapper.toDto(created)));
 	}
+	
+	/**
+	 * Creates the.
+	 *
+	 * @param dto the dto
+	 * @return the response entity
+	 */
+	@PostMapping("{clientId}/{organizationId}")
+	public ResponseEntity<ApiResponse<Void>> assignClientToOrganization(@PathVariable Long clientId,
+			@PathVariable Long organizationId) {
+		service.assignClientToOrganization(clientId, organizationId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Client vinculated", null));
+	}
+	
+	/**
+     * Listar todos los clientes asociados a una organización específica.
+     * GET /api/organizations/{organizationId}/clients
+     */
+    @GetMapping("/listByOrganization/{organizationId}")
+    public ResponseEntity<ApiResponse<List<ClientDTO>>> getClientsByOrganization(
+            @PathVariable Long organizationId) {
+
+        List<Client> clients = service.findByOrganization(organizationId);
+
+        List<ClientDTO> clientDTOs = clients.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true, 
+                "Clients retrieved successfully for organization ID: " + organizationId, 
+                clientDTOs
+        ));
+    }
 
 	/**
 	 * Update.

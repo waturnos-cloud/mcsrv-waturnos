@@ -92,39 +92,6 @@ public class BookingServiceImpl implements BookingService {
 		return bookingRepository.save(existing);
 	}
 
-//	/**
-//	 * Update.
-//	 *
-//	 * @param id       the id
-//	 * @param clientId the client id
-//	 * @return the booking
-//	 */
-//	@Override
-//	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
-//	public Booking assignBookingToClient(Long id, Long clientId) {
-//		
-//		Booking booking = bookingRepository.findById(id)
-//				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND,"Booking not found"));
-//
-//		Client client = clientRepository.findById(clientId)
-//				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND,"Client not found"));
-//
-//		if (!booking.getStatus().equals(BookingStatus.FREE)) {
-//			throw new ServiceException(ErrorCode.BOOKING_INVALID_STATUS, "Not valid status");
-//		}
-//
-//		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-//		booking.setStatus(BookingStatus.RESERVED);
-//		booking.setClient(client);
-//
-//		return bookingRepository.save(booking);
-//
-//	}
-	
-	// Asume que BookingClientRepository ha sido inyectado en la clase de servicio
-	// @Autowired
-	// private BookingClientRepository bookingClientRepository; 
-
 	/**
 	 * AssignBookingToClient (Inscribe a un cliente en un booking multi-plaza).
 	 *

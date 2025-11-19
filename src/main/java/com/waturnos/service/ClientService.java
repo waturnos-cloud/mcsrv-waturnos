@@ -1,7 +1,9 @@
 package com.waturnos.service;
 
-import com.waturnos.entity.Client;
 import java.util.List;
+import java.util.Optional;
+
+import com.waturnos.entity.Client;
 
 /**
  * The Interface ClientService.
@@ -56,16 +58,6 @@ public interface ClientService {
 	Client findById(Long id);
 
 	/**
-	 * Search.
-	 *
-	 * @param email the email
-	 * @param phone the phone
-	 * @param name  the name
-	 * @return the list
-	 */
-	List<Client> search(String email, String phone, String name);
-
-	/**
 	 * Count all.
 	 *
 	 * @return the long
@@ -79,6 +71,10 @@ public interface ClientService {
 	 * @return the list
 	 */
 	List<Client> findByProviderId(Long providerId);
+
+	Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni);
+
+	void assignClientToOrganization(Long clientId, Long organizationId);
 
 
 }

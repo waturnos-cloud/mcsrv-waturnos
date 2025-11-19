@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "f62c12f3-adcd-43dd-a03b-4b302243edf0",
+		"_postman_id": "e40d05e2-363e-4365-8db8-c2df54323dec",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "7769840",
-		"_collection_link": "https://grey-comet-154504.postman.co/workspace/Varios~8c8c47c8-76ad-449d-b4b1-631d803d7503/collection/7769840-f62c12f3-adcd-43dd-a03b-4b302243edf0?action=share&source=collection_link&creator=7769840"
+		"_collection_link": "https://grey-comet-154504.postman.co/workspace/Varios~8c8c47c8-76ad-449d-b4b1-631d803d7503/collection/7769840-e40d05e2-363e-4365-8db8-c2df54323dec?action=share&source=collection_link&creator=7769840"
 	},
 	"item": [
 		{
@@ -1101,7 +1101,7 @@
 					"response": []
 				},
 				{
-					"name": "GET /clients/search",
+					"name": "FindBy - Email",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1111,7 +1111,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/search?email=&phone=&name=",
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/findBy?email=nicolas.bacci@gmail.com",
 							"protocol": "{{protocol}}",
 							"host": [
 								"{{hostname}}"
@@ -1120,20 +1120,76 @@
 								"msvc-waturnos",
 								"v1.0",
 								"clients",
-								"search"
+								"findBy"
 							],
 							"query": [
 								{
 									"key": "email",
-									"value": ""
-								},
+									"value": "nicolas.bacci@gmail.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindBy - Phone",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/findBy?phone=2494369055",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"findBy"
+							],
+							"query": [
 								{
 									"key": "phone",
-									"value": ""
-								},
+									"value": "2494369055"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FindBy - DNI",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/findBy?dni=297546734",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"findBy"
+							],
+							"query": [
 								{
-									"key": "name",
-									"value": ""
+									"key": "dni",
+									"value": "297546734"
 								}
 							]
 						}
