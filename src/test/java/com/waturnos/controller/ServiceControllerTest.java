@@ -69,13 +69,22 @@ class ServiceControllerTest {
 		testServiceEntity.setId(1L);
 		testServiceEntity.setName("Test Service");
 		testServiceEntity.setDescription("Test Description");
-		testServiceEntity.setDuration(60);
+		testServiceEntity.setDurationMinutes(60);
 
 		testServiceDTO = new ServiceDTO();
 		testServiceDTO.setId(1L);
 		testServiceDTO.setName("Test Service");
 		testServiceDTO.setDescription("Test Description");
-		testServiceDTO.setDuration(60);
+		testServiceDTO.setDurationMinutes(60);
+		
+		// Agregar User y Location mock para evitar NullPointerException
+		com.waturnos.dto.beans.UserDTO userDTO = new com.waturnos.dto.beans.UserDTO();
+		userDTO.setId(1L);
+		testServiceDTO.setUser(userDTO);
+		
+		com.waturnos.dto.beans.LocationDTO locationDTO = new com.waturnos.dto.beans.LocationDTO();
+		locationDTO.setId(1L);
+		testServiceDTO.setLocation(locationDTO);
 	}
 
 	@Test
