@@ -1,4 +1,12 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "/Library/Java/JavaVirtualMachines/amazon-corretto-21.jdk/Contents/Home",
+            "default": true
+        }
+    ],
+    "spring-boot.ls.java.home": "/Library/Java/JavaVirtualMachines/amazon-corretto-21.jdk/Contents/Home"
 }

@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -48,16 +48,16 @@ class OrganizationControllerTest {
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	@MockBean
+	@MockitoBean
 	private OrganizationService organizationService;
 
-	@MockBean
+	@MockitoBean
 	private OrganizationMapper organizationMapper;
 
-	@MockBean
+	@MockitoBean
 	private UserMapper userMapper;
 
-	@MockBean
+	@MockitoBean
 	private JwtAuthFilter jwtAuthFilter;
 
 	private Organization testOrganization;
