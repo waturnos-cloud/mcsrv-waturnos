@@ -2,7 +2,6 @@ package com.waturnos.service.impl;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,6 +13,7 @@ import com.waturnos.enums.UserRole;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.repository.OrganizationRepository;
+import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
@@ -37,6 +37,8 @@ public class ClientServiceImpl implements ClientService {
 	
 	/** The organization repository. */
 	private final OrganizationRepository organizationRepository;
+	
+	private final SecurityAccessEntity securityAccessEntity;
 
 	/**
 	 * Find by organization.
@@ -46,12 +48,8 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	public List<Client> findByOrganization(Long organizationId) {
-		Organization organization = organizationRepository.findById(organizationId)
-	            .orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
-
-	    return organization.getClientOrganizations().stream()
-	            .map(ClientOrganization::getClient)
-	            .collect(Collectors.toList());
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		return clientOrganizationRepository.findClientsByOrganization(organizationId);
 	}
 
 	/**
@@ -181,6 +179,7 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	public void assignClientToOrganization(Long clientId, Long organizationId) {
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		Optional<Client> clientDB = clientRepository.findById(clientId);
 		if (!clientDB.isPresent()) {
 			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
