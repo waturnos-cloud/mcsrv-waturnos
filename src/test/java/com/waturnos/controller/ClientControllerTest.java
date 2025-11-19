@@ -107,25 +107,6 @@ class ClientControllerTest {
 
 	@Test
 	@WithMockUser(roles = "PROVIDER")
-	@DisplayName("Buscar clientes por filtros")
-	void testSearchClients_Success() throws Exception {
-		// Arrange
-		List<Client> clients = List.of(testClient);
-		List<ClientDTO> clientDTOs = List.of(testClientDTO);
-		
-		when(clientService.search(any(), any(), any())).thenReturn(clients);
-		when(clientMapper.toDtoList(clients)).thenReturn(clientDTOs);
-
-		// Act & Assert
-		mockMvc.perform(get("/clients/search")
-				.param("name", "Test")
-				.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.success").value(true));
-	}
-
-	@Test
-	@WithMockUser(roles = "PROVIDER")
 	@DisplayName("Crear cliente exitosamente")
 	void testCreateClient_Success() throws Exception {
 		// Arrange

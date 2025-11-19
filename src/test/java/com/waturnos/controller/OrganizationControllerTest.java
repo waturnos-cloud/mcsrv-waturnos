@@ -68,13 +68,11 @@ class OrganizationControllerTest {
 		testOrganization = new Organization();
 		testOrganization.setId(1L);
 		testOrganization.setName("Test Organization");
-		testOrganization.setEmail("test@organization.com");
 		testOrganization.setStatus(OrganizationStatus.ACTIVE);
 
 		testOrganizationDTO = new OrganizationDTO();
 		testOrganizationDTO.setId(1L);
 		testOrganizationDTO.setName("Test Organization");
-		testOrganizationDTO.setEmail("test@organization.com");
 	}
 
 	@Test
