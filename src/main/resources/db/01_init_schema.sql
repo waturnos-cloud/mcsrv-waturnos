@@ -146,7 +146,6 @@ CREATE TABLE client (
     phone VARCHAR(50),
     dni VARCHAR(20),
     password TEXT,
-    organization_id BIGINT REFERENCES organization(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
@@ -276,6 +275,25 @@ CREATE TABLE booking_client (
         ON DELETE CASCADE -- Si se borra el cliente, se borran las entradas aquí
 );
 
+CREATE TABLE client_organization (
+    id BIGSERIAL PRIMARY KEY, 
+    
+    client_id BIGINT NOT NULL,
+    organization_id BIGINT NOT NULL,
+    
+    CONSTRAINT fk_client_org_client
+        FOREIGN KEY (client_id)
+        REFERENCES client (id)
+        ON DELETE CASCADE, 
+        
+    CONSTRAINT fk_client_org_organization
+        FOREIGN KEY (organization_id)
+        REFERENCES organization (id)
+        ON DELETE CASCADE, 
+        
+    CONSTRAINT uq_client_organization UNIQUE (client_id, organization_id)
+);
+
 -- Índice único por nombre + padre
 CREATE UNIQUE INDEX uk_category_name_parent
 ON categories (name, parent_id);
@@ -309,8 +327,9 @@ CREATE INDEX idx_service_name ON service(name);
 CREATE INDEX idx_service_duration ON service(duration_minutes);
 
 -- CLIENT
-CREATE INDEX idx_client_organization ON client(organization_id);
 CREATE INDEX idx_client_email ON client(email);
+CREATE INDEX idx_client_dni ON client(dni);
+CREATE INDEX idx_client_phone ON client(phone);
 CREATE INDEX idx_client_fullname ON client(full_name);
 
 -- BOOKING

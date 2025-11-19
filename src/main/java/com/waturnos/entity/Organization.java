@@ -2,9 +2,11 @@ package com.waturnos.entity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.waturnos.enums.OrganizationStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,7 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"locations","users"})
+@ToString(exclude = {"locations","users","clientOrganizations"})
 public class Organization {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,5 +57,8 @@ public class Organization {
 	
 	@OneToMany(mappedBy = "organization")
     private List<User> users;
+	
+	@OneToMany(mappedBy = "organization", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ClientOrganization> clientOrganizations;
 
 }

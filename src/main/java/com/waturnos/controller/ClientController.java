@@ -2,6 +2,7 @@ package com.waturnos.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -128,6 +129,27 @@ public class ClientController {
 		service.assignClientToOrganization(clientId, organizationId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client vinculated", null));
 	}
+	
+	/**
+     * Listar todos los clientes asociados a una organización específica.
+     * GET /api/organizations/{organizationId}/clients
+     */
+    @GetMapping("/listByOrganization/{organizationId}")
+    public ResponseEntity<ApiResponse<List<ClientDTO>>> getClientsByOrganization(
+            @PathVariable Long organizationId) {
+
+        List<Client> clients = service.findByOrganization(organizationId);
+
+        List<ClientDTO> clientDTOs = clients.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true, 
+                "Clients retrieved successfully for organization ID: " + organizationId, 
+                clientDTOs
+        ));
+    }
 
 	/**
 	 * Update.
