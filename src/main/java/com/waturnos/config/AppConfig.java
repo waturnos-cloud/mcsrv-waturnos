@@ -60,8 +60,9 @@ public class AppConfig {
 	public AuthenticationManager authenticationManager(HttpSecurity http, PasswordEncoder passwordEncoder,
 			CustomUserDetailsService userDetailsService) throws Exception {
 
-		return http.getSharedObject(AuthenticationManagerBuilder.class).userDetailsService(userDetailsService)
-				.passwordEncoder(passwordEncoder).and().build();
+		AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+		authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+		return authenticationManagerBuilder.build();
 	}
 
 	@Bean

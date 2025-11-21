@@ -43,8 +43,10 @@ public class Category {
 
     @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @Builder.Default
     private List<Category> children = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private boolean active = true;
 }

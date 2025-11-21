@@ -51,7 +51,7 @@ spring:
   thymeleaf:
     prefix: classpath:/templates/mail/ # Ubicación de tus plantillas de email
     suffix: .html                     # Extensión de tus plantillas
-    mode: HTML5
+    mode: HTML
     encoding: UTF-8
     cache: false                      # Desactivar caché en desarrollo                      
 jwt:
