@@ -82,8 +82,8 @@ app:
     expiration:
       timetoken: 15 #15 minutos dura el token para reset de contraseña
   notification:
-    WELCOME_USER: https://www.whaturnos.com/organizations/login.html
-    RESET_PASSWORD: https://www.whaturnos.com/user/resetpassword.html
+    WELCOME_USER: http://localhost:5173/login
+    RESET_PASSWORD: http://localhost:5173/user/resetpassword.html
     HOME: https://www.whaturnos.com
   datetime: 
     email-format: d 'de' MMMM 'de las' HH 'hs'

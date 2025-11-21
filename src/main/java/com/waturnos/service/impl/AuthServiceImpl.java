@@ -85,7 +85,7 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.save(resetToken);
 
         // 4. Envía el email con el enlace
-        notificationFactory.send(buildRequestRestPassword(user, resetToken));
+        notificationFactory.sendAsync(buildRequestRestPassword(user, resetToken));
     }
 	
 
