@@ -118,18 +118,21 @@ public class ClientController {
 	 * @return the response entity
 	 */
 	@GetMapping("/search")
-	public ResponseEntity<Map<String, Object>> searchClients(@RequestParam(required = false) String name,
+	public ResponseEntity<ApiResponse<List<ClientDTO>>> searchClients(@RequestParam(required = false) String name,
 			@RequestParam(required = false) String email, @RequestParam(required = false) String phone,
 			@RequestParam(required = false) String dni,
 			@RequestParam(required = true) Long organizationId) {
 		List<Client> clients = service.searchClients(name, email, phone, dni, organizationId);
 
-		Map<String, Object> resp = new HashMap<>();
-		resp.put("data", clients);
-		if (clients.isEmpty()) {
-			resp.put("message", "No se encontraron clientes");
-		}
-		return ResponseEntity.ok(resp);
+        List<ClientDTO> clientDTOs = clients.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(new ApiResponse<>(
+                true, 
+                "Clients retrieved successfully for organization ID: " + organizationId, 
+                clientDTOs
+        ));
 	}
 
 	/**

@@ -189,6 +189,12 @@ public class ClientServiceImpl implements ClientService {
 			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found");
 		}	
 		
+		Optional<ClientOrganization> existing = clientOrganizationRepository.findByClientIdAndOrganizationId(clientId, organizationId);
+		if (existing.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Client already assigned to organization");
+		}
+
+		
 		clientOrganizationRepository.save(ClientOrganization.builder()
 				.client(clientDB.get())
 				.organization(organizationDB.get())
