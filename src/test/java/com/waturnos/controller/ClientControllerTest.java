@@ -129,7 +129,7 @@ class ClientControllerTest {
 	void testUpdateClient_Success() throws Exception {
 		// Arrange
 		when(clientMapper.toEntity(any(ClientDTO.class))).thenReturn(testClient);
-		when(clientService.update(anyLong(), any(Client.class))).thenReturn(testClient);
+		when(clientService.update(any(Client.class))).thenReturn(testClient);
 		when(clientMapper.toDto(any(Client.class))).thenReturn(testClientDTO);
 
 		// Act & Assert

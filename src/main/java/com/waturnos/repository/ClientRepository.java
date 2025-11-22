@@ -36,6 +36,15 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 	            @Param("email") String email,
 	            @Param("dni") String dni,
 	            @Param("phone") String phone);
+
+	@Query("SELECT c FROM Client c WHERE " + 
+				"(:email IS NOT NULL AND c.email = :email) OR " + 
+		       "(:dni IS NOT NULL AND c.dni = :dni) OR " + 
+		       "(:phone IS NOT NULL AND c.phone = :phone)")
+	List<Client> findExistingClientsByUniqueFields(
+	        @Param("email") String email,
+	        @Param("dni") String dni,
+	        @Param("phone") String phone);
 	
 	    @Query("SELECT DISTINCT c FROM Client c " +
 		    "JOIN c.clientOrganizations co " +

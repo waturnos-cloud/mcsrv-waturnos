@@ -158,6 +158,27 @@ public class ClientController {
 		service.assignClientToOrganization(clientId, organizationId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client vinculated", null));
 	}
+
+	/**
+	 * Notify a client. POST /clients/{clientId}/notify
+	 */
+	@PostMapping("{clientId}/notify")
+	public ResponseEntity<ApiResponse<Void>> notifyClient(@PathVariable Long clientId,
+			@RequestBody com.waturnos.dto.beans.ClientNotificationDTO dto) {
+		service.notifyClient(clientId, dto);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Notification sent", null));
+	}
+
+	/**
+	 * Unassign client from organization.
+	 * DELETE /clients/{clientId}/{organizationId}
+	 */
+	@DeleteMapping("{clientId}/{organizationId}")
+	public ResponseEntity<ApiResponse<Void>> unassignClientFromOrganization(@PathVariable Long clientId,
+			@PathVariable Long organizationId) {
+		service.unassignClientFromOrganization(clientId, organizationId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Client unvinculated", null));
+	}
 	
 	/**
 	 * Listar todos los clientes asociados a una organización específica.
@@ -190,9 +211,9 @@ public class ClientController {
 	 * @param dto the dto
 	 * @return the response entity
 	 */
-	@PutMapping("/{id}")
-	public ResponseEntity<ApiResponse<ClientDTO>> update(@PathVariable Long id, @RequestBody ClientDTO dto) {
-		Client updated = service.update(id, mapper.toEntity(dto));
+	@PutMapping
+	public ResponseEntity<ApiResponse<ClientDTO>> update(@RequestBody ClientDTO dto) {
+		Client updated = service.update(mapper.toEntity(dto));
 		return ResponseEntity.ok(new ApiResponse<>(true, "Client updated", mapper.toDto(updated)));
 	}
 

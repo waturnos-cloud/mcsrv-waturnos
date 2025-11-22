@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">Notificación Importante</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+    <div style="max-width: 600px; margin: auto;">
+        
+        <div style="background-color: white; border: 1px solid #ffc107; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+            
+            <h2 style="color: #ffc107; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
+                🔔 Notificación
+            </h2>
+
+            <p>
+                Hola <span th:text="${USERNAME}">[Nombre de Usuario]</span>,
+            </p>
+
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px; margin-bottom: 20px; border-left: 5px solid #0d6efd;">
+                 <p th:utext="${MESSAGE}">[Aquí va el contenido detallado del mensaje de notificación. Puede contener HTML.]</p>
+            </div>
+            
+            <p>
+                Te escribe la organización: <strong><span th:text="${ORG_NAME}">[Nombre de la Organización]</span></strong>
+            </p>
+            
+            <p style="text-align: center; margin-top: 30px;">
+                <a th:href="${LINK}"
+                    style="background-color: #0d6efd; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                    Más Información Aquí
+                </a>
+            </p>
+
+            <p style="margin-top: 30px;">
+                Para más información, visita: <a th:href="${LINK}" th:text="${LINK}">[Enlace Completo]</a>
+            </p>
+
+            <p style="margin-top: 30px;">
+                Saludos cordiales,<br>
+                El equipo de <span th:text="${ORG_NAME}">[Nombre de la Organización]</span>
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 15px; font-size: 0.8em; color: #888;">
+            Este es un correo automático enviado por <span th:text="${ORG_NAME}">[Nombre de la Organización]</span>.
+        </div>
+    </div>
+</body>
+</html>

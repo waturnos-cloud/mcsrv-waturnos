@@ -26,14 +26,6 @@ public interface ClientService {
 	 */
 	Client create(Client client);
 
-	/**
-	 * Update.
-	 *
-	 * @param id     the id
-	 * @param client the client
-	 * @return the client
-	 */
-	Client update(Long id, Client client);
 
 	/**
 	 * Delete.
@@ -83,6 +75,22 @@ public interface ClientService {
 	void assignClientToOrganization(Long clientId, Long organizationId);
 
 	/**
+	 * Unassign client from organization.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId the organization id
+	 */
+	void unassignClientFromOrganization(Long clientId, Long organizationId);
+
+	/**
+	 * Notify a client (send email/whatsapp according to config)
+	 *
+	 * @param clientId the client id
+	 * @param dto notification data
+	 */
+	void notifyClient(Long clientId, com.waturnos.dto.beans.ClientNotificationDTO dto);
+
+	/**
 	 * Search clients.
 	 *
 	 * @param name the name
@@ -93,6 +101,14 @@ public interface ClientService {
 	 * @return the list
 	 */
 	List<Client> searchClients(String name, String email, String phone, String dni, Long organizationId);
+
+	/**
+	 * Update.
+	 *
+	 * @param entity the entity
+	 * @return the client
+	 */
+	Client update(Client entity);
 
 
 }

@@ -7,4 +7,5 @@ public enum NotificationType {
     APPOINTMENT_REMINDER,
     BOOKING_ASSIGN,
     REMINDER_BOOKING
+    ,CLIENT_NOTIFICATION
 }

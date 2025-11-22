@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Notification</title>
+  </head>
+  <body>
+    <p>Hello <span th:text="${USERNAME}"></span>,</p>
+
+    <p th:utext="${MESSAGE}">[Message]</p>
+
+    <p>This message was sent by: <strong th:text="${ORG_NAME}"></strong></p>
+
+    <p>For more information visit: <a th:href="${LINK}" th:text="${LINK}"></a></p>
+
+    <p>Regards,<br/>The <span th:text="${ORG_NAME}"></span> team</p>
+  </body>
+</html>

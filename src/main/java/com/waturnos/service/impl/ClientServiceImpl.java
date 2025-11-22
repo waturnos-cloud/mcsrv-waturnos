@@ -3,13 +3,19 @@ package com.waturnos.service.impl;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.waturnos.dto.beans.ClientNotificationDTO;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.Organization;
 import com.waturnos.enums.UserRole;
+import com.waturnos.notification.bean.NotificationRequest;
+import com.waturnos.notification.enums.NotificationType;
+import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.repository.OrganizationRepository;
@@ -19,6 +25,8 @@ import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
+import com.waturnos.utils.DateUtils;
+import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +47,11 @@ public class ClientServiceImpl implements ClientService {
 	private final OrganizationRepository organizationRepository;
 	
 	private final SecurityAccessEntity securityAccessEntity;
+	private final NotificationFactory notificationFactory;
+	private final MessageSource messageSource;
+
+	@Value("${app.notification.HOME:}")
+	private String appHome;
 
 	/**
 	 * Find by organization.
@@ -82,22 +95,9 @@ public class ClientServiceImpl implements ClientService {
 	        }
 	        throw new ServiceException(ErrorCode.CLIENT_EXISTS, errorMessage);
 	    }
-		
-		return clientRepository.save(client);
-	}
+	    client.setCreator(SessionUtil.getUserName());
+	    client.setCreatedAt(DateUtils.getCurrentDateTime());
 
-	/**
-	 * Update.
-	 *
-	 * @param id     the id
-	 * @param client the client
-	 * @return the client
-	 */
-	@Override
-	public Client update(Long id, Client client) {
-		Client existing = clientRepository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Client not found"));
-		client.setId(existing.getId());
 		return clientRepository.save(client);
 	}
 
@@ -201,6 +201,76 @@ public class ClientServiceImpl implements ClientService {
 				.build());
 		
 	}
+
+	/**
+	 * Unassign client from organization.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId the organization id
+	 */
+	@Override
+	public void unassignClientFromOrganization(Long clientId, Long organizationId) {
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		Optional<Client> clientDB = clientRepository.findById(clientId);
+		if (!clientDB.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
+		}
+		Optional<Organization> organizationDB = organizationRepository.findById(organizationId);
+		if (!organizationDB.isPresent()) {
+			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found");
+		}
+
+		Optional<ClientOrganization> existing = clientOrganizationRepository.findByClientIdAndOrganizationId(clientId, organizationId);
+		if (!existing.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Client is not assigned to organization");
+		}
+
+		clientOrganizationRepository.delete(existing.get());
+	}
+
+	@Override
+	public void notifyClient(Long clientId, ClientNotificationDTO dto) {
+
+		Optional<Client> clientOpt = clientRepository.findById(clientId);
+		if (!clientOpt.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
+		}
+		Client client = clientOpt.get();
+
+		Long orgId = dto.getOrganizationId() != null ? dto.getOrganizationId() : com.waturnos.utils.SessionUtil.getOrganizationId();
+		if (orgId == null) {
+			throw new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not provided");
+		}
+
+		securityAccessEntity.controlValidAccessOrganization(orgId);
+
+		Organization organization = organizationRepository.findById(orgId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
+
+		// Build properties for template
+		java.util.Map<String, String> properties = new java.util.HashMap<>();
+		properties.put("USERNAME", client.getFullName());
+		properties.put("ORG_NAME", organization.getName());
+		properties.put("MESSAGE", dto.getMessage());
+		properties.put("LINK", appHome != null ? appHome : "");
+
+		String language = dto.getLanguage() != null ? dto.getLanguage() : (organization.getDefaultLanguage() != null ? organization.getDefaultLanguage() : "ES");
+
+		String subject = dto.getSubject();
+		if (subject == null || subject.isBlank()) {
+			subject = "Mensaje de " + organization.getName();
+		}
+
+		NotificationRequest request = NotificationRequest.builder()
+				.email(client.getEmail())
+				.language(language)
+				.subject(subject)
+				.type(NotificationType.CLIENT_NOTIFICATION)
+				.properties(properties)
+				.build();
+
+		notificationFactory.sendAsync(request);
+	}
 	
     /**
      * Search clients.
@@ -214,5 +284,48 @@ public class ClientServiceImpl implements ClientService {
     public List<Client> searchClients(String name, String email, String phone, String dni, Long organizationId) {
         return clientRepository.search(name, email, phone, dni, organizationId);
     }
+
+	/**
+	 * Update.
+	 *
+	 * @param client the client
+	 * @return the client
+	 */
+	@Override
+	public Client update(Client client) {
+		Optional<Client> clientDBOptional = clientRepository.findById(client.getId());
+		if (!clientDBOptional.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found");
+		}
+		Client clientDB = clientDBOptional.get();
+		
+		// Buscar posibles conflictos en email/dni/phone (puede devolver varios)
+		List<Client> conflicts = clientRepository.findExistingClientsByUniqueFields(client.getEmail(),
+				client.getDni(), client.getPhone());
+
+		// Excluir al propio cliente que estamos editando
+		conflicts.removeIf(c -> c.getId().equals(client.getId()));
+
+		if (!conflicts.isEmpty()) {
+			Client existingClient = conflicts.get(0);
+			String errorMessage = "Client already exists.";
+
+			if (client.getEmail() != null && client.getEmail().equals(existingClient.getEmail())) {
+				errorMessage = "Email already exists exception in client";
+			} else if (client.getDni() != null && client.getDni().equals(existingClient.getDni())) {
+				errorMessage = "DNI already exists exception in client";
+			} else if (client.getPhone() != null && client.getPhone().equals(existingClient.getPhone())) {
+				errorMessage = "Phone already exists exception in client";
+			}
+			throw new ServiceException(ErrorCode.CLIENT_EXISTS, errorMessage);
+		}
+		clientDB.setFullName(client.getFullName());
+		clientDB.setPhone(client.getPhone());
+		clientDB.setEmail(client.getEmail());
+		clientDB.setDni(client.getDni());
+		clientDB.setModificator(SessionUtil.getUserName());
+		clientDB.setUpdatedAt(DateUtils.getCurrentDateTime());
+		return clientRepository.save(clientDB);
+	}
 
 }
