@@ -74,7 +74,25 @@ public interface ClientService {
 
 	Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni);
 
+	/**
+	 * Assign client to organization.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId the organization id
+	 */
 	void assignClientToOrganization(Long clientId, Long organizationId);
+
+	/**
+	 * Search clients.
+	 *
+	 * @param name the name
+	 * @param email the email
+	 * @param phone the phone
+	 * @param dni the dni
+	 * @param organizationId the organization id
+	 * @return the list
+	 */
+	List<Client> searchClients(String name, String email, String phone, String dni, Long organizationId);
 
 
 }

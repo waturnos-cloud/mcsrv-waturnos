@@ -17,6 +17,10 @@ spring:
       idle-timeout: 600000       # 10 min
       connection-timeout: 30000  # 30 seg
       keepalive-time: 300000     # 5 min	
+      auto-commit: true          # Habilita autocommit en las conexiones
+      minimum-idle: 5            # Mínimo de conexiones en el pool
+      maximum-pool-size: 20      # Máximo de conexiones en el pool
+      transaction-isolation: TRANSACTION_READ_COMMITTED # Nivel de aislamiento recomendado
   messages:
     basename: messages
     encoding: UTF-8        

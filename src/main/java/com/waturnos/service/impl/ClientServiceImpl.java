@@ -195,5 +195,18 @@ public class ClientServiceImpl implements ClientService {
 				.build());
 		
 	}
+	
+    /**
+     * Search clients.
+     *
+     * @param name the name
+     * @param email the email
+     * @param phone the phone
+     * @param organizationId the organization id
+     * @return the list
+     */
+    public List<Client> searchClients(String name, String email, String phone, String dni, Long organizationId) {
+        return clientRepository.search(name, email, phone, dni, organizationId);
+    }
 
 }

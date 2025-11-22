@@ -1,6 +1,8 @@
 package com.waturnos.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -85,7 +87,7 @@ public class ClientController {
 	 *
 	 * @param email the email
 	 * @param phone the phone
-	 * @param name  the name
+	 * @param dni the dni
 	 * @return the response entity
 	 */
 	@GetMapping("/findBy")
@@ -104,6 +106,31 @@ public class ClientController {
 	                .body(new ApiResponse<>(false, "Client not found with the provided criteria.", null));
 	    }	
 	}
+	
+	/**
+	 * Search clients.
+	 *
+	 * @param name the name
+	 * @param email the email
+	 * @param phone the phone
+	 * @param dni the dni
+	 * @param organizationId the organization id
+	 * @return the response entity
+	 */
+	@GetMapping("/search")
+	public ResponseEntity<Map<String, Object>> searchClients(@RequestParam(required = false) String name,
+			@RequestParam(required = false) String email, @RequestParam(required = false) String phone,
+			@RequestParam(required = false) String dni,
+			@RequestParam(required = true) Long organizationId) {
+		List<Client> clients = service.searchClients(name, email, phone, dni, organizationId);
+
+		Map<String, Object> resp = new HashMap<>();
+		resp.put("data", clients);
+		if (clients.isEmpty()) {
+			resp.put("message", "No se encontraron clientes");
+		}
+		return ResponseEntity.ok(resp);
+	}
 
 	/**
 	 * Creates the.
@@ -120,7 +147,8 @@ public class ClientController {
 	/**
 	 * Creates the.
 	 *
-	 * @param dto the dto
+	 * @param clientId the client id
+	 * @param organizationId the organization id
 	 * @return the response entity
 	 */
 	@PostMapping("{clientId}/{organizationId}")
@@ -131,9 +159,12 @@ public class ClientController {
 	}
 	
 	/**
-     * Listar todos los clientes asociados a una organización específica.
-     * GET /api/organizations/{organizationId}/clients
-     */
+	 * Listar todos los clientes asociados a una organización específica.
+	 * GET /api/organizations/{organizationId}/clients
+	 *
+	 * @param organizationId the organization id
+	 * @return the clients by organization
+	 */
     @GetMapping("/listByOrganization/{organizationId}")
     public ResponseEntity<ApiResponse<List<ClientDTO>>> getClientsByOrganization(
             @PathVariable Long organizationId) {
