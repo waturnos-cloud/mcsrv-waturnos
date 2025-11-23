@@ -13,10 +13,17 @@ spring:
     password: npg_cpViMu5TF2Jx
     driver-class-name: org.postgresql.Driver
     hikari:
-      max-lifetime: 1800000      # 30 min
+      # max-lifetime should be shorter than any DB/network pooler timeout to avoid
+      # using connections that the DB or network has already closed. Reduced from
+      # 30min to 5min to prevent 'This connection has been closed' warnings.
+      max-lifetime: 300000       # 5 min
       idle-timeout: 600000       # 10 min
       connection-timeout: 30000  # 30 seg
-      keepalive-time: 300000     # 5 min	
+      # keepalive pings should be less than max-lifetime so connections are validated
+      # before Hikari retires them.
+      keepalive-time: 240000     # 4 min
+      # Time that Hikari will wait for a connection validation (ms)
+      validation-timeout: 5000   # 5 sec
       auto-commit: true          # Habilita autocommit en las conexiones
       minimum-idle: 5            # Mínimo de conexiones en el pool
       maximum-pool-size: 20      # Máximo de conexiones en el pool
