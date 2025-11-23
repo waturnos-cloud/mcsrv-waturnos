@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the user
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	public User updateManager(User user) {
 		return userProcess.updateUser(user);
 	}

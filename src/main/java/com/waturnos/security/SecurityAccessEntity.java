@@ -31,4 +31,11 @@ public class SecurityAccessEntity {
 			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot admin another organization");
 		}
 	}
+	
+	public void controlAccessToUserId(Long userId) {
+		UserRole role = SessionUtil.getRoleUser();
+		if (!UserRole.ADMIN.equals(role) && !(userId.equals(SessionUtil.getCurrentUser().getId()))) {
+			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot admin another organization");
+		}
+	}
 }
