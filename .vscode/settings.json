@@ -8,5 +8,6 @@
             "default": true
         }
     ],
-    "spring-boot.ls.java.home": "/Library/Java/JavaVirtualMachines/amazon-corretto-21.jdk/Contents/Home"
+    "spring-boot.ls.java.home": "/Library/Java/JavaVirtualMachines/amazon-corretto-21.jdk/Contents/Home",
+    "java.debug.settings.onBuildFailureProceed": true
 }

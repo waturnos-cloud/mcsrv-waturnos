@@ -16,12 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import com.waturnos.controller.exceptions.ErrorResponse;
+import com.waturnos.dto.request.ClientLoginRequest;
 import com.waturnos.dto.request.LoginRequest;
+import com.waturnos.dto.response.ClientLoginResponse;
 import com.waturnos.dto.response.LoginResponse;
+import com.waturnos.entity.Client;
 import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.JwtUtil;
+import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
 
@@ -35,7 +39,8 @@ public class AuthController {
 	private final JwtUtil jwtUtil;
 	private final AuthenticationManager authenticationManager;
 	private final MessageSource messageSource;
-	private final UserRepository userRepository; // 👈 necesario para buscar el user completo
+	private final UserRepository userRepository;
+	private final ClientService clientService;
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
@@ -92,6 +97,150 @@ public class AuthController {
 			ErrorResponse errorDetails = new ErrorResponse(e.getErrorCode().getCode(), e.getMessage(),
 					webRequest.getDescription(false));
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+		}
+	}
+	
+	/**
+	 * Client login endpoint.
+	 * Authenticates and generates token. Returns clientId if exists, null if not.
+	 *
+	 * @param request the client login request
+	 * @param webRequest the web request
+	 * @return the response entity with token and optional client id
+	 */
+	@PostMapping("/client/login")
+	public ResponseEntity<?> clientLogin(@RequestBody ClientLoginRequest request, WebRequest webRequest) {
+		try {
+			// Validar que venga organizationId
+			if (request.getOrganizationId() == null) {
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.GLOBAL_ERROR.getCode(),
+						"Organization ID is required",
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+			}
+			
+			// Validar que venga al menos email o phone
+			if (request.getEmail() == null && request.getPhone() == null) {
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.GLOBAL_ERROR.getCode(),
+						"Email or phone is required",
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+			}
+			
+			// Validar que la organización existe
+			if (!clientService.organizationExists(request.getOrganizationId())) {
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION.getCode(),
+						"Organization not found",
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+			}
+			
+			// Buscar cliente existente (NO crear)
+			Client client = clientService.findClientIfExists(
+					request.getOrganizationId(),
+					request.getEmail(),
+					request.getPhone());
+			
+			// Generar token JWT con role CLIENT (usar identifier del request)
+			String identifier = request.getEmail() != null ? request.getEmail() : request.getPhone();
+			Long clientId = client != null ? client.getId() : null;
+			String token = jwtUtil.generateClientToken(
+					identifier,
+					clientId,
+					request.getOrganizationId());
+			
+			String message = client != null 
+					? "Client logged in successfully" 
+					: "Token generated, client not registered";
+			
+			ClientLoginResponse response = new ClientLoginResponse(
+					token, 
+					clientId, 
+					message);
+			
+			return ResponseEntity.ok(response);
+			
+		} catch (ServiceException e) {
+			ErrorResponse errorDetails = new ErrorResponse(
+					e.getErrorCode().getCode(),
+					e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+		} catch (Exception e) {
+			ErrorResponse errorDetails = new ErrorResponse(
+					ErrorCode.GLOBAL_ERROR.getCode(),
+					"An error occurred during client login: " + e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
+		}
+	}
+	
+	/**
+	 * Client registration endpoint.
+	 * Creates a new client and links them to an organization.
+	 *
+	 * @param request the client login request
+	 * @param webRequest the web request
+	 * @return the response entity with token and client id
+	 */
+	@PostMapping("/client/register")
+	public ResponseEntity<?> clientRegister(@RequestBody ClientLoginRequest request, WebRequest webRequest) {
+		try {
+			// Validar que venga organizationId
+			if (request.getOrganizationId() == null) {
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.GLOBAL_ERROR.getCode(),
+						"Organization ID is required",
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+			}
+			
+			// Validar que venga al menos email o phone
+			if (request.getEmail() == null && request.getPhone() == null) {
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.GLOBAL_ERROR.getCode(),
+						"Email or phone is required",
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+			}
+			
+			// Crear cliente nuevo
+			Client client = clientService.registerClient(
+					request.getOrganizationId(),
+					request.getEmail(),
+					request.getPhone(),
+					request.getFullName(),
+					request.getDni());
+			
+			// Generar token JWT con role CLIENT
+			String identifier = client.getEmail() != null ? client.getEmail() : client.getPhone();
+			String token = jwtUtil.generateClientToken(
+					identifier,
+					client.getId(),
+					request.getOrganizationId());
+			
+			ClientLoginResponse response = new ClientLoginResponse(
+					token, 
+					client.getId(), 
+					"Client registered successfully");
+			
+			return ResponseEntity.ok(response);
+			
+		} catch (ServiceException e) {
+			ErrorResponse errorDetails = new ErrorResponse(
+					e.getErrorCode().getCode(),
+					e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+		} catch (Exception e) {
+			ErrorResponse errorDetails = new ErrorResponse(
+					ErrorCode.GLOBAL_ERROR.getCode(),
+					"An error occurred during client registration: " + e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
 		}
 	}
 }

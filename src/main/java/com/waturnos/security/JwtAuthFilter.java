@@ -60,14 +60,33 @@ public class JwtAuthFilter extends GenericFilter {
             String token = authHeader.replace("Bearer ", "");
 
             if (jwtUtil.isTokenValid(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
-                User user = userRepository.findByEmail(email).orElse(null);
-                if (user != null) {
-                	SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
-                	List<SimpleGrantedAuthority> authorities = Collections.singletonList(authority);
-                	user.setIdOrganization(user.getOrganization() != null ? user.getOrganization().getId():null);
-                    var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                String role = jwtUtil.getRoleFromToken(token);
+                
+                if ("CLIENT".equals(role)) {
+                    // Handle client authentication
+                    String identifier = jwtUtil.getEmailFromToken(token);
+                    Long clientId = jwtUtil.getClientIdFromToken(token);
+                    Long organizationId = jwtUtil.getOrganizationIdFromToken(token);
+                    
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_CLIENT");
+                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(authority);
+                    
+                    // Create a custom principal for clients (can be a Map or custom object)
+                    ClientPrincipal clientPrincipal = new ClientPrincipal(clientId, identifier, organizationId);
+                    
+                    var auth = new UsernamePasswordAuthenticationToken(clientPrincipal, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    // Handle user authentication (ADMIN, MANAGER, PROVIDER)
+                    String email = jwtUtil.getEmailFromToken(token);
+                    User user = userRepository.findByEmail(email).orElse(null);
+                    if (user != null) {
+                        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
+                        List<SimpleGrantedAuthority> authorities = Collections.singletonList(authority);
+                        user.setIdOrganization(user.getOrganization() != null ? user.getOrganization().getId() : null);
+                        var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
                 }
             }
         }

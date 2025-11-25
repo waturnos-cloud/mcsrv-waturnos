@@ -112,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the booking
 	 */
 	@Override
-	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT  })
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
@@ -128,7 +128,7 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the updated Booking
 	 */
 	@Override
-	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	@Transactional(readOnly = false)
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
 	    
@@ -199,6 +199,7 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the booking
 	 */
 	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	public Booking cancelBooking(Long id, String reason) {
 
 		Booking booking = bookingRepository.findById(id)
@@ -362,14 +363,17 @@ public class BookingServiceImpl implements BookingService {
 
 		Map<LocalDate, List<ServiceWithBookingsDTO>> response = new TreeMap<>();
 
-		// 4) Dentro de cada día: agrupar por servicio
+		// 4) Dentro de cada día: agrupar por servicio (usando ID para evitar lazy loading en hashCode)
 		groupedByDay.forEach((day, dayList) -> {
 
-			Map<ServiceEntity, List<Booking>> byService = dayList.stream()
-					.collect(Collectors.groupingBy(Booking::getService));
+			Map<Long, List<Booking>> byServiceId = dayList.stream()
+					.collect(Collectors.groupingBy(b -> b.getService().getId()));
 
-			List<ServiceWithBookingsDTO> dtoList = byService.entrySet().stream()
-					.map(e -> mapper.toServiceGroup(e.getKey(), e.getValue())).toList();
+			List<ServiceWithBookingsDTO> dtoList = byServiceId.entrySet().stream()
+					.map(e -> {
+						ServiceEntity service = e.getValue().get(0).getService();
+						return mapper.toServiceGroup(service, e.getValue());
+					}).toList();
 
 			response.put(day, dtoList);
 		});

@@ -155,7 +155,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the service entity
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER , UserRole.CLIENT })
 	public ServiceEntity findById(Long id) {
 		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(id);
 		if (!serviceEntity.isPresent()) {
@@ -171,7 +171,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER , UserRole.CLIENT})
 	public List<ServiceEntity> findByUser(Long userId) {
 		Optional<User> userDB = userRepository.findById(userId);
 		if (!userDB.isPresent()) {

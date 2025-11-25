@@ -32,5 +32,14 @@ public interface ClientOrganizationRepository extends JpaRepository<ClientOrgani
      * @return the optional
      */
     Optional<ClientOrganization> findByClientIdAndOrganizationId(Long clientId, Long organizationId);
+    
+    /**
+     * Check if client is linked to organization.
+     *
+     * @param clientId the client id
+     * @param organizationId the organization id
+     * @return true if exists
+     */
+    boolean existsByClientIdAndOrganizationId(Long clientId, Long organizationId);
 	
 }

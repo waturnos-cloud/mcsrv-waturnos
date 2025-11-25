@@ -339,4 +339,119 @@ public class ClientServiceImpl implements ClientService {
 		return clientRepository.save(clientDB);
 	}
 
+	/**
+	 * Check if organization exists.
+	 *
+	 * @param organizationId the organization id
+	 * @return true if exists, false otherwise
+	 */
+	@Override
+	public boolean organizationExists(Long organizationId) {
+		return organizationRepository.existsById(organizationId);
+	}
+	
+	/**
+	 * Find existing client if exists (does not create, does not throw exception).
+	 *
+	 * @param organizationId the organization id
+	 * @param email the email
+	 * @param phone the phone
+	 * @return the client or null if not found
+	 */
+	@Override
+	public Client findClientIfExists(Long organizationId, String email, String phone) {
+		// Buscar cliente existente por email o phone
+		Optional<Client> clientOpt = clientRepository.findByEmailOrPhone(
+				StringUtils.hasLength(email) ? email.trim() : null,
+				StringUtils.hasLength(phone) ? phone.trim() : null
+		);
+		
+		if (clientOpt.isEmpty()) {
+			return null;
+		}
+		
+		Client client = clientOpt.get();
+		
+		// Verificar que el cliente esté vinculado a la organización
+		boolean isLinked = clientOrganizationRepository.existsByClientIdAndOrganizationId(
+				client.getId(), organizationId);
+		
+		// Solo retornar el cliente si está vinculado a la organización
+		return isLinked ? client : null;
+	}
+	
+	/**
+	 * Register a new client and link to organization.
+	 *
+	 * @param organizationId the organization id
+	 * @param email the email
+	 * @param phone the phone
+	 * @param fullName the full name
+	 * @param dni the document/dni
+	 * @return the newly created client
+	 * @throws ServiceException if client already exists or validation fails
+	 */
+	@Override
+	public Client registerClient(Long organizationId, String email, String phone, String fullName, String dni) {
+		// Validar que al menos uno de los campos esté presente
+		if (!StringUtils.hasLength(email) && !StringUtils.hasLength(phone)) {
+			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Email or phone is required");
+		}
+		
+		// Validar que la organización existe
+		Organization organization = organizationRepository.findById(organizationId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
+		
+		// Verificar que el cliente NO exista por email, phone o dni
+		Optional<Client> existingClient = clientRepository.findByEmailOrPhoneOrDni(
+				StringUtils.hasLength(email) ? email.trim() : null,
+				StringUtils.hasLength(phone) ? phone.trim() : null,
+				StringUtils.hasLength(dni) ? dni.trim() : null
+		);
+		
+		if (existingClient.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_EXISTS, "Client already exists");
+		}
+		
+		// Crear nuevo cliente
+		Client client = new Client();
+		
+		if (StringUtils.hasLength(email)) {
+			client.setEmail(email.trim());
+		}
+		
+		if (StringUtils.hasLength(phone)) {
+			client.setPhone(phone.trim());
+		}
+		
+		if (StringUtils.hasLength(dni)) {
+			client.setDni(dni.trim());
+		}
+		
+		// Asignar fullName: usar el proporcionado o generar uno por defecto
+		if (StringUtils.hasLength(fullName)) {
+			client.setFullName(fullName.trim());
+		} else if (StringUtils.hasLength(email)) {
+			// Generar nombre por defecto desde el email
+			String username = email.trim().contains("@") ? email.trim().split("@")[0] : email.trim();
+			client.setFullName(username);
+		} else if (StringUtils.hasLength(phone)) {
+			// Generar nombre por defecto desde el phone
+			client.setFullName("Cliente " + phone.trim());
+		}
+		
+		client.setCreator("SYSTEM");
+		client.setCreatedAt(DateUtils.getCurrentDateTime());
+		client = clientRepository.save(client);
+		
+		// Vincular cliente con la organización
+		ClientOrganization clientOrg = ClientOrganization.builder()
+				.client(client)
+				.organization(organization)
+				.build();
+		clientOrganizationRepository.save(clientOrg);
+		
+		return client;
+	}
+
 }

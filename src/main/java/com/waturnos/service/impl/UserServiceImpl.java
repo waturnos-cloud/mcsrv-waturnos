@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER, UserRole.CLIENT })
 	public List<User> findManagersByOrganization(Long organizationId) {
 		return this.findUsersByOrganizationPrivate(organizationId, UserRole.MANAGER);
 	}
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the list
 	 */
 	@Override
-	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER, UserRole.CLIENT })
 	public List<User> findProvidersByOrganization(Long organizationId) {
 		return this.findUsersByOrganizationPrivate(organizationId, UserRole.PROVIDER);
 	}

@@ -23,20 +23,35 @@ public class RoleValidationAspect {
 
     @Around("@annotation(requireRole)")
     public Object checkRole(ProceedingJoinPoint joinPoint, RequireRole requireRole) throws Throwable {
-        User currentUser = SessionUtil.getCurrentUser();
         UserRole[] requiredRoles = requireRole.value();
-        if (currentUser == null) {
-            throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: user not authenticated.");
-        }
-        UserRole userRole = currentUser.getRole();
         
-        boolean hasPermission = Arrays.stream(requiredRoles)
-                                      .anyMatch(role -> role == userRole);
-
-        if (!hasPermission) {
-        	throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: insufficient permissions.");
+        // Check if it's a User authentication
+        User currentUser = SessionUtil.getCurrentUser();
+        if (currentUser != null) {
+            UserRole userRole = currentUser.getRole();
+            boolean hasPermission = Arrays.stream(requiredRoles)
+                                          .anyMatch(role -> role == userRole);
+            
+            if (!hasPermission) {
+                throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: insufficient permissions.");
+            }
+            return joinPoint.proceed();
         }
-
-        return joinPoint.proceed();
+        
+        // Check if it's a Client authentication
+        ClientPrincipal currentClient = SessionUtil.getCurrentClient();
+        if (currentClient != null) {
+            // Check if CLIENT role is in the required roles
+            boolean hasPermission = Arrays.stream(requiredRoles)
+                                          .anyMatch(role -> role == UserRole.CLIENT);
+            
+            if (!hasPermission) {
+                throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: insufficient permissions.");
+            }
+            return joinPoint.proceed();
+        }
+        
+        // No authentication found
+        throw new ServiceException(ErrorCode.INSUFFICIENT_PRIVILEGES, "Access denied: user not authenticated.");
     }
 }

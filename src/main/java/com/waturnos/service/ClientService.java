@@ -109,6 +109,45 @@ public interface ClientService {
 	 * @return the client
 	 */
 	Client update(Client entity);
-
+	
+	/**
+	 * Find or create client for login.
+	 * If client doesn't exist, creates a new one.
+	 *
+	 * @param organizationId the organization id
+	 * @param email the email (optional)
+	 * @param phone the phone (optional)
+	 * @return the client
+	 */
+	/**
+	 * Check if organization exists.
+	 * 
+	 * @param organizationId the organization id
+	 * @return true if exists, false otherwise
+	 */
+	boolean organizationExists(Long organizationId);
+	
+	/**
+	 * Find existing client if exists (does not create, does not throw exception).
+	 * 
+	 * @param organizationId the organization id
+	 * @param email the client email (optional)
+	 * @param phone the client phone (optional)
+	 * @return the existing client or null if not found
+	 */
+	Client findClientIfExists(Long organizationId, String email, String phone);
+	
+	/**
+	 * Register a new client and link to organization.
+	 * 
+	 * @param organizationId the organization id
+	 * @param email the client email (optional)
+	 * @param phone the client phone (optional)
+	 * @param fullName the client full name (optional)
+	 * @param dni the client document/dni (optional)
+	 * @return the newly created client
+	 * @throws ServiceException if client already exists or validation fails
+	 */
+	Client registerClient(Long organizationId, String email, String phone, String fullName, String dni);
 
 }
