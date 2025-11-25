@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Organization;
+import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.UserRepository;
@@ -114,6 +115,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
+	@AuditAspect(eventCode = "USER_CREATE_MANAGER", behavior = "Creación de manager")
 	public User createManager(Long organizationId, User manager) {
 		return userProcess.createManager(Organization.builder().id(organizationId).build(), manager);
 	}
@@ -127,6 +129,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@AuditAspect(eventCode = "USER_UPDATE_MANAGER", behavior = "Actualización de usuario manager")
 	public User updateManager(User user) {
 		return userProcess.updateUser(user);
 	}
@@ -168,6 +171,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the user
 	 */
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
+	@AuditAspect(eventCode = "USER_CREATE_PROVIDER", behavior = "Creación de provider")
 	public User createProvider(Long organizationId, User provider) {
 		return userProcess.createProvider(Organization.builder().id(organizationId).build(), provider);
 	}
@@ -188,6 +192,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@AuditAspect(eventCode = "USER_UPDATE_PROVIDER", behavior = "Actualización de usuario provider")
 	public User updateProvider(User provider) {
 		return userProcess.updateUser(provider);
 	}

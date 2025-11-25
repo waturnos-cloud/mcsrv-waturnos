@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Location;
+import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.entity.Organization;
 import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
@@ -70,6 +71,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@Override
 	@RequireRole({UserRole.ADMIN, UserRole.SELLER})
 	@Transactional(readOnly = false)
+	@AuditAspect(eventCode = "ORG_CREATE", behavior = "Creación de organización")
 	public Organization create(Organization org, User user) {
 		
 		Optional<User> userDB = userRepository.findByEmail(user.getEmail());
@@ -102,6 +104,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	 */
 	@Override
 	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.SELLER })
+	@AuditAspect(eventCode = "ORG_UPDATE_BASIC", behavior = "Actualización datos básicos organización")
 	public Organization updateBasicInfo(Organization org) {
 		Organization organizationDB = organizationRepository.findById(org.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
@@ -127,6 +130,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@Override
 	@RequireRole({UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.SELLER})
 	@Transactional(readOnly = false)
+	@AuditAspect(eventCode = "ORG_UPDATE_LOCATIONS", behavior = "Actualización de locations organización")
 	public Organization updateLocations(Long id, List<Location> locations) {
 		Organization existing = organizationRepository.findById(id)
 	            .orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
@@ -209,6 +213,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@Override
 	@RequireRole({UserRole.ADMIN})
 	@Transactional(readOnly = false)
+	@AuditAspect(eventCode = "ORG_STATUS_CHANGE", behavior = "Cambio de estado organización")
 	public Organization activateOrDeactivate(Long id, OrganizationStatus organizationStatus) {
 		Organization organizationDB = organizationRepository.findById(id).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));

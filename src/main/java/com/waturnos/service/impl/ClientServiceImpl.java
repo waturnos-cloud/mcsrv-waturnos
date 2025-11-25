@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.waturnos.dto.beans.ClientNotificationDTO;
+import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.Organization;
@@ -60,6 +61,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_LIST_BY_ORG", behavior = "Listado de clientes por organización")
 	public List<Client> findByOrganization(Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		return clientOrganizationRepository.findClientsByOrganization(organizationId);
@@ -72,6 +74,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_CREATE", behavior = "Creación de cliente")
 	public Client create(Client client) {
 	
 	    final String email = StringUtils.hasLength(client.getEmail()) ? client.getEmail().trim() : null;
@@ -107,6 +110,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param id the id
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_DELETE", behavior = "Eliminación de cliente")
 	public void delete(Long id) {
 		if (!clientRepository.existsById(id))
 			throw new EntityNotFoundException("Client not found");
@@ -130,6 +134,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_FIND_BY_ID", behavior = "Consulta cliente por id")
 	public Client findById(Long id) {
 		return clientRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + id));
@@ -145,6 +150,7 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	@RequireRole(value = {UserRole.ADMIN,UserRole.MANAGER, UserRole.PROVIDER})
+	@AuditAspect(eventCode = "CLIENT_FIND_BY_FIELDS", behavior = "Búsqueda cliente por email/phone/dni")
 	public Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni) {
 		return clientRepository
 				.findByEmailOrPhoneOrDni(email,phone,dni);
@@ -168,6 +174,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list
 	 */
 	public List<Client> findByProviderId(Long providerId) {
+		// Opcional auditar, lo dejamos sin anotación para reducir ruido.
 	    return clientRepository.findByProviderId(providerId);
 	}
 
@@ -178,6 +185,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param organizationId the organization id
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_ASSIGN_ORG", behavior = "Asignar cliente a organización")
 	public void assignClientToOrganization(Long clientId, Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		Optional<Client> clientDB = clientRepository.findById(clientId);
@@ -209,6 +217,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param organizationId the organization id
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_UNASSIGN_ORG", behavior = "Desasignar cliente de organización")
 	public void unassignClientFromOrganization(Long clientId, Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		Optional<Client> clientDB = clientRepository.findById(clientId);
@@ -229,6 +238,7 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
+	@AuditAspect(eventCode = "CLIENT_NOTIFY", behavior = "Notificación enviada a cliente")
 	public void notifyClient(Long clientId, ClientNotificationDTO dto) {
 
 		Optional<Client> clientOpt = clientRepository.findById(clientId);
@@ -292,6 +302,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
+	@AuditAspect(eventCode = "CLIENT_UPDATE", behavior = "Actualización de cliente")
 	public Client update(Client client) {
 		Optional<Client> clientDBOptional = clientRepository.findById(client.getId());
 		if (!clientDBOptional.isPresent()) {
