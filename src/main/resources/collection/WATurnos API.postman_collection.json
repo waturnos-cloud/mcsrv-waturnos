@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "e40d05e2-363e-4365-8db8-c2df54323dec",
+		"_postman_id": "cbd9d2cc-9170-45b1-a498-fbfd853333d7",
 		"name": "WATurnos API",
 		"description": "Colección completa de endpoints de WATurnos (Spring Boot + JWT).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7769840",
-		"_collection_link": "https://grey-comet-154504.postman.co/workspace/Varios~8c8c47c8-76ad-449d-b4b1-631d803d7503/collection/7769840-e40d05e2-363e-4365-8db8-c2df54323dec?action=share&source=collection_link&creator=7769840"
+		"_exporter_id": "160410",
+		"_collection_link": "https://warped-zodiac-887474.postman.co/workspace/MSVC-W~372c2a70-e7ea-4609-a4b2-72e4d4550965/collection/160410-cbd9d2cc-9170-45b1-a498-fbfd853333d7?action=share&source=collection_link&creator=160410"
 	},
 	"item": [
 		{
@@ -1395,6 +1395,51 @@
 					"response": []
 				},
 				{
+					"name": "Get Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/range?providerId=15&startDate=2025-11-25&endDate=2025-11-30",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"range"
+							],
+							"query": [
+								{
+									"key": "providerId",
+									"value": "15"
+								},
+								{
+									"key": "startDate",
+									"value": "2025-11-25"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-11-30"
+								},
+								{
+									"key": "serviceId",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "POST /bookings",
 					"request": {
 						"method": "POST",
@@ -1492,6 +1537,33 @@
 								"cancel"
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "GET /bookings/{bookingId}",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}"
+							]
+						},
+						"description": "Obtiene el detalle completo de un booking incluyendo los clientes vinculados"
 					},
 					"response": []
 				}

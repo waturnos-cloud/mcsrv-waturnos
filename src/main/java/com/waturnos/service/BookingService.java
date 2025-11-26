@@ -99,4 +99,12 @@ public interface BookingService {
 	Map<LocalDate, List<ServiceWithBookingsDTO>> findByRange(Long providerId, LocalDate start, LocalDate end,
 			Long serviceId);
 
+	/**
+	 * Find booking details by id.
+	 *
+	 * @param bookingId the booking id
+	 * @return the booking details DTO
+	 */
+	com.waturnos.dto.response.BookingDetailsDTO findBookingDetailsById(Long bookingId);
+
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
+import com.waturnos.dto.response.BookingDetailsDTO;
 import com.waturnos.dto.response.BookingExtendedDTO;
 import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.dto.response.ServiceListWithBookingDTO;
@@ -127,6 +128,18 @@ public class BookingController {
 		}).collect(Collectors.toList());
 
 		return ResponseEntity.ok(new ApiResponse<>(true, "Bookings for today", result));
+	}
+
+	/**
+	 * Gets the booking details by id.
+	 *
+	 * @param bookingId the booking id
+	 * @return the booking details
+	 */
+	@GetMapping("/{bookingId}")
+	public ResponseEntity<ApiResponse<BookingDetailsDTO>> getBookingDetails(@PathVariable Long bookingId) {
+		BookingDetailsDTO bookingDetails = service.findBookingDetailsById(bookingId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking details retrieved", bookingDetails));
 	}
 
 	/**

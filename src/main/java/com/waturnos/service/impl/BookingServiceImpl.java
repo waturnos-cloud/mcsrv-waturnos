@@ -380,4 +380,44 @@ public class BookingServiceImpl implements BookingService {
 
 		return response;
 	}
+
+	/**
+	 * Find booking details by id.
+	 *
+	 * @param bookingId the booking id
+	 * @return the booking details DTO
+	 */
+	@Override
+	public com.waturnos.dto.response.BookingDetailsDTO findBookingDetailsById(Long bookingId) {
+		Booking booking = bookingRepository.findById(bookingId)
+				.orElseThrow(() -> new EntityNotFoundException("Booking not found with id: " + bookingId));
+
+		com.waturnos.dto.response.BookingDetailsDTO detailsDTO = new com.waturnos.dto.response.BookingDetailsDTO();
+		
+		// Mapear datos básicos del booking
+		detailsDTO.setId(booking.getId());
+		detailsDTO.setStartTime(booking.getStartTime());
+		detailsDTO.setEndTime(booking.getEndTime());
+		detailsDTO.setStatus(booking.getStatus());
+		detailsDTO.setNotes(booking.getNotes());
+		detailsDTO.setServiceId(booking.getService().getId());
+		detailsDTO.setFreeSlots(booking.getFreeSlots());
+		
+		// Mapear los clientes vinculados
+		List<com.waturnos.dto.beans.ClientDTO> clientDTOs = booking.getBookingClients().stream()
+				.map(bc -> {
+					com.waturnos.dto.beans.ClientDTO clientDTO = new com.waturnos.dto.beans.ClientDTO();
+					clientDTO.setId(bc.getClient().getId());
+					clientDTO.setFullName(bc.getClient().getFullName());
+					clientDTO.setDni(bc.getClient().getDni());
+					clientDTO.setEmail(bc.getClient().getEmail());
+					clientDTO.setPhone(bc.getClient().getPhone());
+					return clientDTO;
+				})
+				.collect(Collectors.toList());
+		
+		detailsDTO.setClients(clientDTOs);
+		
+		return detailsDTO;
+	}
 }
