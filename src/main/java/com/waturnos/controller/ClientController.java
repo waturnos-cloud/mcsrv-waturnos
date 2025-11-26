@@ -239,4 +239,26 @@ public class ClientController {
 		long count = service.countAll();
 		return ResponseEntity.ok(new ApiResponse<>(true, "Total clients", count));
 	}
+
+	/**
+	 * Get upcoming bookings for a client.
+	 * Returns all future bookings from now onwards, ordered by date ascending.
+	 * Optionally filters by organization and date range.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId optional organization id filter
+	 * @param fromDate optional start date filter (ISO format: 2025-11-27T14:00:00)
+	 * @param toDate optional end date filter (ISO format: 2025-12-31T23:59:59)
+	 * @return the response entity with list of upcoming bookings
+	 */
+	@GetMapping("/{clientId}/bookings/upcoming")
+	public ResponseEntity<ApiResponse<List<com.waturnos.dto.response.ClientBookingDTO>>> getUpcomingBookings(
+			@PathVariable Long clientId,
+			@RequestParam(required = false) Long organizationId,
+			@RequestParam(required = false) java.time.LocalDateTime fromDate,
+			@RequestParam(required = false) java.time.LocalDateTime toDate) {
+		List<com.waturnos.dto.response.ClientBookingDTO> bookings = service.getUpcomingBookings(clientId, organizationId, fromDate, toDate);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Upcoming bookings retrieved", bookings));
+	}
 }
+

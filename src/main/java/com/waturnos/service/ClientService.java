@@ -150,4 +150,18 @@ public interface ClientService {
 	 */
 	Client registerClient(Long organizationId, String email, String phone, String fullName, String dni);
 
+	/**
+	 * Get upcoming bookings for a client from now onwards, ordered by date ascending.
+	 * Optionally filters by organization and date range.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId optional organization id filter
+	 * @param fromDate optional start date filter (defaults to now)
+	 * @param toDate optional end date filter
+	 * @return the list of client booking DTOs
+	 */
+	List<com.waturnos.dto.response.ClientBookingDTO> getUpcomingBookings(Long clientId, Long organizationId, 
+	                                                                       java.time.LocalDateTime fromDate, 
+	                                                                       java.time.LocalDateTime toDate);
+
 }

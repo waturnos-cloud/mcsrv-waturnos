@@ -208,4 +208,34 @@ List<BookingReminder> findBookingsForTomorrow();
 	List<Booking> findByProviderServiceAndRange(@Param("providerId") Long providerId,
 			@Param("serviceId") Long serviceId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
+	/**
+	 * Find upcoming bookings for a client starting from now, ordered by date ascending.
+	 * Optionally filters by organization and date range.
+	 *
+	 * @param clientId the client id
+	 * @param fromDate start of date range filter (inclusive)
+	 * @param toDate end of date range filter (exclusive)
+	 * @param organizationId optional organization id filter
+	 * @return the list of bookings
+	 */
+	@Query("""
+			SELECT b
+			FROM Booking b
+			JOIN b.bookingClients bc
+			JOIN FETCH b.service s
+			JOIN FETCH s.user u
+			JOIN FETCH s.location l
+			JOIN FETCH l.organization o
+			WHERE bc.client.id = :clientId
+			  AND b.startTime >= :fromDate
+			  AND (CAST(:toDate AS timestamp) IS NULL OR b.startTime < :toDate)
+			  AND (CAST(:organizationId AS long) IS NULL OR o.id = :organizationId)
+			  AND b.status NOT IN ('CANCELLED')
+			ORDER BY b.startTime ASC
+			""")
+	List<Booking> findUpcomingBookingsByClient(@Param("clientId") Long clientId, 
+	                                             @Param("fromDate") LocalDateTime fromDate,
+	                                             @Param("toDate") LocalDateTime toDate,
+	                                             @Param("organizationId") Long organizationId);
+
 }

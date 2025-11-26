@@ -1,15 +1,20 @@
 package com.waturnos.service.impl;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.waturnos.dto.beans.ClientNotificationDTO;
 import com.waturnos.audit.annotations.AuditAspect;
+import com.waturnos.dto.beans.ClientNotificationDTO;
+import com.waturnos.dto.response.ClientBookingDTO;
+import com.waturnos.entity.Booking;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.Organization;
@@ -17,6 +22,7 @@ import com.waturnos.enums.UserRole;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
+import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.repository.OrganizationRepository;
@@ -47,12 +53,20 @@ public class ClientServiceImpl implements ClientService {
 	/** The organization repository. */
 	private final OrganizationRepository organizationRepository;
 	
+	/** The booking repository. */
+	private final BookingRepository bookingRepository;
+	
+	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
+	
+	/** The notification factory. */
 	private final NotificationFactory notificationFactory;
-	private final MessageSource messageSource;
 
 	@Value("${app.notification.HOME:}")
 	private String appHome;
+	
+	@Value("${app.datetime.booking-date-format:EEEE, dd 'de' MMMM 'de' yyyy}")
+	private String bookingDateFormat;
 
 	/**
 	 * Find by organization.
@@ -452,6 +466,55 @@ public class ClientServiceImpl implements ClientService {
 		clientOrganizationRepository.save(clientOrg);
 		
 		return client;
+	}
+
+	/**
+	 * Get upcoming bookings for a client from now onwards.
+	 * Optionally filters by organization and date range.
+	 *
+	 * @param clientId the client id
+	 * @param organizationId optional organization id filter
+	 * @param fromDate optional start date (defaults to now if null)
+	 * @param toDate optional end date (no upper limit if null)
+	 * @return the list of client booking DTOs
+	 */
+	@Override
+	@AuditAspect(eventCode = "CLIENT_UPCOMING_BOOKINGS", behavior = "Consulta de próximos turnos del cliente")
+	public List<ClientBookingDTO> getUpcomingBookings(Long clientId, Long organizationId, 
+	                                                   LocalDateTime fromDate, LocalDateTime toDate) {
+		// Verificar que el cliente existe
+		if (!clientRepository.existsById(clientId)) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found with id: " + clientId);
+		}
+
+		// Si no se especifica fromDate, usar now()
+		LocalDateTime effectiveFromDate = fromDate != null ? fromDate : LocalDateTime.now();
+		
+		List<Booking> bookings = bookingRepository.findUpcomingBookingsByClient(clientId, effectiveFromDate, toDate, organizationId);
+
+		// Formatter para fecha en español desde configuración
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(bookingDateFormat, new Locale("es", "ES"));
+
+		return bookings.stream()
+				.map(booking -> {
+					String formattedDate = booking.getStartTime().format(formatter);
+					// Capitalizar primera letra del día
+					formattedDate = formattedDate.substring(0, 1).toUpperCase() + formattedDate.substring(1);
+
+					return ClientBookingDTO.builder()
+							.bookingId(booking.getId())
+							.formattedDate(formattedDate)
+							.startTime(booking.getStartTime())
+							.endTime(booking.getEndTime())
+							.serviceName(booking.getService().getName())
+							.serviceDurationMinutes(booking.getService().getDurationMinutes())
+							.providerName(booking.getService().getUser().getFullName())
+							.organizationName(booking.getService().getLocation().getOrganization().getName())
+							.status(booking.getStatus() != null ? booking.getStatus().name() : null)
+							.notes(booking.getNotes())
+							.build();
+				})
+				.collect(Collectors.toList());
 	}
 
 }

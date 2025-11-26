@@ -1288,6 +1288,52 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "GET /clients/{clientId}/bookings/upcoming",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/clients/{{clientId}}/bookings/upcoming?organizationId={{organizationId}}&fromDate=2025-11-27T00:00:00&toDate=2025-12-31T23:59:59",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"clients",
+								"{{clientId}}",
+								"bookings",
+								"upcoming"
+							],
+							"query": [
+								{
+									"key": "organizationId",
+									"value": "{{organizationId}}",
+									"description": "Opcional: filtrar por organización"
+								},
+								{
+									"key": "fromDate",
+									"value": "2025-11-27T00:00:00",
+									"description": "Opcional: fecha inicio (ISO 8601). Por defecto: ahora"
+								},
+								{
+									"key": "toDate",
+									"value": "2025-12-31T23:59:59",
+									"description": "Opcional: fecha fin (ISO 8601). Por defecto: sin límite"
+								}
+							]
+						},
+						"description": "Obtiene los próximos turnos de un cliente ordenados por fecha ascendente. Incluye fecha formateada, horarios, servicio, provider y organización."
+					},
+					"response": []
 				}
 			]
 		},
