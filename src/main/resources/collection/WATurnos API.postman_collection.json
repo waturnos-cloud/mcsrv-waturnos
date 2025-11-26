@@ -1612,6 +1612,41 @@
 						"description": "Obtiene el detalle completo de un booking incluyendo los clientes vinculados"
 					},
 					"response": []
+				},
+				{
+					"name": "PUT /bookings/{bookingId}/status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/{{bookingId}}/status?status=COMPLETED",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"{{bookingId}}",
+								"status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "COMPLETED",
+									"description": "Estados válidos: FREE, PARTIALLY_RESERVED, RESERVED, CANCELLED, COMPLETED, NO_SHOW"
+								}
+							]
+						},
+						"description": "Actualiza el estado de un booking. Estados válidos: FREE, PARTIALLY_RESERVED, RESERVED, CANCELLED, COMPLETED, NO_SHOW"
+					},
+					"response": []
 				}
 			]
 		},
