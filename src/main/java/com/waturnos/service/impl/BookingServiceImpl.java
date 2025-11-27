@@ -41,6 +41,7 @@ import com.waturnos.repository.ClientRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
+import com.waturnos.service.WaitlistService;
 import com.waturnos.service.exceptions.EntityNotFoundException;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
@@ -84,15 +85,15 @@ public class BookingServiceImpl implements BookingService {
     /** The mapper. */
     private final ServiceBookingMapper mapper; 
     
-    /** The message source. */
-    private final MessageSource messageSource;
-    
-    
+	/** The message source. */
+	private final MessageSource messageSource;
+	
+	/** The waitlist service. */
+	private final WaitlistService waitlistService;
+	
 	/** The date forma email. */
 	@Value("${app.datetime.email-format}")
-	private String dateFormaEmail;
-
-	/** The url home. */
+	private String dateFormaEmail;	/** The url home. */
 	@Value("${app.notification.HOME}")
 	private String urlHome;
 	/**
@@ -169,18 +170,27 @@ public class BookingServiceImpl implements BookingService {
 			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT, "Client is already registered for this booking.");
 		}
 
+		// Agregar el cliente al booking (mantener lógica original HEAD)
 		BookingClient bookingClient = BookingClient.builder()
 				.booking(booking)
 				.client(client)
 				.build();
-
 		booking.addBookingClient(bookingClient);
 
+		// Actualizar timestamp y disparar notificación
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+		notificationFactory.sendAsync(buildRequest(booking, client));
 
-		notificationFactory.sendAsync(buildRequest(booking,client));
+		// Guardar booking
+		Booking savedBooking = bookingRepository.save(booking);
 
-		return bookingRepository.save(booking);
+		// Verificar si cumple una waitlist (solo si el servicio tiene waitList activo)
+		ServiceEntity service = savedBooking.getService();
+		if (service != null && Boolean.TRUE.equals(service.getWaitList())) {
+			waitlistService.fulfillWaitlist(savedBooking, clientId);
+		}
+
+		return savedBooking;
 	}
 	
 	
@@ -215,6 +225,7 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	@AuditAspect("BOOKING_CANCEL")
+	@Transactional
 	public Booking cancelBooking(Long id, String reason) {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
@@ -233,7 +244,15 @@ public class BookingServiceImpl implements BookingService {
 		booking.setStatus(BookingStatus.CANCELLED);
 		booking.setCancelReason(reason);
 
-		return bookingRepository.save(booking);
+		Booking savedBooking = bookingRepository.save(booking);
+
+		// Notificar waitlist solo si el servicio tiene habilitada la lista de espera
+		ServiceEntity service = savedBooking.getService();
+		if (service != null && Boolean.TRUE.equals(service.getWaitList())) {
+			waitlistService.notifyNextInLine(savedBooking);
+		}
+
+		return savedBooking;
 	}
 
 	/**

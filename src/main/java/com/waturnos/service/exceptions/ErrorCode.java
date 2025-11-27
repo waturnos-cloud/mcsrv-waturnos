@@ -20,6 +20,7 @@ public enum ErrorCode {
     SERVICE_ALREADY_EXIST_EXCEPTION("1100","error.message.service.already.exist"),
     SERVICE_PROVIDER_ORGANIZATION_EXCEPTION("1101","error.message.service.provider.organization.incorrect"),
     SERVICE_EXCEPTION("1102","error.message.service.incorrect"),
+    SERVICE_NOT_FOUND("1103","error.message.service.not.found"),
     
     //BOOKING
     BOOKING_NOT_FOUND("1200","error.message.booking.not.found"),
@@ -32,6 +33,15 @@ public enum ErrorCode {
     CLIENT_EXISTS("1301","error.message.client.exist"),
     CLIENT_NOT_EXISTS_IN_ORGANIZATION("1302","error.message.client.not.exist.in.organization"),
     CLIENT_EXISTS_IN_ORGANIZATION("1303","error.message.client.exist.in.organization"),
+    
+    // WAITLIST
+    WAITLIST_NOT_FOUND("1400","error.message.waitlist.not.found"),
+    
+    // GENERAL
+    BAD_REQUEST("400","error.message.bad.request"),
+    CONFLICT("409","error.message.conflict"),
+    FORBIDDEN("403","error.message.forbidden"),
+    ORGANIZATION_NOT_FOUND("1006","error.message.organization.not.found"),
     ;
 
     private final String code;

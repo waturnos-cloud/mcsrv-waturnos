@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+   <title th:remove="all">Turno Disponible - Lista de Espera</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+   <div style="max-width: 600px; margin: auto;">
+      <div style="background-color: white; border: 1px solid #0d6efd; padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+         
+         <h2 style="color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 10px;">
+            🔔 ¡Turno Disponible!
+         </h2>
+
+         <p>
+            Hola <strong><span th:text="${USERNAME}">[Nombre de Cliente]</span></strong>,
+         </p>
+
+         <p>
+            ¡Buenas noticias! Se ha <strong>liberado un turno</strong> que estabas esperando.
+         </p>
+
+         <!-- Bloque de información -->
+         <div style="background-color: #e7f3ff; padding: 15px; border-radius: 4px; border: 1px dashed #0d6efd; margin-top: 20px; margin-bottom: 20px; font-size: 1.05em;">
+            <p style="margin: 0 0 10px 0;">
+               <strong>Servicio:</strong> <span th:text="${SERVICENAME}">[Nombre del Servicio]</span>
+            </p>
+            <p style="margin: 0 0 10px 0;">
+               <strong>Proveedor:</strong> <span th:text="${PROVIDERNAME}">[Nombre del Proveedor]</span>
+            </p>
+            <p style="margin: 0;">
+               <strong>Fecha y Hora:</strong> <span th:text="${DATEBOOKING}">[Fecha y Hora]</span>
+            </p>
+         </div>
+
+         <!-- Advertencia de tiempo limitado -->
+         <div style="background-color: #fff3cd; padding: 12px; border-radius: 4px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+            <p style="margin: 0; color: #856404;">
+               ⏰ <strong>¡Apresúrate!</strong> Tienes <strong><span th:text="${EXPIRATION_MINUTES}">[15]</span> minutos</strong> 
+               para reservar este turno antes de que se ofrezca al siguiente en la lista.
+            </p>
+         </div>
+
+         <p>
+            Para reservar este turno, ingresa a la aplicación y confirma tu asistencia lo antes posible.
+         </p>
+
+         <div style="text-align: center; margin: 25px 0;">
+            <a th:href="${BOOKING_URL}" 
+               style="background-color: #0d6efd; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+               Reservar Turno Ahora
+            </a>
+         </div>
+
+         <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 25px 0;">
+
+         <p style="color: #666; font-size: 0.9em;">
+            Si no puedes asistir o no deseas reservar este turno, no es necesario que hagas nada. 
+            El turno se ofrecerá automáticamente al siguiente cliente en la lista de espera.
+         </p>
+
+         <p style="color: #666; font-size: 0.9em; margin-top: 20px;">
+            Saludos,<br/>
+            <strong>El equipo de <span th:text="${ORGANIZATIONNAME}">[Organización]</span></strong>
+         </p>
+      </div>
+
+      <div style="text-align: center; margin-top: 15px; font-size: 0.85em; color: #999;">
+         <p>Este es un mensaje automático, por favor no respondas a este correo.</p>
+      </div>
+   </div>
+</body>
+</html>

@@ -130,6 +130,14 @@ CREATE TABLE service (
     CHECK (capacity > 0)
 );
 
+ALTER TABLE service 
+  ADD COLUMN wait_list BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN wait_list_time INTEGER DEFAULT 15; -- minutos por defecto
+
+-- Agregar comentario
+COMMENT ON COLUMN service.wait_list IS 'Habilita lista de espera para este servicio';
+COMMENT ON COLUMN service.wait_list_time IS 'Minutos que tiene el cliente para reservar cuando se notifica';
+
 -- Tabla: service_props
 CREATE TABLE service_props (
     id BIGSERIAL PRIMARY KEY,
@@ -293,6 +301,48 @@ CREATE TABLE client_organization (
         
     CONSTRAINT uq_client_organization UNIQUE (client_id, organization_id)
 );
+
+
+CREATE TABLE waitlist_entries (
+  id BIGSERIAL PRIMARY KEY,
+  
+  -- Referencias
+  client_id BIGINT NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+  service_id BIGINT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
+  provider_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  organization_id BIGINT NOT NULL REFERENCES organization(id) ON DELETE CASCADE,
+  
+  -- Tipo de espera
+  type VARCHAR(20) NOT NULL CHECK (type IN ('SPECIFIC', 'TIME_WINDOW')),
+  
+  -- Para tipo SPECIFIC
+  specific_booking_id BIGINT REFERENCES booking(id) ON DELETE SET NULL,
+  
+  -- Para ambos tipos
+  date DATE NOT NULL,
+  time_from TIME NOT NULL,
+  time_to TIME NOT NULL,
+  
+  -- Estado y posición
+  status VARCHAR(20) NOT NULL DEFAULT 'WAITING' 
+    CHECK (status IN ('WAITING', 'NOTIFIED', 'EXPIRED', 'FULFILLED', 'CANCELLED')),
+  position INTEGER NOT NULL,
+  
+  -- Tiempos
+  expiration_minutes INTEGER NOT NULL, -- Cuántos minutos tiene para reservar
+  notified_at TIMESTAMP NULL,
+  expires_at TIMESTAMP NULL,
+  
+  -- Auditoría
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Índices para waitlist_entries
+CREATE INDEX idx_waitlist_service ON waitlist_entries(service_id, status, position);
+CREATE INDEX idx_waitlist_client ON waitlist_entries(client_id, status);
+CREATE INDEX idx_waitlist_booking ON waitlist_entries(specific_booking_id);
+CREATE INDEX idx_waitlist_status ON waitlist_entries(status, expires_at);
 
 -- Índice único por nombre + padre
 CREATE UNIQUE INDEX uk_category_name_parent
