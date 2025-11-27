@@ -34,19 +34,37 @@ import com.waturnos.service.exceptions.ServiceException;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * The Class AuthController.
+ */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
+	/** The jwt util. */
 	private final JwtUtil jwtUtil;
+	
+	/** The authentication manager. */
 	private final AuthenticationManager authenticationManager;
+	
+	/** The message source. */
 	private final MessageSource messageSource;
+	
+	/** The user repository. */
 	private final UserRepository userRepository;
+	
+	/** The client service. */
 	private final ClientService clientService;
+    
+    /** The access token service. */
     private final AccessTokenService accessTokenService;
+	
 	/**
-	 * Solicita un código de acceso temporal (OTP) por email o teléfono
+	 * Solicita un código de acceso temporal (OTP) por email o teléfono.
+	 *
+	 * @param request the request
+	 * @return the response entity
 	 */
 	@PostMapping("/access-token/request")
 	public ResponseEntity<?> requestAccessToken(@RequestBody AccessTokenRequest request) {
@@ -58,7 +76,10 @@ public class AuthController {
 	}
 
 	/**
-	 * Valida el código de acceso temporal y lo elimina si es válido
+	 * Valida el código de acceso temporal y lo elimina si es válido.
+	 *
+	 * @param request the request
+	 * @return the response entity
 	 */
 	@PostMapping("/access-token/validate")
 	public ResponseEntity<?> validateAccessToken(@RequestBody AccessTokenValidateRequest request) {
@@ -74,6 +95,13 @@ public class AuthController {
 		}
 	}
 
+	/**
+	 * Login.
+	 *
+	 * @param request the request
+	 * @param webRequest the web request
+	 * @return the response entity
+	 */
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
 		try {
