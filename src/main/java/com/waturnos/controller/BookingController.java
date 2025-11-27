@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +25,7 @@ import com.waturnos.dto.response.ServiceListWithBookingDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingSummaryDetail;
+import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.service.BookingService;
 
@@ -98,6 +100,22 @@ public class BookingController {
 
 		Booking canceled = service.cancelBooking(dto.getId(), dto.getReason());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
+	}
+
+	/**
+	 * Update booking status.
+	 *
+	 * @param bookingId the booking id
+	 * @param status the new status
+	 * @return the response entity
+	 */
+	@PutMapping("/{bookingId}/status")
+	public ResponseEntity<ApiResponse<BookingDTO>> updateBookingStatus(
+			@PathVariable Long bookingId, 
+			@RequestParam BookingStatus status) {
+		
+		Booking updated = service.updateStatus(bookingId, status);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking status updated", mapper.toDto(updated)));
 	}
 
 	/**
