@@ -8,4 +8,5 @@ public enum NotificationType {
     BOOKING_ASSIGN,
     REMINDER_BOOKING
     ,CLIENT_NOTIFICATION
+    ,ACCESS_TOKEN
 }

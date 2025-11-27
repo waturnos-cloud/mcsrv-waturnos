@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:remove="all">Código de Acceso Temporal</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <div style="max-width:600px;margin:auto;border:1px solid #0d6efd;padding:25px;border-radius:8px;">
+        <h2 style="color:#0d6efd;">🔐 Código de Acceso Temporal</h2>
+        <p>Hola <strong th:text="${USERNAME}">Usuario</strong>, has solicitado un código de acceso temporal.</p>
+        <p>Utiliza este código para continuar con tu acceso:</p>
+        <p style="text-align:center;font-size:1.6em;font-weight:bold;background:#f0f8ff;padding:12px;border-radius:6px;border:1px dashed #6c757d;letter-spacing:4px;">
+            <span th:text="${ACCESS_CODE}">000000</span>
+        </p>
+        <p style="text-align:center;font-size:0.95em;background:#fff3cd;color:#856404;padding:10px;border-radius:4px;border:1px dashed #ffeeba;">
+            ⚠️ El código expira en <span th:text="${EXPIRATION_MINUTES}">5</span> minutos.
+        </p>
+        <p>Si no solicitaste este código puedes ignorar este correo. No se realizará ningún cambio.</p>
+        <hr style="border:0;border-top:1px solid #eee;margin:25px 0;"/>
+        <p style="font-size:0.9em;color:#555;">Este es un correo automático, por favor no responder.</p>
+        <p>Saludos,<br/>Equipo Whaturnos</p>
+    </div>
+</body>
+</html>

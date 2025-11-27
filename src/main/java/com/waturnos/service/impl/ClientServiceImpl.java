@@ -76,7 +76,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list
 	 */
 	@Override
-	@AuditAspect("CLIENT_LIST_BY_ORG")
 	public List<Client> findByOrganization(Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		return clientOrganizationRepository.findClientsByOrganization(organizationId);

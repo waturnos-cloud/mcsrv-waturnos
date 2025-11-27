@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import com.waturnos.controller.exceptions.ErrorResponse;
+import com.waturnos.dto.request.AccessTokenRequest;
+import com.waturnos.dto.request.AccessTokenValidateRequest;
 import com.waturnos.dto.request.ClientLoginRequest;
 import com.waturnos.dto.request.LoginRequest;
 import com.waturnos.dto.response.ClientLoginResponse;
@@ -25,6 +27,7 @@ import com.waturnos.entity.User;
 import com.waturnos.enums.OrganizationStatus;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.JwtUtil;
+import com.waturnos.service.AccessTokenService;
 import com.waturnos.service.ClientService;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
@@ -41,6 +44,35 @@ public class AuthController {
 	private final MessageSource messageSource;
 	private final UserRepository userRepository;
 	private final ClientService clientService;
+    private final AccessTokenService accessTokenService;
+	/**
+	 * Solicita un código de acceso temporal (OTP) por email o teléfono
+	 */
+	@PostMapping("/access-token/request")
+	public ResponseEntity<?> requestAccessToken(@RequestBody AccessTokenRequest request) {
+		if (request.getEmail() == null && request.getPhone() == null) {
+			return ResponseEntity.badRequest().body("Email or phone required");
+		}
+		accessTokenService.generateToken(request.getEmail(), request.getPhone());
+		return ResponseEntity.ok("Código enviado");
+	}
+
+	/**
+	 * Valida el código de acceso temporal y lo elimina si es válido
+	 */
+	@PostMapping("/access-token/validate")
+	public ResponseEntity<?> validateAccessToken(@RequestBody AccessTokenValidateRequest request) {
+		if ((request.getEmail() == null && request.getPhone() == null) || request.getCode() == null) {
+			return ResponseEntity.badRequest().body("Email/phone and code required");
+		}
+		var tokenOpt = accessTokenService.validateToken(request.getEmail(), request.getPhone(), request.getCode());
+		if (tokenOpt.isPresent()) {
+			accessTokenService.deleteToken(tokenOpt.get().getId());
+			return ResponseEntity.ok("Código válido");
+		} else {
+			return ResponseEntity.status(401).body("Código inválido o expirado");
+		}
+	}
 
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody LoginRequest request, WebRequest webRequest) {
@@ -111,6 +143,15 @@ public class AuthController {
 	@PostMapping("/client/login")
 	public ResponseEntity<?> clientLogin(@RequestBody ClientLoginRequest request, WebRequest webRequest) {
 		try {
+			if ((request.getEmail() == null && request.getPhone() == null) || request.getCode() == null) {
+				return ResponseEntity.badRequest().body("Email/phone and code required");
+			}
+			var tokenOpt = accessTokenService.validateToken(request.getEmail(), request.getPhone(), request.getCode());
+			if (tokenOpt.isPresent()) {
+				accessTokenService.deleteToken(tokenOpt.get().getId());
+			} else {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Código inválido o expirado");
+			}
 			// Validar que venga organizationId
 			if (request.getOrganizationId() == null) {
 				ErrorResponse errorDetails = new ErrorResponse(

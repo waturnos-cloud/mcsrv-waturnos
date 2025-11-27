@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.waturnos.audit.AuditContext;
-import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.entity.Organization;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
@@ -77,13 +76,13 @@ public class UserProcessImpl  implements UserProcess{
 	
 
 	@Override
-	@AuditAspect("USER_PROCESS_CREATE_MANAGER")
 	public User createManager(Organization organization, User manager) {
 		Organization organizationDB = organizationRepository.findById(organization.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
 
 		securityAccessEntity.controlValidAccessOrganization(organizationDB.getId());
 		AuditContext.setOrganization(organizationDB);
+		AuditContext.setObject(manager.getFullName());
 		
 		Optional<User> user = userRepository.findByEmail(manager.getEmail());
 		if(user.isPresent()) {
@@ -112,7 +111,7 @@ public class UserProcessImpl  implements UserProcess{
 		String passwordUser = Utils.buildPassword(user.getFullName(), user.getPhone());
 		log.error("Password inicial: "+ passwordUser);
 		user.setPassword(passwordEncoder.encode(passwordUser));
-		notificationFactory.send(buildRequest(user,passwordUser));
+		notificationFactory.sendAsync(buildRequest(user,passwordUser));
 		return userRepository.save(user);
 
 	}
@@ -138,17 +137,16 @@ public class UserProcessImpl  implements UserProcess{
 	}
 
 	@Override
-	@AuditAspect("USER_PROCESS_UPDATE")
 	public User updateUser(User user) {
 		User userDB = userRepository.findById(user.getId())
 				.orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found"));
 		securityAccessEntity.controlAccessToUserId(userDB.getId());
 		AuditContext.setOrganization(userDB.getOrganization());
+		AuditContext.setObject(user.getFullName());
 		if (StringUtils.hasLength(user.getPassword())) {
 			userDB.setPassword(passwordEncoder.encode(user.getPassword()));
 		}	
 		userDB.setFullName(user.getFullName());
-		userDB.setEmail(user.getEmail());
 		userDB.setEmail(user.getEmail());
 		userDB.setPhone(user.getPhone());
 		userDB.setBio(user.getBio());
@@ -159,14 +157,13 @@ public class UserProcessImpl  implements UserProcess{
 	}
 
 	@Override
-	@AuditAspect("USER_PROCESS_CREATE_PROVIDER")
 	public User createProvider(Organization organization, User provider) {
 		Organization organizationDB = organizationRepository.findById(organization.getId()).orElseThrow(
 				() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
 		
 		securityAccessEntity.controlValidAccessOrganization(organizationDB.getId());
 		AuditContext.setOrganization(organizationDB);
-		
+		AuditContext.setObject(provider.getFullName());
 		Optional<User> existUser = userRepository.findByEmail(provider.getEmail());
 		if(existUser.isPresent()) {
 			throw new ServiceException(ErrorCode.EMAIL_ALREADY_EXIST_EXCEPTION, "Email already exists exception");

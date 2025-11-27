@@ -103,6 +103,8 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		serviceEntity.setCreatedAt(LocalDateTime.now());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
 		AuditContext.setService(serviceEntityResponse);
+		AuditContext.setProvider(userDB.get());
+		AuditContext.get().setObject(serviceEntity.getName());
 		listAvailability.forEach(av -> {
 			av.setServiceId(serviceEntity.getId());
 			availabilityRepository.save(av);
@@ -221,6 +223,8 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		ServiceEntity serviceDB = serviceDBExists.get();
 		AuditContext.setOrganization(serviceDB.getUser().getOrganization());
 		AuditContext.setService(serviceDB);
+		AuditContext.setProvider(service.getUser());
+		AuditContext.get().setObject(service.getName());
 		serviceDB.setUpdatedAt(LocalDateTime.now());
 		serviceDB.setModificator(SessionUtil.getUserName());
 		serviceDB.setName(service.getName());
@@ -247,6 +251,8 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		}
 		AuditContext.setOrganization(serviceDB.get().getUser().getOrganization());
 		AuditContext.setService(serviceDB.get());
+		AuditContext.setProvider(serviceDB.get().getUser());
+		AuditContext.get().setObject(serviceDB.get().getName());
 		batchProcessor.deleteServiceAsync(serviceDB.get().getId(), serviceDB.get().getName(), true);
 	}
 
@@ -267,6 +273,9 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		}
 		AuditContext.setOrganization(serviceEntity.get().getUser().getOrganization());
 		AuditContext.setService(serviceEntity.get());
+		AuditContext.setProvider(serviceEntity.get().getUser());
+		AuditContext.get().setObject(serviceEntity.get().getName());
+
 		unavailabilityService.create(UnavailabilityEntity.builder().startDay(startDate.toLocalDate())
 				.startTime(startDate.toLocalTime()).endDay(endDate.toLocalDate()).endTime(endDate.toLocalTime())
 				.service(ServiceEntity.builder().id(serviceId).build()).build());

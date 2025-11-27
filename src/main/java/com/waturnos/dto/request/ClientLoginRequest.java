@@ -18,6 +18,9 @@ public class ClientLoginRequest {
 	/** The email. */
 	private String email;
 	
+	/** The code. */
+	private String code;
+	
 	/** The phone. */
 	private String phone;
 	

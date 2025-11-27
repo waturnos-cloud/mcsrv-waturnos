@@ -398,9 +398,6 @@ CREATE INDEX idx_usersprops_key ON users_props(key);
 CREATE INDEX idx_clientprops_key ON client_props(key);
 
 
--- ============================================
--- AJUSTE DE SECUENCIAS
--- ============================================
 DO $$
 DECLARE
     tbl RECORD;
@@ -413,5 +410,17 @@ BEGIN
     END LOOP;
 END $$;
 
---Se actualiza secuencia para que en los inserts de booking haga de a 100 el insert 
 ALTER SEQUENCE booking_id_seq INCREMENT BY 100;
+
+-- Tabla para códigos de acceso temporales (OTP)
+CREATE TABLE access_token (
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(200),
+    phone VARCHAR(30),
+    code VARCHAR(6) NOT NULL,
+    expiry_date TIMESTAMP NOT NULL
+);
+
+CREATE INDEX idx_access_token_email ON access_token(email);
+CREATE INDEX idx_access_token_phone ON access_token(phone);
+CREATE INDEX idx_access_token_expiry ON access_token(expiry_date);
