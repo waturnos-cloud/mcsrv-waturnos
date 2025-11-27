@@ -53,4 +53,10 @@ public class ServiceEntity {
 	private Category type;
     
     private Integer capacity;
+    
+    @Builder.Default
+    private Boolean waitList = false;
+    
+    @Builder.Default
+    private Integer waitListTime = 15;
 }

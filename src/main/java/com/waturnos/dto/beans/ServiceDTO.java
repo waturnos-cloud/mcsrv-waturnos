@@ -15,4 +15,6 @@ public class ServiceDTO {
 	private LocationDTO location;
 	private CategoryTreeDTO type;
 	private Integer capacity;
+	private boolean waitList;
+	private Integer waitListTime;
 }
