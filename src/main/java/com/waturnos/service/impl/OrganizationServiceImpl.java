@@ -93,6 +93,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		org.getLocations().stream().forEach(l -> l.setOrganization(organizationDB));
 		locationRepository.saveAll(org.getLocations());
 		AuditContext.setOrganization(organizationDB);
+		AuditContext.get().setObject(organizationDB.getName());
 		return organizationDB;
 		
 	}
@@ -121,6 +122,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		organizationDB.setUpdatedAt(DateUtils.getCurrentDateTime());
 		Organization organizationupdated = organizationRepository.save(organizationDB);
 		AuditContext.setOrganization(organizationupdated);
+		AuditContext.get().setObject(organizationupdated.getName());
 		return organizationupdated;
 
 	}
@@ -143,6 +145,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Role provider only modified if simple organization");
 		}
 		AuditContext.setOrganization(existing);
+		AuditContext.get().setObject(existing.getName());
 		List<Location> deleteLocations = new ArrayList<>();
 		List<Location> upsertLocations = syncLocations(existing, locations, deleteLocations);
 		locationRepository.saveAll(upsertLocations);
@@ -227,6 +230,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 		organizationDB.setModificator(SessionUtil.getUserName());
 		organizationDB.setUpdatedAt(DateUtils.getCurrentDateTime());
 		AuditContext.setOrganization(organizationDB);
+		AuditContext.get().setObject(organizationDB.getName());
 		return organizationRepository.save(organizationDB);
 		//TODO si desactiva hay que hacer una notificación masiva de turnos adquiridos informando que revisen los turnos con la organización.
 		

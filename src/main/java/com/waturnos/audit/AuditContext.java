@@ -87,6 +87,29 @@ public class AuditContext {
         data.setOrganizationName(organization.getName());
     }
 
+    /**
+     * Set provider name in current audit context
+     */
+    public static void setProviderName(String providerName) {
+        get().setProviderName(providerName);
+    }
+
+    /**
+     * Set both provider ID and name from User entity
+     */
+    public static void setProvider(com.waturnos.entity.User provider) {
+        AuditData data = get();
+        data.setProviderId(provider.getId());
+        data.setProviderName(provider.getFullName());
+    }
+
+    /**
+     * Set object identifier in current audit context
+     */
+    public static void setObject(String object) {
+        get().setObject(object);
+    }
+
     @Data
     @Builder
     public static class AuditData {
@@ -94,5 +117,8 @@ public class AuditContext {
         private String serviceName;
         private Long organizationId;
         private String organizationName;
+        private Long providerId;
+        private String providerName;
+        private String object;
     }
 }

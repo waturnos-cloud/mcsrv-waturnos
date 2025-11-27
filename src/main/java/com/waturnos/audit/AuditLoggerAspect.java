@@ -55,12 +55,10 @@ public class AuditLoggerAspect {
         // Obtener datos de la request ANTES del proceed
         ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         String ip = null;
-        String ua = null;
         String requestId = null;
         if (attrs != null) {
             var req = attrs.getRequest();
             ip = firstNonEmpty(req.getHeader("X-Forwarded-For"), req.getRemoteAddr());
-            ua = req.getHeader("User-Agent");
             requestId = firstNonEmpty(req.getHeader("X-Request-Id"), UUID.randomUUID().toString());
         } else {
             requestId = UUID.randomUUID().toString();
@@ -105,13 +103,15 @@ public class AuditLoggerAspect {
                     .email(currentUser != null ? currentUser.getEmail() : null)
                     .organizationId(orgId)
                     .organizationName(orgName)
+                    .providerId(contextData.getProviderId())
+                    .providerName(contextData.getProviderName())
                     .role(currentUser != null && currentUser.getRole() != null ? currentUser.getRole().name() : null)
                     .methodSignature(sig.toShortString())
                     .ipAddress(ip)
-                    .userAgent(ua)
                     .requestId(requestId)
                     .serviceId(contextData.getServiceId())
                     .serviceName(contextData.getServiceName())
+                    .object(contextData.getObject())
                     .success(Boolean.TRUE)
                     .errorMessage(null)
                     .durationMs(durationMs)
@@ -146,13 +146,15 @@ public class AuditLoggerAspect {
                     .email(currentUser != null ? currentUser.getEmail() : null)
                     .organizationId(orgId)
                     .organizationName(orgName)
+                    .providerId(contextData.getProviderId())
+                    .providerName(contextData.getProviderName())
                     .role(currentUser != null && currentUser.getRole() != null ? currentUser.getRole().name() : null)
                     .methodSignature(sig.toShortString())
                     .ipAddress(ip)
-                    .userAgent(ua)
                     .requestId(requestId)
                     .serviceId(contextData.getServiceId())
                     .serviceName(contextData.getServiceName())
+                    .object(contextData.getObject())
                     .success(Boolean.FALSE)
                     .errorMessage(ex.getMessage())
                     .durationMs(durationMs)

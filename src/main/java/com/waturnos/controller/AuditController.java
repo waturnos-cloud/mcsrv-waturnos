@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.waturnos.dto.response.AuditDTO;
 import com.waturnos.dto.response.AuditEventDTO;
 import com.waturnos.entity.Audit;
 import com.waturnos.service.AuditQueryService;
+import com.waturnos.mapper.AuditMapper;
+import com.waturnos.mapper.AuditLabelResolver;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class AuditController {
 
     private final AuditQueryService auditQueryService;
+    private final AuditMapper auditMapper;
+    private final AuditLabelResolver auditLabelResolver;
 
     /**
      * Get audit logs filtered by current user's role and permissions
@@ -41,23 +46,26 @@ public class AuditController {
      * @param toDate optional end date
      * @param event optional event code filter
      * @param serviceId optional service filter
+     * @param providerId optional provider filter
      * @param page page number (0-based)
      * @param size page size
      * @return page of audit entries
      */
     @GetMapping("/logs")
-    public ResponseEntity<ApiResponse<Page<Audit>>> getAudits(
+    public ResponseEntity<ApiResponse<Page<AuditDTO>>> getAudits(
             @RequestParam(required = false) Long organizationId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) String event,
             @RequestParam(required = false) Long serviceId,
+            @RequestParam(required = false) Long providerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
-        Page<Audit> audits = auditQueryService.getAuditsForCurrentUser(organizationId, startDate, endDate, event, serviceId, pageable);
-        return ResponseEntity.ok(new ApiResponse<>(true, "Audits retrieved", audits));
+        Page<Audit> audits = auditQueryService.getAuditsForCurrentUser(organizationId, startDate, endDate, event, serviceId, providerId, pageable);
+        Page<AuditDTO> dtoPage = audits.map(a -> auditMapper.toDto(a, auditLabelResolver));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Audits retrieved", dtoPage));
     }
 
     /**

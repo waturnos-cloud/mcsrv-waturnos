@@ -3,6 +3,7 @@ package com.waturnos.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.waturnos.dto.beans.CategoryTreeDTO;
@@ -22,6 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
      * 🟢 Devuelve todas las categorías que no tienen padre
      */
     @Override
+    @Cacheable(cacheNames = "categories:parents")
     public List<Category> getParentCategories() {
         return categoryRepository.findByParentIsNull();
     }
@@ -30,6 +32,7 @@ public class CategoryServiceImpl implements CategoryService {
      * 🟢 Devuelve categorías cuyo parent.id = parentId
      */
     @Override
+    @Cacheable(cacheNames = "categories:children", key = "#parentId")
     public List<Category> getChildCategories(Long parentId) {
         return categoryRepository.findByParentId(parentId);
     }
@@ -38,6 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
      * 🟢 Obtener categoría simple por id
      */
     @Override
+    @Cacheable(cacheNames = "categories:byId", key = "#id")
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found: " + id));
@@ -47,6 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
      * 🟢 Devuelve toda la estructura árbol padre → hijos
      */
     @Override
+    @Cacheable(cacheNames = "categories:tree")
     public List<CategoryTreeDTO> getCategoryTree() {
         List<Category> parents = categoryRepository.findByParentIsNull();
 

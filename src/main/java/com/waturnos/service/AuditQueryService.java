@@ -25,6 +25,7 @@ public interface AuditQueryService {
      * @param toDate optional end date
      * @param event optional event code filter
      * @param serviceId optional service filter
+     * @param providerId optional provider filter
      * @param pageable pagination parameters
      * @return page of audit entries the current user can access
      */
@@ -34,6 +35,7 @@ public interface AuditQueryService {
         LocalDateTime toDate,
         String event,
         Long serviceId,
+        Long providerId,
         Pageable pageable
     );
 

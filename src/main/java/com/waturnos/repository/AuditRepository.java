@@ -16,7 +16,7 @@ import com.waturnos.entity.Audit;
 public interface AuditRepository extends JpaRepository<Audit, Long> {
 
     /**
-     * Find audits by organization with optional date range, event and service filters
+     * Find audits by organization with optional date range, event, service and provider filters
      */
     @Query(value = """
         SELECT * FROM audit a 
@@ -25,6 +25,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
           AND (COALESCE(:serviceId, a.service_id, -1) = COALESCE(a.service_id, -1))
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         ORDER BY a.event_date DESC
         """, 
         countQuery = """
@@ -34,6 +35,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
           AND (COALESCE(:serviceId, a.service_id, -1) = COALESCE(a.service_id, -1))
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         """,
         nativeQuery = true)
     Page<Audit> findByOrganization(
@@ -42,6 +44,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
         @Param("toDate") LocalDateTime toDate,
         @Param("event") String event,
         @Param("serviceId") Long serviceId,
+        @Param("providerId") Long providerId,
         Pageable pageable
     );
 
@@ -54,6 +57,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:fromDate, a.event_date) = a.event_date OR a.event_date >= :fromDate)
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         ORDER BY a.event_date DESC
         """,
         countQuery = """
@@ -62,6 +66,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:fromDate, a.event_date) = a.event_date OR a.event_date >= :fromDate)
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         """,
         nativeQuery = true)
     Page<Audit> findByService(
@@ -69,6 +74,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
         @Param("fromDate") LocalDateTime fromDate,
         @Param("toDate") LocalDateTime toDate,
         @Param("event") String event,
+        @Param("providerId") Long providerId,
         Pageable pageable
     );
 
@@ -83,6 +89,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
           AND (COALESCE(:serviceId, a.service_id, -1) = COALESCE(a.service_id, -1))
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         ORDER BY a.event_date DESC
         """,
         countQuery = """
@@ -93,6 +100,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
           AND (COALESCE(:toDate, a.event_date) = a.event_date OR a.event_date <= :toDate)
           AND (COALESCE(:event, a.event) = a.event)
           AND (COALESCE(:serviceId, a.service_id, -1) = COALESCE(a.service_id, -1))
+          AND (COALESCE(:providerId, a.provider_id, -1) = COALESCE(a.provider_id, -1))
         """,
         nativeQuery = true)
     Page<Audit> findByOrganizationAndEmail(
@@ -102,6 +110,7 @@ public interface AuditRepository extends JpaRepository<Audit, Long> {
         @Param("toDate") LocalDateTime toDate,
         @Param("event") String event,
         @Param("serviceId") Long serviceId,
+        @Param("providerId") Long providerId,
         Pageable pageable
     );
 }

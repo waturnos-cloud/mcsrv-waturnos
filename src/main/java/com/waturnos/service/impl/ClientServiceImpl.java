@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.waturnos.audit.AuditContext;
 import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.dto.beans.ClientNotificationDTO;
 import com.waturnos.dto.response.ClientBookingDTO;
@@ -88,7 +89,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect("CLIENT_CREATE")
 	public Client create(Client client) {
 	
 	    final String email = StringUtils.hasLength(client.getEmail()) ? client.getEmail().trim() : null;
@@ -124,7 +124,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @param id the id
 	 */
 	@Override
-	@AuditAspect("CLIENT_DELETE")
 	public void delete(Long id) {
 		if (!clientRepository.existsById(id))
 			throw new EntityNotFoundException("Client not found");
@@ -148,7 +147,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect("CLIENT_FIND_BY_ID")
 	public Client findById(Long id) {
 		return clientRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + id));
@@ -164,7 +162,6 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	@RequireRole(value = {UserRole.ADMIN,UserRole.MANAGER, UserRole.PROVIDER})
-	@AuditAspect("CLIENT_FIND_BY_FIELDS")
 	public Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni) {
 		return clientRepository
 				.findByEmailOrPhoneOrDni(email,phone,dni);
@@ -216,7 +213,9 @@ public class ClientServiceImpl implements ClientService {
 			throw new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Client already assigned to organization");
 		}
 
-		
+		AuditContext.setOrganization(organizationDB.get());
+		AuditContext.get().setObject(clientDB.get().getFullName());
+
 		clientOrganizationRepository.save(ClientOrganization.builder()
 				.client(clientDB.get())
 				.organization(organizationDB.get())
@@ -247,6 +246,9 @@ public class ClientServiceImpl implements ClientService {
 		if (!existing.isPresent()) {
 			throw new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Client is not assigned to organization");
 		}
+		
+		AuditContext.setOrganization(organizationDB.get());
+		AuditContext.get().setObject(clientDB.get().getFullName());
 
 		clientOrganizationRepository.delete(existing.get());
 	}
@@ -293,6 +295,9 @@ public class ClientServiceImpl implements ClientService {
 				.properties(properties)
 				.build();
 
+		AuditContext.setOrganization(organization);
+		AuditContext.get().setObject(client.getFullName());
+		
 		notificationFactory.sendAsync(request);
 	}
 	
@@ -316,7 +321,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect("CLIENT_UPDATE")
 	public Client update(Client client) {
 		Optional<Client> clientDBOptional = clientRepository.findById(client.getId());
 		if (!clientDBOptional.isPresent()) {
@@ -479,7 +483,6 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list of client booking DTOs
 	 */
 	@Override
-	@AuditAspect("CLIENT_UPCOMING_BOOKINGS")
 	public List<ClientBookingDTO> getUpcomingBookings(Long clientId, Long organizationId, 
 	                                                   LocalDateTime fromDate, LocalDateTime toDate) {
 		// Verificar que el cliente existe

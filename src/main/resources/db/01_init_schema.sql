@@ -306,22 +306,25 @@ CREATE TABLE IF NOT EXISTS audit (
     email VARCHAR(200),
     organization_id BIGINT,
     organization_name VARCHAR(200),
+    provider_id BIGINT,
+    provider_name VARCHAR(200),
     role VARCHAR(50),
     success BOOLEAN NOT NULL,
     error_message TEXT,
     method_signature VARCHAR(255),
     duration_ms BIGINT,
     ip_address VARCHAR(64),
-    user_agent VARCHAR(255),
     request_id VARCHAR(64),
     service_id BIGINT,
-    service_name VARCHAR(255)
+    service_name VARCHAR(255),
+    object VARCHAR(80)
 );
 
 CREATE INDEX IF NOT EXISTS idx_audit_date ON audit(event_date);
 CREATE INDEX IF NOT EXISTS idx_audit_org ON audit(organization_id);
 CREATE INDEX IF NOT EXISTS idx_audit_event ON audit(event);
 CREATE INDEX IF NOT EXISTS idx_audit_service ON audit(service_id);
+CREATE INDEX IF NOT EXISTS idx_audit_provider ON audit(provider_id);
 
 
 

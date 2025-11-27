@@ -19,7 +19,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "audit", indexes = {
     @Index(name = "idx_audit_date", columnList = "event_date"),
     @Index(name = "idx_audit_org", columnList = "organization_id"),
-    @Index(name = "idx_audit_service", columnList = "service_id")
+    @Index(name = "idx_audit_service", columnList = "service_id"),
+    @Index(name = "idx_audit_provider", columnList = "provider_id")
 })
 @Data
 @NoArgsConstructor
@@ -49,6 +50,12 @@ public class Audit {
     @Column(name = "organization_name")
     private String organizationName;
 
+    @Column(name = "provider_id")
+    private Long providerId;
+
+    @Column(name = "provider_name")
+    private String providerName;
+
     @Column(name = "role")
     private String role; // ADMIN, MANAGER, PROVIDER
 
@@ -69,10 +76,6 @@ public class Audit {
     @Column(name = "ip_address", length = 64)
     private String ipAddress;
 
-    // User-Agent del cliente (si disponible)
-    @Column(name = "user_agent", length = 255)
-    private String userAgent;
-
     // Identificador de request/correlación
     @Column(name = "request_id", length = 64)
     private String requestId;
@@ -84,4 +87,8 @@ public class Audit {
     // Nombre del servicio relacionado (si aplica)
     @Column(name = "service_name")
     private String serviceName;
+    
+    // Objeto auditado (si aplica)
+    @Column(name = "object", length = 80)
+    private String object;
 }

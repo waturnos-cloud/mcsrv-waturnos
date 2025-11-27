@@ -121,6 +121,7 @@ public class BookingServiceImpl implements BookingService {
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 		if (existing.getService() != null && existing.getService().getUser() != null && existing.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(existing.getService().getUser().getOrganization());
+			AuditContext.setProvider(existing.getService().getUser());
 			AuditContext.setService(existing.getService());
 		}
 		existing.setStatus(status);
@@ -144,6 +145,7 @@ public class BookingServiceImpl implements BookingService {
 
 		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
+			AuditContext.setProvider(booking.getService().getUser());
 			AuditContext.setService(booking.getService());
 		}
 
@@ -155,6 +157,8 @@ public class BookingServiceImpl implements BookingService {
 
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
+		
+		AuditContext.setObject(client.getFullName());
 
 		if (booking.getFreeSlots() <= 0) {
 			throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
@@ -217,6 +221,7 @@ public class BookingServiceImpl implements BookingService {
 
 		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
+			AuditContext.setProvider(booking.getService().getUser());
 			AuditContext.setService(booking.getService());
 		}
 

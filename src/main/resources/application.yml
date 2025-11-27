@@ -4,6 +4,8 @@ server:
     context-path: /msvc-waturnos/v1.0
 
 spring:
+  cache:
+    type: simple
   datasource:
     url: jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos
     #url: jdbc:postgresql://localhost:5432/waturnos
@@ -79,6 +81,69 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# Eventos disponibles por rol para auditoría
+audit:
+  events:
+    admin:
+      - CLIENT_ASSIGN_ORG
+      - CLIENT_UNASSIGN_ORG
+      - CLIENT_NOTIFY
+      - ORG_CREATE
+      - ORG_UPDATE_BASIC
+      - ORG_UPDATE_LOCATIONS
+      - ORG_STATUS_CHANGE
+      - USER_CREATE_MANAGER
+      - USER_UPDATE_MANAGER
+      - USER_CREATE_PROVIDER
+      - USER_UPDATE_PROVIDER
+      - USER_DELETE_MANAGER
+      - USER_DELETE_PROVIDER
+      - USER_PROCESS_CREATE_MANAGER
+      - USER_PROCESS_CREATE_PROVIDER
+      - USER_PROCESS_UPDATE
+      - SERVICE_CREATE
+      - SERVICE_UPDATE
+      - SERVICE_DELETE
+      - SERVICE_LOCK_CALENDAR
+      - BOOKING_UPDATE_STATUS
+      - BOOKING_ASSIGN_CLIENT
+      - BOOKING_CANCEL
+    manager:
+      - CLIENT_LIST_BY_ORG
+      - CLIENT_CREATE
+      - CLIENT_DELETE
+      - CLIENT_FIND_BY_ID
+      - CLIENT_FIND_BY_FIELDS
+      - CLIENT_ASSIGN_ORG
+      - CLIENT_UNASSIGN_ORG
+      - CLIENT_NOTIFY
+      - CLIENT_UPDATE
+      - CLIENT_UPCOMING_BOOKINGS
+      - ORG_UPDATE_BASIC
+      - ORG_UPDATE_LOCATIONS
+      - USER_CREATE_PROVIDER
+      - USER_UPDATE_PROVIDER
+      - USER_DELETE_PROVIDER
+      - USER_PROCESS_CREATE_PROVIDER
+      - USER_PROCESS_UPDATE
+      - SERVICE_CREATE
+      - SERVICE_UPDATE
+      - SERVICE_DELETE
+      - SERVICE_LOCK_CALENDAR
+      - BOOKING_UPDATE_STATUS
+      - BOOKING_ASSIGN_CLIENT
+      - BOOKING_CANCEL
+    provider:
+      - CLIENT_CREATE
+      - CLIENT_UPDATE
+      - CLIENT_NOTIFY
+      - CLIENT_UPCOMING_BOOKINGS
+      - SERVICE_UPDATE
+      - SERVICE_LOCK_CALENDAR
+      - BOOKING_UPDATE_STATUS
+      - BOOKING_ASSIGN_CLIENT
+      - BOOKING_CANCEL
 
 # El formato es: [CHANNEL_NAME]=[NOTIFICATION_TYPE_1]|[NOTIFICATION_TYPE_2]|...
 notification:
