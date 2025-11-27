@@ -7,13 +7,13 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to mark methods for auditing. Monitored with Around advice.
- * Parameters:
- * - eventCode: business event identifier
- * - behavior: description/context of the action
+ * The event code is used as a key to lookup the description in messages.properties (audit.event.{eventCode})
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface AuditAspect {
-    String eventCode();
-    String behavior();
+    /**
+     * Event code identifier. Used to lookup audit.event.{value} in messages.properties
+     */
+    String value();
 }

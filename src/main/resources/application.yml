@@ -30,7 +30,7 @@ spring:
       transaction-isolation: TRANSACTION_READ_COMMITTED # Nivel de aislamiento recomendado
   messages:
     basename: messages
-    encoding: UTF-8        
+    encoding: UTF-8
   jpa:
     hibernate:
       ddl-auto: none

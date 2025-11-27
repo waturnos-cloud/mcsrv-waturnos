@@ -19,6 +19,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.waturnos.audit.AuditContext;
+import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
@@ -113,9 +115,14 @@ public class BookingServiceImpl implements BookingService {
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT  })
+	@AuditAspect("BOOKING_UPDATE_STATUS")
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+		if (existing.getService() != null && existing.getService().getUser() != null && existing.getService().getUser().getOrganization() != null) {
+			AuditContext.setOrganization(existing.getService().getUser().getOrganization());
+			AuditContext.setService(existing.getService());
+		}
 		existing.setStatus(status);
 		return bookingRepository.save(existing);
 	}
@@ -130,43 +137,46 @@ public class BookingServiceImpl implements BookingService {
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	@Transactional(readOnly = false)
+	@AuditAspect("BOOKING_ASSIGN_CLIENT")
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
-	    
-		
 		Booking booking = bookingRepository.findById(bookingId)
-	            .orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
+				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
+
+		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
+			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
+			AuditContext.setService(booking.getService());
+		}
 
 		ClientOrganization clientOrganization = clientOrganizationRepository
 				.findByClientIdAndOrganizationId(clientId, booking.getService().getUser().getOrganization().getId())
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Booking not found"));
-		
+
 		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
-		
-	    Client client = clientRepository.findById(clientId)
-	            .orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
 
-	    
-	    if (booking.getFreeSlots() <= 0) {
-	        throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
-	    }
+		Client client = clientRepository.findById(clientId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
 
-	    if (booking.getBookingClients().stream()
-	                .anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
-	        throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT, "Client is already registered for this booking.");
-	    }
-	    
-	    BookingClient bookingClient = BookingClient.builder()
-	            .booking(booking)
-	            .client(client)
-	            .build();
-	    
-	    booking.addBookingClient(bookingClient);
+		if (booking.getFreeSlots() <= 0) {
+			throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
+		}
 
-	    booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-	    
-	    notificationFactory.sendAsync(buildRequest(booking,client));
-	    
-	    return bookingRepository.save(booking);
+		if (booking.getBookingClients().stream()
+					.anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
+			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT, "Client is already registered for this booking.");
+		}
+
+		BookingClient bookingClient = BookingClient.builder()
+				.booking(booking)
+				.client(client)
+				.build();
+
+		booking.addBookingClient(bookingClient);
+
+		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+
+		notificationFactory.sendAsync(buildRequest(booking,client));
+
+		return bookingRepository.save(booking);
 	}
 	
 	
@@ -190,33 +200,35 @@ public class BookingServiceImpl implements BookingService {
 						LocaleContextHolder.getLocale()))
 				.type(NotificationType.BOOKING_ASSIGN).properties(properties).build();
 	}
-
+	
 	/**
 	 * Cancel booking.
 	 *
-	 * @param id     the id
+	 * @param id the id
 	 * @param reason the reason
 	 * @return the booking
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
+	@AuditAspect("BOOKING_CANCEL")
 	public Booking cancelBooking(Long id, String reason) {
-
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+
+		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
+			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
+			AuditContext.setService(booking.getService());
+		}
 
 		if (!booking.getStatus().equals(BookingStatus.RESERVED)) {
 			throw new EntityNotFoundException("Not valid status");
 		}
-
-		// TODO modificator? otro servicio para client y admin/manager?
 
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		booking.setStatus(BookingStatus.CANCELLED);
 		booking.setCancelReason(reason);
 
 		return bookingRepository.save(booking);
-
 	}
 
 	/**

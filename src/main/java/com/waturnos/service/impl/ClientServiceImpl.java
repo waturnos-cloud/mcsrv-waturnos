@@ -75,7 +75,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_LIST_BY_ORG", behavior = "Listado de clientes por organización")
+	@AuditAspect("CLIENT_LIST_BY_ORG")
 	public List<Client> findByOrganization(Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		return clientOrganizationRepository.findClientsByOrganization(organizationId);
@@ -88,7 +88,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_CREATE", behavior = "Creación de cliente")
+	@AuditAspect("CLIENT_CREATE")
 	public Client create(Client client) {
 	
 	    final String email = StringUtils.hasLength(client.getEmail()) ? client.getEmail().trim() : null;
@@ -124,7 +124,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param id the id
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_DELETE", behavior = "Eliminación de cliente")
+	@AuditAspect("CLIENT_DELETE")
 	public void delete(Long id) {
 		if (!clientRepository.existsById(id))
 			throw new EntityNotFoundException("Client not found");
@@ -148,7 +148,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_FIND_BY_ID", behavior = "Consulta cliente por id")
+	@AuditAspect("CLIENT_FIND_BY_ID")
 	public Client findById(Long id) {
 		return clientRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + id));
@@ -164,7 +164,7 @@ public class ClientServiceImpl implements ClientService {
 	 */
 	@Override
 	@RequireRole(value = {UserRole.ADMIN,UserRole.MANAGER, UserRole.PROVIDER})
-	@AuditAspect(eventCode = "CLIENT_FIND_BY_FIELDS", behavior = "Búsqueda cliente por email/phone/dni")
+	@AuditAspect("CLIENT_FIND_BY_FIELDS")
 	public Optional<Client> findByEmailOrPhoneOrDni(String email, String phone, String dni) {
 		return clientRepository
 				.findByEmailOrPhoneOrDni(email,phone,dni);
@@ -199,7 +199,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param organizationId the organization id
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_ASSIGN_ORG", behavior = "Asignar cliente a organización")
+	@AuditAspect("CLIENT_ASSIGN_ORG")
 	public void assignClientToOrganization(Long clientId, Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		Optional<Client> clientDB = clientRepository.findById(clientId);
@@ -231,7 +231,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @param organizationId the organization id
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_UNASSIGN_ORG", behavior = "Desasignar cliente de organización")
+	@AuditAspect("CLIENT_UNASSIGN_ORG")
 	public void unassignClientFromOrganization(Long clientId, Long organizationId) {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		Optional<Client> clientDB = clientRepository.findById(clientId);
@@ -252,7 +252,7 @@ public class ClientServiceImpl implements ClientService {
 	}
 
 	@Override
-	@AuditAspect(eventCode = "CLIENT_NOTIFY", behavior = "Notificación enviada a cliente")
+	@AuditAspect("CLIENT_NOTIFY")
 	public void notifyClient(Long clientId, ClientNotificationDTO dto) {
 
 		Optional<Client> clientOpt = clientRepository.findById(clientId);
@@ -316,7 +316,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the client
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_UPDATE", behavior = "Actualización de cliente")
+	@AuditAspect("CLIENT_UPDATE")
 	public Client update(Client client) {
 		Optional<Client> clientDBOptional = clientRepository.findById(client.getId());
 		if (!clientDBOptional.isPresent()) {
@@ -479,7 +479,7 @@ public class ClientServiceImpl implements ClientService {
 	 * @return the list of client booking DTOs
 	 */
 	@Override
-	@AuditAspect(eventCode = "CLIENT_UPCOMING_BOOKINGS", behavior = "Consulta de próximos turnos del cliente")
+	@AuditAspect("CLIENT_UPCOMING_BOOKINGS")
 	public List<ClientBookingDTO> getUpcomingBookings(Long clientId, Long organizationId, 
 	                                                   LocalDateTime fromDate, LocalDateTime toDate) {
 		// Verificar que el cliente existe

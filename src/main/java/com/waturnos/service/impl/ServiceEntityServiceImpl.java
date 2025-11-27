@@ -12,6 +12,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.waturnos.audit.AuditContext;
+import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.ServiceEntity;
@@ -79,6 +81,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER, UserRole.SELLER })
 	@Transactional(readOnly = false)
+	@AuditAspect("SERVICE_CREATE")
 	public ServiceEntity create(ServiceEntity serviceEntity, List<AvailabilityEntity> listAvailability, Long userId,
 			Long locationId, boolean workInHollidays) {
 
@@ -93,11 +96,13 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		if (service.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_ALREADY_EXIST_EXCEPTION, "Service already exists exception");
 		}
+		AuditContext.setOrganization(userDB.get().getOrganization());
 		serviceEntity.setLocation(locationRepository.findById(locationId).get());
 		serviceEntity.setUser(userDB.get());
 		serviceEntity.setCreator(SessionUtil.getUserName());
 		serviceEntity.setCreatedAt(LocalDateTime.now());
 		ServiceEntity serviceEntityResponse = serviceRepository.save(serviceEntity);
+		AuditContext.setService(serviceEntityResponse);
 		listAvailability.forEach(av -> {
 			av.setServiceId(serviceEntity.getId());
 			availabilityRepository.save(av);
@@ -177,7 +182,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		if (!userDB.isPresent()) {
 			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
 		}
-		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
+//		securityAccessEntity.controlValidAccessOrganization(userDB.get().getOrganization().getId());
 		return serviceRepository.findByUserId(userId);
 	}
 
@@ -203,6 +208,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@Transactional(readOnly = false)
+	@AuditAspect("SERVICE_UPDATE")
 	public ServiceEntity update(ServiceEntity service) {
 
 		Optional<ServiceEntity> serviceDBExists = serviceRepository.findById(service.getId());
@@ -213,6 +219,8 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			throw new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found");
 		}
 		ServiceEntity serviceDB = serviceDBExists.get();
+		AuditContext.setOrganization(serviceDB.getUser().getOrganization());
+		AuditContext.setService(serviceDB);
 		serviceDB.setUpdatedAt(LocalDateTime.now());
 		serviceDB.setModificator(SessionUtil.getUserName());
 		serviceDB.setName(service.getName());
@@ -231,13 +239,15 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@AuditAspect("SERVICE_DELETE")
 	public void delete(Long serviceId) {
 		Optional<ServiceEntity> serviceDB = serviceRepository.findById(serviceId);
 		if (!serviceDB.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
 		}
+		AuditContext.setOrganization(serviceDB.get().getUser().getOrganization());
+		AuditContext.setService(serviceDB.get());
 		batchProcessor.deleteServiceAsync(serviceDB.get().getId(), serviceDB.get().getName(), true);
-
 	}
 
 	/**
@@ -249,15 +259,18 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.PROVIDER })
+	@AuditAspect("SERVICE_LOCK_CALENDAR")
 	public void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId) {
 		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(serviceId);
 		if (!serviceEntity.isPresent()) {
 			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
 		}
+		AuditContext.setOrganization(serviceEntity.get().getUser().getOrganization());
+		AuditContext.setService(serviceEntity.get());
 		unavailabilityService.create(UnavailabilityEntity.builder().startDay(startDate.toLocalDate())
 				.startTime(startDate.toLocalTime()).endDay(endDate.toLocalDate()).endTime(endDate.toLocalTime())
 				.service(ServiceEntity.builder().id(serviceId).build()).build());
-		
+        
 		batchProcessor.deleteBookings(startDate, endDate, serviceEntity.get());
 	}
 }

@@ -6,8 +6,9 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.waturnos.entity.Organization;
+import com.waturnos.audit.AuditContext;
 import com.waturnos.audit.annotations.AuditAspect;
+import com.waturnos.entity.Organization;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
 import com.waturnos.repository.UserRepository;
@@ -115,7 +116,7 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
-	@AuditAspect(eventCode = "USER_CREATE_MANAGER", behavior = "Creación de manager")
+	@AuditAspect("USER_CREATE_MANAGER")
 	public User createManager(Long organizationId, User manager) {
 		return userProcess.createManager(Organization.builder().id(organizationId).build(), manager);
 	}
@@ -129,15 +130,18 @@ public class UserServiceImpl implements UserService {
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
-	@AuditAspect(eventCode = "USER_UPDATE_MANAGER", behavior = "Actualización de usuario manager")
+	@AuditAspect("USER_UPDATE_MANAGER")
 	public User updateManager(User user) {
 		return userProcess.updateUser(user);
 	}
 
+	@AuditAspect("USER_DELETE_MANAGER")
 	public void deleteManager(Long managerId) {
-
+		Optional<User> userDB = userRepository.findById(managerId);
+		if (userDB.isPresent()) {
+			AuditContext.setOrganization(userDB.get().getOrganization());
+		}
 		validateCommons(managerId, UserRole.MANAGER);
-
 		userRepository.deleteById(managerId);
 	}
 
@@ -171,7 +175,7 @@ public class UserServiceImpl implements UserService {
 	 * @return the user
 	 */
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.SELLER })
-	@AuditAspect(eventCode = "USER_CREATE_PROVIDER", behavior = "Creación de provider")
+	@AuditAspect("USER_CREATE_PROVIDER")
 	public User createProvider(Long organizationId, User provider) {
 		return userProcess.createProvider(Organization.builder().id(organizationId).build(), provider);
 	}
@@ -184,15 +188,19 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER })
 	@Transactional(readOnly = false)
+	@AuditAspect("USER_DELETE_PROVIDER")
 	public void deleteProvider(Long providerId) {
+		Optional<User> userDB = userRepository.findById(providerId);
+		if (userDB.isPresent()) {
+			AuditContext.setOrganization(userDB.get().getOrganization());
+		}
 		validateCommons(providerId, UserRole.PROVIDER);
-
 		batchProcessor.deleteProviderAsync(providerId);
 	}
 
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
-	@AuditAspect(eventCode = "USER_UPDATE_PROVIDER", behavior = "Actualización de usuario provider")
+	@AuditAspect("USER_UPDATE_PROVIDER")
 	public User updateProvider(User provider) {
 		return userProcess.updateUser(provider);
 	}

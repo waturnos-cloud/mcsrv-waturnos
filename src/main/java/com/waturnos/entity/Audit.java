@@ -18,7 +18,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "audit", indexes = {
     @Index(name = "idx_audit_date", columnList = "event_date"),
-    @Index(name = "idx_audit_org", columnList = "organization_id")
+    @Index(name = "idx_audit_org", columnList = "organization_id"),
+    @Index(name = "idx_audit_service", columnList = "service_id")
 })
 @Data
 @NoArgsConstructor
@@ -33,11 +34,8 @@ public class Audit {
     @Column(name = "event_date")
     private LocalDateTime date;
 
-    @Column(name = "event_code")
-    private String eventCode;
-
-    @Column(name = "behavior")
-    private String behavior;
+    @Column(name = "event")
+    private String event;
 
     @Column(name = "username")
     private String username;
@@ -78,4 +76,12 @@ public class Audit {
     // Identificador de request/correlación
     @Column(name = "request_id", length = 64)
     private String requestId;
+    
+    // ID del servicio relacionado (si aplica)
+    @Column(name = "service_id")
+    private Long serviceId;
+    
+    // Nombre del servicio relacionado (si aplica)
+    @Column(name = "service_name")
+    private String serviceName;
 }
