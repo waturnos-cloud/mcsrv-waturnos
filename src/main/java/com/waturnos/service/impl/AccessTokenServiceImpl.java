@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,9 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     
     private final MessageSource messageSource;
     
+    @Value("${app.bypass.accessToken:false}")
+    private Boolean bypassAccessToken;
+    
     /** The Constant EXPIRY_MINUTES. */
     private static final int EXPIRY_MINUTES = 5;
 
@@ -47,7 +51,7 @@ public class AccessTokenServiceImpl implements AccessTokenService {
     public void generateToken(String email, String phone) {
         // Opcional: borrar tokens previos para ese email/phone
         repository.deleteByEmailOrPhone(email, phone);
-        String code = String.format("%06d", new Random().nextInt(1000000));
+        String code = bypassAccessToken ? "111111" : String.format("%06d", new Random().nextInt(1000000));
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(EXPIRY_MINUTES);
         AccessToken token = AccessToken.builder()
                 .email(email)
@@ -56,8 +60,10 @@ public class AccessTokenServiceImpl implements AccessTokenService {
                 .expiryDate(expiry)
                 .build();
         repository.save(token);
-        
-        notificationFactory.sendAsync(buildRequest(token));
+        // Si está el bypass activo NO enviamos email
+        if (!Boolean.TRUE.equals(bypassAccessToken)) {
+            notificationFactory.sendAsync(buildRequest(token));
+        }
     }
     
 	/**

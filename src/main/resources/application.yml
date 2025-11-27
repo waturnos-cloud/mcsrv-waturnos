@@ -151,6 +151,8 @@ app:
   resetpassword:
     expiration:
       timetoken: 15 #15 minutos dura el token para reset de contraseña
+  bypass:
+    accessToken: true # Si true genera 111111 y no envía email
   notification:
     WELCOME_USER: http://localhost:5173/login
     RESET_PASSWORD: http://localhost:5173/user/resetpassword.html
