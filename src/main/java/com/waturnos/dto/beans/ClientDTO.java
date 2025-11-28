@@ -9,4 +9,5 @@ public class ClientDTO {
 	private String dni;
 	private String email;
 	private String phone;
+	private String avatar;
 }

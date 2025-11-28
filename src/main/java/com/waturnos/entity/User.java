@@ -38,6 +38,7 @@ public class User implements CommonUser {
 	private String email;
 	private String phone;
 	private String password;
+	private String avatar;
 	private String photoUrl;
 	private String bio;
 	@Enumerated(EnumType.STRING)

@@ -36,6 +36,7 @@ public class Client implements CommonUser {
 	private String phone;
 	private String password;
 	private String dni;
+	private String avatar;
 	private String creator;
 	private String modificator;
 	private LocalDateTime createdAt;

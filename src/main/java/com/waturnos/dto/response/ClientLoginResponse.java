@@ -21,6 +21,9 @@ public class ClientLoginResponse {
 	/** Optional message. */
 	private String message;
 	
+	/** The avatar URL. */
+	private String avatar;
+	
 	/**
 	 * Constructor without message.
 	 *

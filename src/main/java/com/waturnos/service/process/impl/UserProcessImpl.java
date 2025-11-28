@@ -141,7 +141,9 @@ public class UserProcessImpl  implements UserProcess{
 		User userDB = userRepository.findById(user.getId())
 				.orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND, "User not found"));
 		securityAccessEntity.controlAccessToUserId(userDB.getId());
-		AuditContext.setOrganization(userDB.getOrganization());
+		if(UserRole.ADMIN != SessionUtil.getRoleUser()) {
+			AuditContext.setOrganization(userDB.getOrganization());
+		}	
 		AuditContext.setObject(user.getFullName());
 		if (StringUtils.hasLength(user.getPassword())) {
 			userDB.setPassword(passwordEncoder.encode(user.getPassword()));

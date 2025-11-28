@@ -13,6 +13,7 @@ public class LoginResponse {
 	private String role;
 	private Long organizationId;
 	private Long providerId;
+	private String avatar;
 
 	public LoginResponse(String token, Long userId, String role) {
 		this.token = token;

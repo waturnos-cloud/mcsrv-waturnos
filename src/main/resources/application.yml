@@ -6,6 +6,10 @@ server:
 spring:
   cache:
     type: simple
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
   datasource:
     url: jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos
     #url: jdbc:postgresql://localhost:5432/waturnos
@@ -148,6 +152,8 @@ notification:
     
 app:
   baseUrl:
+  upload:
+    base-dir: /Users/waturnos/images/
   resetpassword:
     expiration:
       timetoken: 15 #15 minutos dura el token para reset de contraseña

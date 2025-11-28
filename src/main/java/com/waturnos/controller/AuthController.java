@@ -143,8 +143,7 @@ public class AuthController {
 				throw new ServiceException(ErrorCode.ORGANIZATION_NOT_ACTIVE, "Organization not active");
 			}
 			// ✅ Respuesta extendida
-			LoginResponse response = new LoginResponse(token, user.getId(), role, organizationId, providerId);
-
+			LoginResponse response = new LoginResponse(token, user.getId(), role, organizationId, providerId,user.getAvatar());
 			return ResponseEntity.ok(response);
 
 		} catch (AuthenticationException e) {
@@ -225,10 +224,13 @@ public class AuthController {
 					? "Client logged in successfully" 
 					: "Token generated, client not registered";
 			
+			String avatar = client != null ? client.getAvatar() : null;
+			
 			ClientLoginResponse response = new ClientLoginResponse(
 					token, 
 					clientId, 
-					message);
+					message,
+					avatar);
 			
 			return ResponseEntity.ok(response);
 			
@@ -294,7 +296,8 @@ public class AuthController {
 			ClientLoginResponse response = new ClientLoginResponse(
 					token, 
 					client.getId(), 
-					"Client registered successfully");
+					"Client registered successfully",
+					client.getAvatar());
 			
 			return ResponseEntity.ok(response);
 			
