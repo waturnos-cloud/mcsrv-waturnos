@@ -209,7 +209,7 @@ public class ClientServiceImpl implements ClientService {
 		
 		Optional<ClientOrganization> existing = clientOrganizationRepository.findByClientIdAndOrganizationId(clientId, organizationId);
 		if (existing.isPresent()) {
-			throw new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Client already assigned to organization");
+			throw new ServiceException(ErrorCode.CLIENT_EXISTS_IN_ORGANIZATION, "Client already assigned to organization");
 		}
 
 		AuditContext.setOrganization(organizationDB.get());
