@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.dto.beans.OrganizationDTO;
@@ -56,6 +57,20 @@ public class OrganizationControllerStateless {
 	@GetMapping("/{id}")
 	public ResponseEntity<OrganizationDTO> getById(@PathVariable Long id) {
 		return service.findById(id).map(o -> organizationMapper.toDto(o, true)).map(ResponseEntity::ok)
+				.orElse(ResponseEntity.notFound().build());
+	}
+	
+	/**
+	 * Obtiene organización por subdominio.
+	 *
+	 * @param subdomain subdominio
+	 * @return organización en modo completo si existe
+	 */
+	@GetMapping("/bySubdomain")
+	public ResponseEntity<OrganizationDTO> getBySubdomain(@RequestParam String subdomain) {
+		return service.findBySubdomain(subdomain)
+				.map(o -> organizationMapper.toDto(o, true))
+				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
 }

@@ -74,6 +74,12 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@Transactional(readOnly = false)
 	@AuditAspect("ORG_CREATE")
 	public Organization create(Organization org, User user) {
+		// Validar unicidad de subdomain si viene informado
+		if (org.getSubdomain() != null && !org.getSubdomain().isBlank()) {
+			if (organizationRepository.existsBySubdomainIgnoreCase(org.getSubdomain())) {
+				throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Subdomain already exists");
+			}
+		}
 		
 		Optional<User> userDB = userRepository.findByEmail(user.getEmail());
 		if(userDB.isPresent()) {
@@ -118,6 +124,16 @@ public class OrganizationServiceImpl implements OrganizationService {
 		organizationDB.setLogoUrl(org.getLogoUrl());
 		organizationDB.setName(org.getName());
 		organizationDB.setType(org.getType());
+		// Validar unicidad de subdomain si se actualiza
+		if (org.getSubdomain() != null && !org.getSubdomain().isBlank()) {
+			Organization existingWithSub = organizationRepository.findBySubdomainIgnoreCase(org.getSubdomain());
+			if (existingWithSub != null && !existingWithSub.getId().equals(organizationDB.getId())) {
+				throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Subdomain already exists");
+			}
+			organizationDB.setSubdomain(org.getSubdomain());
+		} else {
+			organizationDB.setSubdomain(null);
+		}
 		organizationDB.setModificator(SessionUtil.getUserName());
 		organizationDB.setUpdatedAt(DateUtils.getCurrentDateTime());
 		Organization organizationupdated = organizationRepository.save(organizationDB);
@@ -239,6 +255,25 @@ public class OrganizationServiceImpl implements OrganizationService {
 	@Override
 	public List<Organization> findAll() {
 		return organizationRepository.findByStatusOrderByNameAsc(OrganizationStatus.ACTIVE); 
+	}
+
+	@Override
+	public boolean subdomainExists(String subdomain, Long organizationId) {
+		if (subdomain == null || subdomain.isBlank()) {
+			return false;
+		}
+		if (organizationId != null) {
+			return organizationRepository.existsBySubdomainIgnoreCaseAndIdNot(subdomain, organizationId);
+		}
+		return organizationRepository.existsBySubdomainIgnoreCase(subdomain);
+	}
+
+	@Override
+	public Optional<Organization> findBySubdomain(String subdomain) {
+		if (subdomain == null || subdomain.isBlank()) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(organizationRepository.findBySubdomainIgnoreCase(subdomain));
 	}
 
 	/**

@@ -42,6 +42,7 @@ CREATE TABLE organization (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255),
     logo_url TEXT,
+    subdomain VARCHAR(120),
     timezone VARCHAR(100),
     type BIGINT REFERENCES categories(id),
     default_language VARCHAR(10),
@@ -387,6 +388,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_provider ON audit(provider_id);
 -- ORGANIZATION
 CREATE INDEX idx_organization_status ON organization(status);
 CREATE INDEX idx_organization_active ON organization(active);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_organization_subdomain ON organization(subdomain) WHERE subdomain IS NOT NULL;
 
 -- LOCATION
 CREATE INDEX idx_location_organization ON location(organization_id);

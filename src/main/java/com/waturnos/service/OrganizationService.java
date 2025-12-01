@@ -81,4 +81,21 @@ public interface OrganizationService {
 	 */
 	List<Organization> findAll();
 
+	/**
+	 * Checks if a subdomain exists, optionally excluding an organization id.
+	 *
+	 * @param subdomain the subdomain to check
+	 * @param organizationId optional id to exclude from search
+	 * @return true if exists in other orgs; false otherwise
+	 */
+	boolean subdomainExists(String subdomain, Long organizationId);
+
+	/**
+	 * Find organization by subdomain (case-insensitive).
+	 *
+	 * @param subdomain the subdomain
+	 * @return optional organization
+	 */
+	Optional<Organization> findBySubdomain(String subdomain);
+
 }

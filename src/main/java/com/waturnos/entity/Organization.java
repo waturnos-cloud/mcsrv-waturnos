@@ -37,6 +37,7 @@ public class Organization {
 	private Long id;
 	private String name;
 	private String logoUrl;
+	private String subdomain;
 	private String timezone;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "type")

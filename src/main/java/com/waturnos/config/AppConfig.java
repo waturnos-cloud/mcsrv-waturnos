@@ -31,7 +31,18 @@ public class AppConfig {
 	@Bean
 	public CorsFilter corsFilter() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("http://localhost:5173","http://localhost:5174", "https://waturnos-admin.vercel.app"));
+		config.setAllowCredentials(true);
+		config.setAllowedOriginPatterns(List.of(
+		    "http://localhost:*",
+		    "http://*.waturnos.com.ar:*",
+		    "https://waturnos-admin.vercel.app",
+		    "http://waturnos.com.ar",
+		    "http://www.waturnos.com.ar",
+		    "http://*.waturnos.com.ar",
+		    "https://waturnos.com.ar",
+		    "https://www.waturnos.com.ar",
+		    "https://*.waturnos.com.ar"
+		));
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setExposedHeaders(List.of("Authorization"));

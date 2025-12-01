@@ -10,6 +10,7 @@ public class OrganizationDTO {
 	private Long id;
 	private String name;
 	private String logoUrl;
+	private String subdomain;
 	private String timezone;
 	private CategoryTreeDTO type;
 	private String defaultLanguage;

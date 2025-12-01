@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -139,5 +140,21 @@ public class OrganizationController {
 	public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
 		service.delete(id);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Organization deleted", null));
+	}
+
+	/**
+	 * Checks if subdomain exists. Optionally excludes an organization id.
+	 *
+	 * @param subdomain the subdomain to check
+	 * @param organizationId optional org id to exclude
+	 * @return true if exists in other orgs; false otherwise
+	 */
+	@GetMapping("/subdomain/check")
+	public ResponseEntity<ApiResponse<Boolean>> checkSubdomain(
+			@RequestParam("subdomain") String subdomain,
+			@RequestParam(value = "organizationId", required = false) Long organizationId) {
+		boolean exists = service.subdomainExists(subdomain, organizationId);
+		boolean available = !exists;
+		return ResponseEntity.ok(new ApiResponse<>(true, "Subdomain availability", available));
 	}
 }

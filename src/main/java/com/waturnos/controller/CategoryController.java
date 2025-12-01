@@ -8,34 +8,19 @@ import com.waturnos.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/public/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 
 	private final CategoryService categoryService;
 
 	/**
-	 * 🔹 Devuelve todas las categorías padre (parent = null) GET /categories
+	 * 🔹 Devuelve todas las categorías padre (parent = null) GET /categories.
+	 *
+	 * @return the parent categories
 	 */
 	@GetMapping
 	public ResponseEntity<?> getParentCategories() {
 		return ResponseEntity.ok(categoryService.getParentCategories());
-	}
-
-	/**
-	 * 🔹 Devuelve todas las subcategorías de una categoría padre GET
-	 * /categories/{parentId}/children
-	 */
-	@GetMapping("/{parentId}/children")
-	public ResponseEntity<?> getChildCategories(@PathVariable Long parentId) {
-		return ResponseEntity.ok(categoryService.getChildCategories(parentId));
-	}
-
-	/**
-	 * 🔹 Devuelve todo el árbol de categorías GET /categories/tree
-	 */
-	@GetMapping("/tree")
-	public ResponseEntity<?> getCategoryTree() {
-		return ResponseEntity.ok(categoryService.getCategoryTree());
 	}
 }
