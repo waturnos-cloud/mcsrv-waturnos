@@ -1,5 +1,7 @@
 package com.waturnos.dto.beans;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -17,4 +19,5 @@ public class ServiceDTO {
 	private Integer capacity;
 	private boolean waitList;
 	private Integer waitListTime;
+	private List<AvailabilityDTO> listAvailability;
 }
