@@ -451,6 +451,20 @@ CREATE INDEX idx_serviceprops_key ON service_props(key);
 CREATE INDEX idx_usersprops_key ON users_props(key);
 CREATE INDEX idx_clientprops_key ON client_props(key);
 
+-- Tabla: sync_task (registro de ejecuciones de tareas programadas)
+CREATE TABLE IF NOT EXISTS sync_task (
+    id BIGSERIAL PRIMARY KEY,
+    schedule_type VARCHAR(80) NOT NULL,
+    status VARCHAR(20) NOT NULL, -- SUCCESS | FAIL
+    details TEXT,               -- resumen en json: {"successCount":n, "errorCount":m}
+    last_execution_date DATE NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Unicidad por tarea y día
+CREATE UNIQUE INDEX IF NOT EXISTS uq_sync_task_type_date ON sync_task(schedule_type, last_execution_date);
+
+
 
 DO $$
 DECLARE

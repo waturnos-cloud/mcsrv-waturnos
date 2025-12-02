@@ -33,6 +33,7 @@ import com.waturnos.service.UnavailabilityService;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
 import com.waturnos.service.process.BatchProcessor;
+import com.waturnos.utils.DateUtils;
 import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -153,6 +154,58 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		}
 
 		bookingService.create(bookings);
+	}
+
+	/**
+	 * Generate bookings for a specific date based on service availabilities and unavailabilities.
+	 * Intended for daily expansion at midnight.
+	 *
+	 * @param service the service
+	 * @param date the date to generate bookings for
+	 */
+	public void generateBookingsForDate(ServiceEntity service, LocalDate date) {
+		Set<LocalDate> unavailabilities = unavailabilityService.getHolidays();
+		List<AvailabilityEntity> availabilities = availabilityRepository.findByServiceId(service.getId());
+		List<Booking> bookings = new ArrayList<>();
+		DayOfWeek dayOfWeek = date.getDayOfWeek();
+		if (unavailabilities == null || !unavailabilities.contains(date)) {
+			availabilities.stream().filter(a -> a.getDayOfWeek() == dayOfWeek.getValue()).forEach(a -> {
+				LocalTime currentTime = a.getStartTime();
+				while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
+					Booking booking = new Booking();
+					booking.setStartTime(LocalDateTime.of(date, currentTime));
+					booking.setEndTime(LocalDateTime.of(date, currentTime.plusMinutes(service.getDurationMinutes())));
+					booking.setStatus(BookingStatus.FREE);
+					booking.setService(service);
+					booking.setFreeSlots(service.getCapacity());
+					booking.setCreatedAt(DateUtils.getCurrentDateTime());
+					bookings.add(booking);
+					currentTime = currentTime.plusMinutes(service.getDurationMinutes());
+				}
+			});
+		}
+		if (!bookings.isEmpty()) {
+			bookingService.create(bookings);
+		}
+	}
+
+	/**
+	 * Extend bookings by one day from the last existing booking date.
+	 * If no bookings exist, generates for the configured forward days.
+	 *
+	 * @param service the service entity
+	 */
+	public void extendBookingsByOneDay(ServiceEntity service) {
+		LocalDate lastBookingDate = bookingService.findMaxBookingDateByServiceId(service.getId());
+		LocalDate dateToGenerate;
+		if (lastBookingDate == null) {
+			// No hay bookings previos, generar desde hoy + 1
+			dateToGenerate = LocalDate.now().plusDays(1);
+		} else {
+			// Extender un día más desde la última fecha
+			dateToGenerate = lastBookingDate.plusDays(1);
+		}
+		generateBookingsForDate(service, dateToGenerate);
 	}
 
 	/**

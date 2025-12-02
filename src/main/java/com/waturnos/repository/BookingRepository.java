@@ -238,4 +238,18 @@ List<BookingReminder> findBookingsForTomorrow();
 	                                             @Param("toDate") LocalDateTime toDate,
 	                                             @Param("organizationId") Long organizationId);
 
+	/**
+	 * Find the maximum (latest) booking date for a given service.
+	 * Returns null if no bookings exist.
+	 *
+	 * @param serviceId the service id
+	 * @return the latest LocalDate with bookings, or null
+	 */
+	@Query("""
+			SELECT MAX(CAST(b.startTime AS LocalDate))
+			FROM Booking b
+			WHERE b.service.id = :serviceId
+			""")
+	LocalDate findMaxBookingDateByServiceId(@Param("serviceId") Long serviceId);
+
 }

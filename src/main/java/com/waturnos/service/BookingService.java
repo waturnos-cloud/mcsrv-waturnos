@@ -107,4 +107,12 @@ public interface BookingService {
 	 */
 	com.waturnos.dto.response.BookingDetailsDTO findBookingDetailsById(Long bookingId);
 
+	/**
+	 * Find the maximum (latest) booking date for a given service.
+	 *
+	 * @param serviceId the service id
+	 * @return the latest LocalDate with bookings, or null if none exist
+	 */
+	LocalDate findMaxBookingDateByServiceId(Long serviceId);
+
 }

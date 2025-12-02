@@ -456,4 +456,15 @@ public class BookingServiceImpl implements BookingService {
 		
 		return detailsDTO;
 	}
+
+	/**
+	 * Find the maximum (latest) booking date for a given service.
+	 *
+	 * @param serviceId the service id
+	 * @return the latest LocalDate with bookings, or null if none exist
+	 */
+	@Override
+	public LocalDate findMaxBookingDateByServiceId(Long serviceId) {
+		return bookingRepository.findMaxBookingDateByServiceId(serviceId);
+	}
 }

@@ -11,11 +11,17 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.extended.BookingReminder;
+import com.waturnos.entity.ServiceEntity;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
+import com.waturnos.repository.ServiceRepository;
 import com.waturnos.schedule.ScheduledTasks;
+import com.waturnos.service.impl.ServiceEntityServiceImpl;
+import com.waturnos.service.SyncTaskService;
+import com.waturnos.enums.ScheduleType;
+import com.waturnos.enums.ExecutionStatus;
 import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +47,14 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 	
 	/** The message source. */
 	private final MessageSource messageSource;
+
+	/** Service repository to iterate services. */
+	private final ServiceRepository serviceRepository;
+
+	/** Service logic to generate bookings per day. */
+	private final ServiceEntityServiceImpl serviceEntityService;
+
+	private final SyncTaskService syncTaskService;
 	
 	/**
 	 * Remember booking to users.
@@ -48,25 +62,66 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 	@Override
     @Scheduled(cron = "${app.scheduling.notify-clients-cron}")
 	public void rememberBookingToUsers() {
-        List<BookingReminder> reminders = bookingRepository.findBookingsForTomorrow();
+		java.time.LocalDate today = java.time.LocalDate.now();
+		// Evitar doble ejecución en el mismo día si ya fue registrada
+		if (syncTaskService.wasExecutedOn(ScheduleType.REMEMBER_BOOKING_TO_USERS, today)) {
+			log.info("REMEMBER_BOOKING_TO_USERS ya se ejecutó hoy, se omite ejecución.");
+			return;
+		}
+		List<BookingReminder> reminders = bookingRepository.findBookingsForTomorrow();
 
         if (reminders.isEmpty()) {
            log.info("No hay reservas para notificar mañana.");
             return;
         }
-        reminders.forEach(reminder -> {
-        	notificationFactory.send(buildRequestReminderBooking(reminder)) ;             
-        });
+		int success = 0;
+		int error = 0;
+		for (BookingReminder reminder : reminders) {
+			try {
+				notificationFactory.send(buildRequestReminderBooking(reminder));
+				success++;
+			} catch (Exception e) {
+				log.error("Error enviando recordatorio a {}", reminder.getEmail(), e);
+				error++;
+			}
+		}
+		String details = String.format("{\"successCount\":%d,\"errorCount\":%d}", success, error);
+		syncTaskService.recordExecution(ScheduleType.REMEMBER_BOOKING_TO_USERS, java.time.LocalDate.now(), ExecutionStatus.SUCCESS, details);
 		
 	}
 
 	/**
-	 * Adds the booking next day.
+	 * Extends bookings by one day from the last existing booking date.
+	 * Ejecuta a medianoche: extiende la agenda de cada servicio agregando 1 día más.
 	 */
 	@Override
     @Scheduled(cron = "${app.scheduling.add-free-bookings-cron}")
 	public void addBookingNextDay() {
-		
+		java.time.LocalDate today = java.time.LocalDate.now();
+		// Evitar doble ejecución en el mismo día si ya fue registrada
+		if (syncTaskService.wasExecutedOn(ScheduleType.ADD_NEW_BOOKINGS, today)) {
+			log.info("ADD_NEW_BOOKINGS ya se ejecutó hoy, se omite ejecución.");
+			return;
+		}
+		// Extiende bookings: agrega 1 día más desde la última fecha de cada servicio
+		List<ServiceEntity> services = serviceRepository.findAll();
+		if (services.isEmpty()) {
+			log.info("No hay servicios para extender bookings");
+			return;
+		}
+		int success = 0;
+		int error = 0;
+		for (ServiceEntity service : services) {
+			try {
+				serviceEntityService.extendBookingsByOneDay(service);
+				success++;
+			} catch (Exception e) {
+				log.error("Error extendiendo bookings para servicio {}", service.getId(), e);
+				error++;
+			}
+		}
+		String details = String.format("{\"successCount\":%d,\"errorCount\":%d}", success, error);
+		syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(), ExecutionStatus.SUCCESS, details);
 	}
 	
 

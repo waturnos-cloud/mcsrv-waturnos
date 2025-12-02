@@ -370,4 +370,34 @@ public final class DateUtils {
         if (date == null) return null;
         return date.toInstant().atZone(DEFAULT_ZONE_ID).toLocalDateTime();
     }
+
+    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+    // 8. CONVERSIÓN DE DÍAS DE LA SEMANA (Frontend JS ↔ Backend Java)
+    // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
+
+    /**
+     * Convierte el día de la semana de formato JavaScript (0=Domingo, 1=Lunes...6=Sábado)
+     * a formato Java/BD (1=Lunes, 2=Martes...7=Domingo).
+     * 
+     * @param jsDayOfWeek día de la semana en formato JS (0-6)
+     * @return día de la semana en formato Java/BD (1-7)
+     */
+    public static int convertJsToDayOfWeek(int jsDayOfWeek) {
+        // JS: 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+        // Java: 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb, 7=Dom
+        return jsDayOfWeek == 0 ? 7 : jsDayOfWeek;
+    }
+
+    /**
+     * Convierte el día de la semana de formato Java/BD (1=Lunes, 2=Martes...7=Domingo)
+     * a formato JavaScript (0=Domingo, 1=Lunes...6=Sábado).
+     * 
+     * @param dayOfWeek día de la semana en formato Java/BD (1-7)
+     * @return día de la semana en formato JS (0-6)
+     */
+    public static int convertDayOfWeekToJs(int dayOfWeek) {
+        // Java: 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb, 7=Dom
+        // JS: 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+        return dayOfWeek == 7 ? 0 : dayOfWeek;
+    }
 }
