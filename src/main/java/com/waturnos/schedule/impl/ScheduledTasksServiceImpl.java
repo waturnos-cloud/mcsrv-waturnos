@@ -72,7 +72,9 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 
         if (reminders.isEmpty()) {
            log.info("No hay reservas para notificar mañana.");
-            return;
+			syncTaskService.recordExecution(ScheduleType.REMEMBER_BOOKING_TO_USERS, java.time.LocalDate.now(),
+					ExecutionStatus.SUCCESS, String.format("{\"successCount\":%d,\"errorCount\":%d}", 0, 0));
+           return;
         }
 		int success = 0;
 		int error = 0;
@@ -107,6 +109,8 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 		List<ServiceEntity> services = serviceRepository.findAll();
 		if (services.isEmpty()) {
 			log.info("No hay servicios para extender bookings");
+			syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(),
+					ExecutionStatus.SUCCESS, String.format("{\"successCount\":%d,\"errorCount\":%d}", 0, 0));
 			return;
 		}
 		int success = 0;
