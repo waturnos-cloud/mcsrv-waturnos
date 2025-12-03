@@ -38,6 +38,7 @@ import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.repository.ServiceRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
@@ -59,6 +60,7 @@ import lombok.RequiredArgsConstructor;
  *
  * @param bookingRepository    the booking repository
  * @param clientRepository     the client repository
+ * @param serviceRepository    the service repository
  * @param securityAccessEntity the security access entity
  */
 @RequiredArgsConstructor
@@ -69,6 +71,9 @@ public class BookingServiceImpl implements BookingService {
 
 	/** The client repository. */
 	private final ClientRepository clientRepository;
+	
+	/** The service repository. */
+	private final ServiceRepository serviceRepository;
 
 	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
@@ -79,9 +84,6 @@ public class BookingServiceImpl implements BookingService {
 	/** The notification factory. */
 	private final NotificationFactory notificationFactory;
 
-	/** The Constant DATE_FORMATTER. */
-	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     /** The mapper. */
     private final ServiceBookingMapper mapper; 
     
@@ -90,10 +92,15 @@ public class BookingServiceImpl implements BookingService {
 	
 	/** The waitlist service. */
 	private final WaitlistService waitlistService;
+
+	/** The Constant DATE_FORMATTER. */
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	/** The date forma email. */
 	@Value("${app.datetime.email-format}")
-	private String dateFormaEmail;	/** The url home. */
+	private String dateFormaEmail;
+	
+	/** The url home. */
 	@Value("${app.notification.HOME}")
 	private String urlHome;
 	/**
@@ -104,6 +111,20 @@ public class BookingServiceImpl implements BookingService {
 	 */
 	@Override
 	public List<Booking> create(List<Booking> list) {
+		// Calcular freeSlots basado en la capacidad del servicio si no está definido
+		list.forEach(booking -> {
+			if (booking.getFreeSlots() == null && booking.getService() != null) {
+				ServiceEntity service = booking.getService();
+				// Si el servicio no está cargado completamente, cargarlo
+				Integer capacity = service.getCapacity();
+				if (capacity == null) {
+					ServiceEntity fullService = serviceRepository.findById(service.getId())
+						.orElseThrow(() -> new IllegalArgumentException("Service not found: " + service.getId()));
+					capacity = fullService.getCapacity();
+				}
+				booking.setFreeSlots(capacity);
+			}
+		});
 		return bookingRepository.saveAll(list);
 	}
 

@@ -128,6 +128,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		LocalDate endDate = startDate.plusDays(service.getFutureDays());
 
 		List<Booking> bookings = new ArrayList<>();
+		final int MAX_BOOKINGS_PER_BATCH = 1000; // Limitar a 1000 bookings por vez
 
 		for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
 			final LocalDate currentDate = date;
@@ -151,9 +152,18 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 					}
 				});
 			}
+			
+			// Guardar en lotes para evitar OutOfMemoryError
+			if (bookings.size() >= MAX_BOOKINGS_PER_BATCH) {
+				bookingService.create(new ArrayList<>(bookings));
+				bookings.clear();
+			}
 		}
 
-		bookingService.create(bookings);
+		// Guardar bookings restantes
+		if (!bookings.isEmpty()) {
+			bookingService.create(bookings);
+		}
 	}
 
 	/**

@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.waturnos.dto.beans.CategoryTreeDTO;
 import com.waturnos.dto.beans.LocationDTO;
 import com.waturnos.dto.beans.ServiceDTO;
 import com.waturnos.dto.beans.UserDTO;
@@ -46,10 +47,11 @@ public abstract class ServiceMapper {
 	 * @return the service DTO
 	 */
 	@Mapping(target = "listAvailability", ignore = true)
+	@Mapping(target = "type", ignore = true)
 	public abstract ServiceDTO toDTO(ServiceEntity entity);
 	
 	/**
-	 * After mapping para cargar la disponibilidad.
+	 * After mapping para cargar la disponibilidad y la categoría.
 	 */
 	@AfterMapping
 	protected void loadAvailability(ServiceEntity entity, @MappingTarget ServiceDTO dto) {
@@ -59,6 +61,15 @@ public abstract class ServiceMapper {
 					availabilityRepository.findByServiceId(entity.getId())
 				)
 			);
+			
+			// Mapear solo la categoría sin sus hijos para evitar loops
+			if (entity.getType() != null) {
+				CategoryTreeDTO categoryDTO = new CategoryTreeDTO();
+				categoryDTO.setId(entity.getType().getId());
+				categoryDTO.setName(entity.getType().getName());
+				categoryDTO.setChildren(null); // No cargar children
+				dto.setType(categoryDTO);
+			}
 		}
 	}
 

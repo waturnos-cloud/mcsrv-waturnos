@@ -98,4 +98,19 @@ public interface OrganizationService {
 	 */
 	Optional<Organization> findBySubdomain(String subdomain);
 
+	/**
+	 * Find all public organizations (active only).
+	 *
+	 * @return the list
+	 */
+	List<Organization> findAllPublic();
+
+	/**
+	 * Find all organizations by category (active only).
+	 *
+	 * @param categoryId the category id
+	 * @return the list
+	 */
+	List<Organization> findByCategory(Long categoryId);
+
 }

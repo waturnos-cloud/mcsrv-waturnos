@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"organization"})
+@EqualsAndHashCode(exclude = {"organization"})
 public class Location {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

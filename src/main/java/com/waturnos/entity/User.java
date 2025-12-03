@@ -20,6 +20,7 @@ import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -30,6 +31,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"organization","services"})
+@EqualsAndHashCode(exclude = {"organization","services"})
 public class User implements CommonUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

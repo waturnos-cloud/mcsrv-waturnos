@@ -22,7 +22,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"location"})
+@ToString(exclude = {"user", "location", "type"})
 public class ServiceEntity {
 
     @Id

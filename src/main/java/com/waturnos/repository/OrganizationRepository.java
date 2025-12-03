@@ -16,4 +16,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Long
 	Organization findBySubdomainIgnoreCase(String subdomain);
 	boolean existsBySubdomainIgnoreCaseAndIdNot(String subdomain, Long id);
 	
+	List<Organization> findByTypeIdAndStatusOrderByNameAsc(Long categoryId, OrganizationStatus status);
+	
 }

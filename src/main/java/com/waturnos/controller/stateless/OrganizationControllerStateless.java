@@ -73,4 +73,16 @@ public class OrganizationControllerStateless {
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
+
+	/**
+	 * Gets organizations by category.
+	 *
+	 * @param categoryId the category id
+	 * @return the organizations by category
+	 */
+	@GetMapping("/category/{categoryId}")
+	public ResponseEntity<List<OrganizationDTO>> getByCategory(@PathVariable Long categoryId) {
+		return ResponseEntity.ok(service.findByCategory(categoryId).stream()
+				.map(o -> organizationMapper.toDto(o, false)).toList());
+	}
 }

@@ -307,4 +307,19 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         };
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Organization> findAllPublic() {
+		return organizationRepository.findByStatusOrderByNameAsc(OrganizationStatus.ACTIVE);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Organization> findByCategory(Long categoryId) {
+		if (categoryId == null) {
+			throw new ServiceException(ErrorCode.BAD_REQUEST, "Category ID cannot be null");
+		}
+		return organizationRepository.findByTypeIdAndStatusOrderByNameAsc(categoryId, OrganizationStatus.ACTIVE);
+	}
 }
