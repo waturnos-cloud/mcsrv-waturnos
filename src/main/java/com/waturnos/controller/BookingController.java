@@ -204,4 +204,29 @@ public class BookingController {
 		return ResponseEntity.ok(counts);
 	}
 
+	/**
+	 * Gets grouped availability by service type/category for a specific date.
+	 * This endpoint aggregates availability across all services of the same type,
+	 * useful when the client doesn't care which specific service (e.g., which court)
+	 * is available, only that there is availability.
+	 *
+	 * @param categoryId the category/type id
+	 * @param date the date in YYYY-MM-DD format
+	 * @param providerId the provider id
+	 * @return grouped availability slots
+	 */
+	@GetMapping("/availability-by-type")
+	public ResponseEntity<ApiResponse<List<com.waturnos.dto.response.GroupedAvailabilityDTO>>> 
+			getGroupedAvailabilityByType(
+			@RequestParam Long categoryId,
+			@RequestParam String date,
+			@RequestParam Long providerId) {
+
+		LocalDate requestedDate = LocalDate.parse(date);
+		List<com.waturnos.dto.response.GroupedAvailabilityDTO> availability = 
+				service.findGroupedAvailabilityByType(categoryId, requestedDate, providerId);
+
+		return ResponseEntity.ok(new ApiResponse<>(true, "Grouped availability retrieved", availability));
+	}
+
 }

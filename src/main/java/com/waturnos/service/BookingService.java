@@ -115,4 +115,16 @@ public interface BookingService {
 	 */
 	LocalDate findMaxBookingDateByServiceId(Long serviceId);
 
+	/**
+	 * Find grouped availability by service type (category) for a specific date.
+	 * This groups all services of the same type and shows aggregated availability.
+	 *
+	 * @param categoryId the category/type id
+	 * @param date the date to check availability
+	 * @param providerId the provider id
+	 * @return list of grouped availability slots
+	 */
+	List<com.waturnos.dto.response.GroupedAvailabilityDTO> findGroupedAvailabilityByType(
+			Long categoryId, LocalDate date, Long providerId);
+
 }

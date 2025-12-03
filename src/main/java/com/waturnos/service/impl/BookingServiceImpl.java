@@ -467,4 +467,68 @@ public class BookingServiceImpl implements BookingService {
 	public LocalDate findMaxBookingDateByServiceId(Long serviceId) {
 		return bookingRepository.findMaxBookingDateByServiceId(serviceId);
 	}
+
+	/**
+	 * Find grouped availability by service type (category) for a specific date.
+	 * This aggregates all services of the same type/category and shows time slots
+	 * with availability count across all services.
+	 *
+	 * @param categoryId the category/type id
+	 * @param date the date to check availability
+	 * @param providerId the provider id
+	 * @return list of grouped availability slots
+	 */
+	@Override
+	public List<com.waturnos.dto.response.GroupedAvailabilityDTO> findGroupedAvailabilityByType(
+			Long categoryId, LocalDate date, Long providerId) {
+		
+		LocalDateTime startOfDay = date.atStartOfDay();
+		LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+		
+		// Buscar todos los bookings del día, filtrados por provider y tipo de servicio
+		List<Booking> bookings = bookingRepository
+				.findByProviderAndTypeAndDateRange(providerId, categoryId, startOfDay, endOfDay);
+		
+		// Agrupar por time slot (startTime)
+		Map<LocalDateTime, List<Booking>> groupedByTime = bookings.stream()
+				.collect(Collectors.groupingBy(Booking::getStartTime));
+		
+		// Contar cuántos servicios únicos del provider tiene este tipo
+		Long totalServices = bookings.stream()
+				.map(b -> b.getService().getId())
+				.distinct()
+				.count();
+		
+		// Construir DTOs
+		return groupedByTime.entrySet().stream()
+				.map(entry -> {
+					LocalDateTime timeSlot = entry.getKey();
+					List<Booking> slotsAtThisTime = entry.getValue();
+					
+					// Filtrar los que están FREE
+					List<Booking> availableSlots = slotsAtThisTime.stream()
+							.filter(b -> b.getStatus() == BookingStatus.FREE)
+							.collect(Collectors.toList());
+					
+					List<Long> availableBookingIds = availableSlots.stream()
+							.map(Booking::getId)
+							.collect(Collectors.toList());
+					
+					// Si hay al menos un servicio de este tipo, endTime es el mismo para todos
+					LocalDateTime endTime = slotsAtThisTime.isEmpty() 
+							? timeSlot.plusHours(1) 
+							: slotsAtThisTime.get(0).getEndTime();
+					
+					return com.waturnos.dto.response.GroupedAvailabilityDTO.builder()
+							.startTime(timeSlot)
+							.endTime(endTime)
+							.totalServices(totalServices.intValue())
+							.availableCount(availableSlots.size())
+							.availableBookingIds(availableBookingIds)
+							.isFullyBooked(availableSlots.isEmpty())
+							.build();
+				})
+				.sorted((a, b) -> a.getStartTime().compareTo(b.getStartTime()))
+				.collect(Collectors.toList());
+	}
 }

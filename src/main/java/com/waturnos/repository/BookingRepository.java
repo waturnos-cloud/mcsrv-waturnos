@@ -252,4 +252,30 @@ List<BookingReminder> findBookingsForTomorrow();
 			""")
 	LocalDate findMaxBookingDateByServiceId(@Param("serviceId") Long serviceId);
 
+	/**
+	 * Find all bookings for a provider, filtered by service type/category and date range.
+	 * Used for grouped availability view.
+	 *
+	 * @param providerId the provider id
+	 * @param categoryId the category/type id
+	 * @param start start of date range (inclusive)
+	 * @param end end of date range (exclusive)
+	 * @return the list of bookings
+	 */
+	@Query("""
+			SELECT b
+			FROM Booking b
+			JOIN b.service s
+			WHERE s.user.id = :providerId
+			  AND s.type.id = :categoryId
+			  AND b.startTime >= :start
+			  AND b.startTime < :end
+			ORDER BY b.startTime ASC
+			""")
+	List<Booking> findByProviderAndTypeAndDateRange(
+			@Param("providerId") Long providerId,
+			@Param("categoryId") Long categoryId,
+			@Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end);
+
 }
