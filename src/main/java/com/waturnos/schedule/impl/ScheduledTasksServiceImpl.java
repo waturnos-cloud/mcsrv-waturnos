@@ -106,7 +106,8 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 			return;
 		}
 		// Extiende bookings: agrega 1 día más desde la última fecha de cada servicio
-		List<ServiceEntity> services = serviceRepository.findAll();
+		// Solo procesar servicios activos (no borrados)
+		List<ServiceEntity> services = serviceRepository.findAllActive();
 		if (services.isEmpty()) {
 			log.info("No hay servicios para extender bookings");
 			syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(),

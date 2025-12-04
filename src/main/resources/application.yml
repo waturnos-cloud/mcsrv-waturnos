@@ -73,7 +73,7 @@ spring:
     cache: false                      # Desactivar caché en desarrollo                      
 jwt:
   secret: "cambiaEsteSecretoLargoConLetrasYNumeros1234567890abcdef"
-  expiration-ms: 3600000
+  expiration-ms: 32400000 #9 horas
   
 logging:
   level:

@@ -262,6 +262,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @param serviceId the service id
 	 */
 	@Override
+	@Transactional
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@AuditAspect("SERVICE_DELETE")
 	public void delete(Long serviceId) {
@@ -273,6 +274,11 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		AuditContext.setService(serviceDB.get());
 		AuditContext.setProvider(serviceDB.get().getUser());
 		AuditContext.get().setObject(serviceDB.get().getName());
+		
+		// Marcar como borrado INMEDIATAMENTE para que no aparezca en listados
+		serviceRepository.markAsDeleted(serviceId);
+		
+		// Proceso async se encarga del borrado físico
 		batchProcessor.deleteServiceAsync(serviceDB.get().getId(), serviceDB.get().getName(), true);
 	}
 

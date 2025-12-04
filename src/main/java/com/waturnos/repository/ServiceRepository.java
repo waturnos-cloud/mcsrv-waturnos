@@ -16,7 +16,18 @@ public interface ServiceRepository extends JpaRepository<ServiceEntity, Long> {
 
 	List<ServiceEntity> findByLocationId(Long locationId);
 	
-	List<ServiceEntity> findByUserId(Long userId);
+	@Query("SELECT s FROM ServiceEntity s WHERE s.user.id = :userId AND s.deleted = false")
+	List<ServiceEntity> findByUserId(@Param("userId") Long userId);
+	
+	@Query("SELECT s FROM ServiceEntity s WHERE s.location.id = :locationId AND s.deleted = false")
+	List<ServiceEntity> findActiveByLocationId(@Param("locationId") Long locationId);
+	
+	@Modifying
+	@Query("UPDATE ServiceEntity s SET s.deleted = true WHERE s.id = :serviceId")
+	void markAsDeleted(@Param("serviceId") Long serviceId);
+	
+	@Query("SELECT s FROM ServiceEntity s WHERE s.deleted = false")
+	List<ServiceEntity> findAllActive();
 	
 	@Modifying
 	@Query("DELETE FROM ServiceEntity s WHERE s.user.id = :userId")
