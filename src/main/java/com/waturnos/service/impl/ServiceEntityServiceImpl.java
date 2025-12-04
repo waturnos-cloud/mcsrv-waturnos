@@ -27,6 +27,7 @@ import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
+import com.waturnos.service.BookingGeneratorService;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.ServiceEntityService;
 import com.waturnos.service.UnavailabilityService;
@@ -37,12 +38,14 @@ import com.waturnos.utils.DateUtils;
 import com.waturnos.utils.SessionUtil;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class ServiceEntityServiceImpl.
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ServiceEntityServiceImpl implements ServiceEntityService {
 
 	/** The service repository. */
@@ -69,6 +72,9 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	/** The batch processor. */
 	private final BatchProcessor batchProcessor;
 
+	/** The booking generator service. */
+	private final BookingGeneratorService bookingGeneratorService;
+	
 	/**
 	 * Creates the.
 	 *
@@ -111,59 +117,10 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			availabilityRepository.save(av);
 		});
 
-		generateBookings(serviceEntity, listAvailability, workInHollidays ? unavailabilityService.getHolidays() : null);
+		// Generar bookings de forma asíncrona para no bloquear la respuesta
+		bookingGeneratorService.generateBookingsAsync(serviceEntity, listAvailability, 
+				workInHollidays ? unavailabilityService.getHolidays() : null);
 		return serviceEntityResponse;
-	}
-
-	/**
-	 * Generate bookings.
-	 *
-	 * @param service          the service
-	 * @param availabilities   the availabilities
-	 * @param unavailabilities the unavailabilities
-	 */
-	private void generateBookings(ServiceEntity service, List<AvailabilityEntity> availabilities,
-			Set<LocalDate> unavailabilities) {
-		LocalDate startDate = LocalDate.now();
-		LocalDate endDate = startDate.plusDays(service.getFutureDays());
-
-		List<Booking> bookings = new ArrayList<>();
-		final int MAX_BOOKINGS_PER_BATCH = 1000; // Limitar a 1000 bookings por vez
-
-		for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-			final LocalDate currentDate = date;
-			DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
-
-			if (unavailabilities == null || !unavailabilities.contains(currentDate)) {
-
-				// Filtrás las disponibilidades que coincidan con ese día
-				availabilities.stream().filter(a -> a.getDayOfWeek() == dayOfWeek.getValue()).forEach(a -> {
-					LocalTime currentTime = a.getStartTime();
-					while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
-						Booking booking = new Booking();
-						booking.setStartTime(LocalDateTime.of(currentDate, currentTime));
-						booking.setEndTime(
-								LocalDateTime.of(currentDate, currentTime.plusMinutes(service.getDurationMinutes())));
-						booking.setStatus(BookingStatus.FREE);
-						booking.setService(service);
-						booking.setFreeSlots(service.getCapacity());
-						bookings.add(booking);
-						currentTime = currentTime.plusMinutes(service.getDurationMinutes());
-					}
-				});
-			}
-			
-			// Guardar en lotes para evitar OutOfMemoryError
-			if (bookings.size() >= MAX_BOOKINGS_PER_BATCH) {
-				bookingService.create(new ArrayList<>(bookings));
-				bookings.clear();
-			}
-		}
-
-		// Guardar bookings restantes
-		if (!bookings.isEmpty()) {
-			bookingService.create(bookings);
-		}
 	}
 
 	/**

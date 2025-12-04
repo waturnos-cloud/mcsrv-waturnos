@@ -72,6 +72,6 @@ public interface ServiceEntityService {
 	 * @param serviceId the service id
 	 */
 	void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId);
-	
+
 	
 }
