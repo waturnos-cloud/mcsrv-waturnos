@@ -110,6 +110,7 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the list
 	 */
 	@Override
+	@Transactional
 	public List<Booking> create(List<Booking> list) {
 		// Calcular freeSlots basado en la capacidad del servicio si no está definido
 		list.forEach(booking -> {

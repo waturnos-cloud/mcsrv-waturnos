@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
@@ -20,6 +19,7 @@ import com.waturnos.service.BookingGeneratorService;
 import com.waturnos.service.BookingService;
 import com.waturnos.utils.DateUtils;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,14 +32,16 @@ import lombok.extern.slf4j.Slf4j;
 public class BookingGeneratorServiceImpl implements BookingGeneratorService {
 
     private final BookingService bookingService;
+    private final EntityManager entityManager;
 
     /**
      * Genera bookings de forma asíncrona procesando en chunks para optimizar memoria.
      * Este método se ejecuta en un hilo separado del pool async.
+     * Nota: No lleva @Transactional aquí porque cada llamada a bookingService.create()
+     * ya maneja su propia transacción, lo que permite que Hibernate use batch inserts correctamente.
      */
     @Override
     @Async("taskExecutor")
-    @Transactional
     public void generateBookingsAsync(ServiceEntity service, List<AvailabilityEntity> availabilities,
                                       Set<LocalDate> unavailabilities) {
         log.info("Iniciando generación asíncrona de bookings para servicio ID: {}, futureDays: {}", 
@@ -66,6 +68,9 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
                 DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 
                 if (unavailabilities == null || !unavailabilities.contains(currentDate)) {
+                    // Usar getReference para evitar cargar el servicio completo y sus relaciones lazy
+                    ServiceEntity serviceRef = entityManager.getReference(ServiceEntity.class, service.getId());
+                    
                     availabilities.stream()
                             .filter(a -> a.getDayOfWeek() == dayOfWeek.getValue())
                             .forEach(a -> {
@@ -76,7 +81,7 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
                                     booking.setEndTime(LocalDateTime.of(currentDate, 
                                             currentTime.plusMinutes(service.getDurationMinutes())));
                                     booking.setStatus(BookingStatus.FREE);
-                                    booking.setService(service);
+                                    booking.setService(serviceRef);
                                     booking.setFreeSlots(service.getCapacity());
                                     booking.setCreatedAt(DateUtils.getCurrentDateTime());
                                     bookings.add(booking);
