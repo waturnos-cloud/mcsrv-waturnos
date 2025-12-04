@@ -135,12 +135,14 @@ CREATE TABLE service (
 ALTER TABLE service 
   ADD COLUMN wait_list BOOLEAN NOT NULL DEFAULT FALSE,
   ADD COLUMN wait_list_time INTEGER DEFAULT 15, -- minutos por defecto
+  ADD COLUMN offset_minutes INTEGER NOT NULL DEFAULT 0; -- tiempo adicional entre turnos
   ADD COLUMN deleted BOOLEAN DEFAULT FALSE; -- soft delete flag
 
 -- Agregar comentarios
 COMMENT ON COLUMN service.wait_list IS 'Habilita lista de espera para este servicio';
 COMMENT ON COLUMN service.wait_list_time IS 'Minutos que tiene el cliente para reservar cuando se notifica';
 COMMENT ON COLUMN service.deleted IS 'Soft delete flag - TRUE cuando el servicio está marcado para borrado';
+COMMENT ON COLUMN service.offset_minutes IS 'Tiempo adicional entre turnos (ej: 15 min para preparar gabinete)';
 
 -- Tabla: service_props
 CREATE TABLE service_props (

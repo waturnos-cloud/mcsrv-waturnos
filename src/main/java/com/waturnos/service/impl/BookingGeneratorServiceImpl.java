@@ -75,6 +75,10 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
                             .filter(a -> a.getDayOfWeek() == dayOfWeek.getValue())
                             .forEach(a -> {
                                 LocalTime currentTime = a.getStartTime();
+                                // Calcular el intervalo real entre turnos: duración + offset
+                                int intervalMinutes = service.getDurationMinutes() + 
+                                                    (service.getOffsetMinutes() != null ? service.getOffsetMinutes() : 0);
+                                
                                 while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
                                     Booking booking = new Booking();
                                     booking.setStartTime(LocalDateTime.of(currentDate, currentTime));
@@ -85,7 +89,8 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
                                     booking.setFreeSlots(service.getCapacity());
                                     booking.setCreatedAt(DateUtils.getCurrentDateTime());
                                     bookings.add(booking);
-                                    currentTime = currentTime.plusMinutes(service.getDurationMinutes());
+                                    // Avanzar usando el intervalo (duración + offset)
+                                    currentTime = currentTime.plusMinutes(intervalMinutes);
 
                                     // Flush inmediato al alcanzar el batch
                                     if (bookings.size() >= BATCH_SIZE) {
