@@ -62,6 +62,13 @@ public class AppConfig {
 						.requestMatchers("/auth/**", "/api/auth/**", "/swagger-ui.html", "/swagger-ui/**",
 								"/api-docs/**", "/v3/api-docs/**", "/public/**", "/images/**")
 						.permitAll().anyRequest().authenticated())
+				// Manejar errores de autenticación con 401 en lugar de 403
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint((request, response, authException) -> {
+							response.setStatus(401);
+							response.setContentType("application/json");
+							response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+						}))
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
