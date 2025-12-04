@@ -27,6 +27,26 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	List<Booking> findByServiceId(Long serviceId);
 
 	/**
+	 * Find by service id with booking clients fetched.
+	 * Evita N+1 queries al cargar bookingClients en una sola consulta.
+	 *
+	 * @param serviceId the service id
+	 * @return the list
+	 */
+	@Query("SELECT DISTINCT b FROM Booking b LEFT JOIN FETCH b.bookingClients bc LEFT JOIN FETCH bc.client WHERE b.service.id = :serviceId")
+	List<Booking> findByServiceIdWithClients(@Param("serviceId") Long serviceId);
+
+	/**
+	 * Delete all booking clients by service id.
+	 * Debe ejecutarse antes de deleteAllByServiceId.
+	 *
+	 * @param serviceId the service id
+	 */
+	@Modifying
+	@Query("DELETE FROM BookingClient bc WHERE bc.booking.id IN (SELECT b.id FROM Booking b WHERE b.service.id = :serviceId)")
+	void deleteAllBookingClientsByServiceId(@Param("serviceId") Long serviceId);
+
+	/**
 	 * Delete all by service id.
 	 *
 	 * @param serviceId the service id

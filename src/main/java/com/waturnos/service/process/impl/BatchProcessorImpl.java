@@ -25,6 +25,7 @@ import com.waturnos.service.process.BatchProcessor;
 import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class UserProcessImpl.
@@ -41,7 +42,7 @@ import lombok.RequiredArgsConstructor;
  * @param providerOrganizationRepository the provider organization repository
  */
 @RequiredArgsConstructor
-
+@Slf4j
 public class BatchProcessorImpl implements BatchProcessor {
 
 	/** The booking repository. */
@@ -75,12 +76,12 @@ public class BatchProcessorImpl implements BatchProcessor {
 	@Async
 	@Transactional(readOnly = false)
 	public void deleteServiceAsync(long serviceId, String serviceName, boolean deleteService) {
-	    List<Booking> bookingsToDelete = bookingRepository.findByServiceId(serviceId);
+	    // Traer todos los bookings con sus clientes en UNA SOLA QUERY (evita N+1)
+	    List<Booking> bookingsWithClients = bookingRepository.findByServiceIdWithClients(serviceId);
 
-	    bookingsToDelete.forEach(booking -> {
-	        
+	    // Enviar notificaciones a los clientes afectados
+	    bookingsWithClients.forEach(booking -> {
 	        if (booking.getBookingClients() != null && !booking.getBookingClients().isEmpty()) {
-	            
 	            booking.getBookingClients().stream()
 	                .map(bookingClient -> bookingClient.getClient())
 	                .forEach(client -> {
@@ -88,6 +89,16 @@ public class BatchProcessorImpl implements BatchProcessor {
 	                });
 	        }
 	    });
+
+	    // Borrar en batch: primero booking_clients, luego bookings, finalmente el servicio
+	    bookingRepository.deleteAllBookingClientsByServiceId(serviceId);
+	    bookingRepository.deleteAllByServiceId(serviceId);
+	    
+	    if (deleteService) {
+	    	serviceRepository.deleteById(serviceId);
+	    }
+	    
+	    log.info("Servicio {} eliminado - {} bookings procesados", serviceId, bookingsWithClients.size());
 	}
 
 	/**
@@ -105,7 +116,7 @@ public class BatchProcessorImpl implements BatchProcessor {
 		});
 		serviceRepository.deleteAllByUserId(providerId);
 		userRepository.deleteById(providerId);
-
+		
 	}
 
 	/**
