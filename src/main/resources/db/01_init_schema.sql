@@ -178,17 +178,21 @@ CREATE TABLE client_props (
 );
 
 -- Tabla: recurrence
+-- Almacena patrones de recurrencia para turnos fijos de clientes
 CREATE TABLE recurrence (
     id BIGSERIAL PRIMARY KEY,
-    service_id BIGINT REFERENCES service(id) ON DELETE CASCADE,
-    client_id BIGINT REFERENCES client(id) ON DELETE SET NULL,
-    pattern VARCHAR(50),
-    interval SMALLINT DEFAULT 1,
-    weekdays VARCHAR(20),
-    start_date DATE,
-    end_date DATE,
-    count INT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    client_id BIGINT NOT NULL REFERENCES client(id) ON DELETE CASCADE,
+    service_id BIGINT NOT NULL REFERENCES service(id) ON DELETE CASCADE,
+    provider_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    day_of_week SMALLINT NOT NULL CHECK (day_of_week BETWEEN 1 AND 7), -- 1=Lunes, 7=Domingo
+    time_slot TIME NOT NULL, -- Hora del turno (ej: 20:00:00)
+    recurrence_type VARCHAR(20) NOT NULL CHECK (recurrence_type IN ('FOREVER', 'COUNT', 'END_DATE')),
+    occurrence_count INTEGER, -- Cantidad de ocurrencias si type=COUNT
+    end_date DATE, -- Fecha fin si type=END_DATE
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    created_by BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT unique_client_slot UNIQUE(client_id, service_id, provider_id, day_of_week, time_slot, active)
 );
 
 -- Tabla: booking
@@ -420,17 +424,23 @@ CREATE INDEX idx_client_phone ON client(phone);
 CREATE INDEX idx_client_fullname ON client(full_name);
 
 -- BOOKING
-CREATE INDEX idx_booking_client ON booking(client_id);
 CREATE INDEX idx_booking_service ON booking(service_id);
 CREATE INDEX idx_booking_status ON booking(status);
 CREATE INDEX idx_booking_start_time ON booking(start_time);
 CREATE INDEX idx_booking_end_time ON booking(end_time);
 CREATE INDEX idx_booking_org ON booking(organization_id);
+CREATE INDEX idx_booking_recurrence ON booking(recurrence_id);
+
+-- BOOKING_CLIENT
+CREATE INDEX idx_booking_client_booking ON booking_client(booking_id);
+CREATE INDEX idx_booking_client_client ON booking_client(client_id);
 
 -- RECURRENCE
 CREATE INDEX idx_recurrence_service ON recurrence(service_id);
 CREATE INDEX idx_recurrence_client ON recurrence(client_id);
-CREATE INDEX idx_recurrence_pattern ON recurrence(pattern);
+CREATE INDEX idx_recurrence_provider ON recurrence(provider_id);
+CREATE INDEX idx_recurrence_active ON recurrence(active);
+CREATE INDEX idx_recurrence_day_time ON recurrence(day_of_week, time_slot);
 
 -- PAYMENT
 CREATE INDEX idx_payment_booking ON payment(booking_id);

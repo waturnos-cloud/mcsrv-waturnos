@@ -57,6 +57,10 @@ public class Booking {
 	@JoinColumn(name = "service_id")
 	private ServiceEntity service;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recurrence_id")
+	private Recurrence recurrence;
+	
     @Column(nullable = false)
     private Integer freeSlots;
     

@@ -61,8 +61,27 @@ public interface BookingMapper {
 	 * @return the booking DTO
 	 */
 	@Mappings({
-			@Mapping(target = "serviceId", source = "service.id") })
+			@Mapping(target = "serviceId", source = "service.id"),
+			@Mapping(target = "recurrenceId", source = "recurrence.id"),
+			@Mapping(target = "isRecurrent", expression = "java(e.getRecurrence() != null)"),
+			@Mapping(target = "recurrencePattern", expression = "java(getRecurrencePattern(e))") })
 	BookingDTO toDto(Booking e);
+	
+	/**
+	 * Get recurrence pattern string
+	 * @param booking the booking
+	 * @return pattern string like "MIÉRCOLES 20:00"
+	 */
+	default String getRecurrencePattern(Booking booking) {
+		if (booking.getRecurrence() == null) return null;
+		
+		String[] daysEs = {"", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO", "DOMINGO"};
+		int dayIndex = booking.getRecurrence().getDayOfWeek();
+		String dayName = dayIndex >= 1 && dayIndex <= 7 ? daysEs[dayIndex] : "";
+		String time = booking.getRecurrence().getTimeSlot().toString();
+		
+		return dayName + " " + time;
+	}
 
 	/**
 	 * To entity.

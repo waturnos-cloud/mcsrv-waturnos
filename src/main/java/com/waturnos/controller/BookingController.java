@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,16 +20,22 @@ import org.springframework.web.bind.annotation.RestController;
 import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
+import com.waturnos.dto.request.CreateRecurrenceRequest;
 import com.waturnos.dto.response.BookingDetailsDTO;
 import com.waturnos.dto.response.BookingExtendedDTO;
+import com.waturnos.dto.response.CheckRecurrenceResponse;
 import com.waturnos.dto.response.CountBookingDTO;
+import com.waturnos.dto.response.RecurrenceDTO;
 import com.waturnos.dto.response.ServiceListWithBookingDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.User;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
+import com.waturnos.security.ClientPrincipal;
 import com.waturnos.service.BookingService;
+import com.waturnos.service.RecurrenceService;
 
 /**
  * The Class BookingController.
@@ -38,6 +46,9 @@ public class BookingController {
 
 	/** The service. */
 	private final BookingService service;
+	
+	/** The recurrence service. */
+	private final RecurrenceService recurrenceService;
 
 	/** The mapper. */
 	private final BookingMapper mapper;
@@ -47,10 +58,12 @@ public class BookingController {
 	 *
 	 * @param s the s
 	 * @param m the m
+	 * @param rs the recurrence service
 	 */
-	public BookingController(BookingService s, BookingMapper m) {
+	public BookingController(BookingService s, BookingMapper m, RecurrenceService rs) {
 		this.service = s;
 		this.mapper = m;
+		this.recurrenceService = rs;
 	}
 
 	/**
@@ -227,6 +240,68 @@ public class BookingController {
 				service.findGroupedAvailabilityByType(categoryId, requestedDate, providerId);
 
 		return ResponseEntity.ok(new ApiResponse<>(true, "Grouped availability retrieved", availability));
+	}
+	
+	// ========== RECURRENCE ENDPOINTS ==========
+	
+	/**
+	 * Check if a booking can be recurrent by analyzing future slots
+	 * @param bookingId the booking id
+	 * @return check recurrence response
+	 */
+	@GetMapping("/{bookingId}/check-recurrence")
+	public ResponseEntity<ApiResponse<CheckRecurrenceResponse>> checkRecurrence(
+			@PathVariable Long bookingId) {
+		CheckRecurrenceResponse response = recurrenceService.checkRecurrence(bookingId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Recurrence check completed", response));
+	}
+	
+	/**
+	 * Create a recurrence for a booking
+	 * @param request the recurrence request
+	 * @param authentication the authentication
+	 * @return the created recurrence
+	 */
+	@PostMapping("/set-recurrence")
+	public ResponseEntity<ApiResponse<RecurrenceDTO>> setRecurrence(
+			@RequestBody CreateRecurrenceRequest request,
+			Authentication authentication) {
+		Object principal = authentication.getPrincipal();
+		Long userId = null;
+		
+		if (principal instanceof User) {
+			userId = ((User) principal).getId();
+		} else if (principal instanceof ClientPrincipal) {
+			// Los clientes no tienen userId, usar null (el servicio lo manejará)
+			userId = null;
+		}
+		
+		RecurrenceDTO recurrence = recurrenceService.createRecurrence(request, userId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Recurrencia creada exitosamente", recurrence));
+	}
+	
+	/**
+	 * Cancel a recurrence
+	 * @param recurrenceId the recurrence id
+	 * @return response
+	 */
+	@DeleteMapping("/recurrence/{recurrenceId}")
+	public ResponseEntity<ApiResponse<Void>> cancelRecurrence(
+			@PathVariable Long recurrenceId) {
+		recurrenceService.cancelRecurrence(recurrenceId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Recurrencia cancelada", null));
+	}
+	
+	/**
+	 * Get recurrences by client
+	 * @param clientId the client id
+	 * @return list of recurrences
+	 */
+	@GetMapping("/recurrences/client/{clientId}")
+	public ResponseEntity<ApiResponse<List<RecurrenceDTO>>> getRecurrencesByClient(
+			@PathVariable Long clientId) {
+		List<RecurrenceDTO> recurrences = recurrenceService.getRecurrencesByClient(clientId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Recurrencias obtenidas", recurrences));
 	}
 
 }

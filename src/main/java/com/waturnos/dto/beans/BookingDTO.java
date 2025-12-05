@@ -15,4 +15,7 @@ public class BookingDTO {
 	protected String notes;
 	protected Long serviceId;
 	protected Integer freeSlots;
+	protected Long recurrenceId;
+	protected Boolean isRecurrent;
+	protected String recurrencePattern; // Ej: "MIÉRCOLES 20:00"
 }

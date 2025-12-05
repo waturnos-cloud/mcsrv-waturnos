@@ -13,10 +13,15 @@ import org.springframework.stereotype.Service;
 
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.BookingClient;
+import com.waturnos.entity.Recurrence;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.enums.BookingStatus;
+import com.waturnos.enums.RecurrenceType;
+import com.waturnos.repository.BookingRepository;
 import com.waturnos.service.BookingGeneratorService;
 import com.waturnos.service.BookingService;
+import com.waturnos.service.RecurrenceService;
 import com.waturnos.utils.DateUtils;
 
 import jakarta.persistence.EntityManager;
@@ -33,6 +38,8 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
 
     private final BookingService bookingService;
     private final EntityManager entityManager;
+    private final RecurrenceService recurrenceService;
+    private final BookingRepository bookingRepository;
 
     /**
      * Genera bookings de forma asíncrona procesando en chunks para optimizar memoria.
@@ -115,5 +122,114 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
         
         log.info("Generación de bookings completada para servicio ID: {} - Total: {} bookings", 
                 service.getId(), totalBookings);
+        
+        // Aplicar recurrencias activas a los bookings recién generados
+        applyRecurrencesToNewBookings(service.getId(), startDate, endDate);
+    }
+    
+    /**
+     * Aplica las recurrencias activas a los bookings recién generados
+     */
+    private void applyRecurrencesToNewBookings(Long serviceId, LocalDate startDate, LocalDate endDate) {
+        log.info("Aplicando recurrencias activas a bookings del servicio {}", serviceId);
+        
+        try {
+            List<Recurrence> activeRecurrences = recurrenceService.getAllActiveRecurrences();
+            
+            // Filtrar por servicio
+            List<Recurrence> serviceRecurrences = activeRecurrences.stream()
+                .filter(r -> r.getService().getId().equals(serviceId))
+                .toList();
+            
+            if (serviceRecurrences.isEmpty()) {
+                log.debug("No hay recurrencias activas para el servicio {}", serviceId);
+                return;
+            }
+            
+            log.info("Encontradas {} recurrencias activas para aplicar", serviceRecurrences.size());
+            
+            for (Recurrence recurrence : serviceRecurrences) {
+                // Validar si la recurrencia aún es válida
+                if (!isRecurrenceValid(recurrence, endDate)) {
+                    log.debug("Recurrencia {} no es válida para este rango de fechas", recurrence.getId());
+                    continue;
+                }
+                
+                // Buscar bookings que coincidan con el patrón de recurrencia
+                List<Booking> matchingBookings = bookingRepository.findByServiceIdAndDateRange(
+                    serviceId,
+                    startDate.atStartOfDay(),
+                    endDate.atTime(23, 59, 59)
+                ).stream()
+                    .filter(b -> b.getStartTime().getDayOfWeek().getValue() == recurrence.getDayOfWeek())
+                    .filter(b -> b.getStartTime().toLocalTime().equals(recurrence.getTimeSlot()))
+                    .filter(b -> b.getStatus() == BookingStatus.FREE)
+                    .filter(b -> b.getRecurrence() == null) // Solo asignar si no tiene recurrencia
+                    .toList();
+                
+                // Limitar si es COUNT
+                List<Booking> bookingsToAssign = matchingBookings;
+                if (recurrence.getRecurrenceType() == RecurrenceType.COUNT && 
+                    recurrence.getOccurrenceCount() != null) {
+                    
+                    // Contar cuántos bookings ya tiene asignados esta recurrencia
+                    long currentCount = bookingRepository.findByServiceId(serviceId).stream()
+                        .filter(b -> b.getRecurrence() != null && b.getRecurrence().getId().equals(recurrence.getId()))
+                        .count();
+                    
+                    int remaining = recurrence.getOccurrenceCount() - (int)currentCount;
+                    if (remaining <= 0) {
+                        log.debug("Recurrencia {} ya alcanzó su límite de ocurrencias", recurrence.getId());
+                        continue;
+                    }
+                    
+                    bookingsToAssign = matchingBookings.stream()
+                        .limit(remaining)
+                        .toList();
+                }
+                
+                // Asignar cada booking al cliente
+                log.info("Asignando {} bookings automáticamente para recurrencia {}", 
+                    bookingsToAssign.size(), recurrence.getId());
+                
+                for (Booking booking : bookingsToAssign) {
+                    BookingClient bc = BookingClient.builder()
+                        .booking(booking)
+                        .client(recurrence.getClient())
+                        .build();
+                    
+                    booking.addBookingClient(bc);
+                    booking.setRecurrence(recurrence);
+                    booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+                }
+                
+                if (!bookingsToAssign.isEmpty()) {
+                    bookingRepository.saveAll(bookingsToAssign);
+                }
+            }
+            
+            log.info("Recurrencias aplicadas exitosamente");
+            
+        } catch (Exception e) {
+            log.error("Error aplicando recurrencias: {}", e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Valida si una recurrencia sigue siendo válida para el rango de fechas
+     */
+    private boolean isRecurrenceValid(Recurrence recurrence, LocalDate endDate) {
+        switch (recurrence.getRecurrenceType()) {
+            case END_DATE:
+                return recurrence.getEndDate() == null || 
+                       !recurrence.getEndDate().isBefore(LocalDate.now());
+            case FOREVER:
+                return true;
+            case COUNT:
+                // Siempre validar si es COUNT, se verifica el límite en el método principal
+                return true;
+            default:
+                return false;
+        }
     }
 }

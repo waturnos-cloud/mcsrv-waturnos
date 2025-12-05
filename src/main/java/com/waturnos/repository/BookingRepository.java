@@ -297,5 +297,20 @@ List<BookingReminder> findBookingsForTomorrow();
 			@Param("categoryId") Long categoryId,
 			@Param("start") LocalDateTime start,
 			@Param("end") LocalDateTime end);
+	
+	/**
+	 * Find bookings by service ID and date range for recurrence checking
+	 * @param serviceId the service id
+	 * @param start start of date range (inclusive)
+	 * @param end end of date range (inclusive)
+	 * @return the list of bookings
+	 */
+	@Query("SELECT b FROM Booking b WHERE b.service.id = :serviceId " +
+	       "AND b.startTime >= :start AND b.startTime <= :end " +
+	       "ORDER BY b.startTime ASC")
+	List<Booking> findByServiceIdAndDateRange(
+			@Param("serviceId") Long serviceId,
+			@Param("start") LocalDateTime start,
+			@Param("end") LocalDateTime end);
 
 }
