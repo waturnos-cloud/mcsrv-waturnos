@@ -83,17 +83,14 @@ public class ClientController {
 	/**
 	 * Search.
 	 *
-	 * @param email the email
-	 * @param phone the phone
-	 * @param dni the dni
+	 * @param paramSearch el parámetro de búsqueda (puede ser email, phone o dni)
 	 * @return the response entity
 	 */
 	@GetMapping("/findBy")
-	public ResponseEntity<ApiResponse<ClientDTO>> findBy(@RequestParam(required = false) String email,
-			@RequestParam(required = false) String phone, 
-			@RequestParam(required = false) String dni) {
+	public ResponseEntity<ApiResponse<ClientDTO>> findBy(@RequestParam String paramSearch) {
 
-		Optional<Client> clientOptional = service.findByEmailOrPhoneOrDni(email, phone, dni);
+		// Busca por email, phone o dni usando el mismo parámetro
+		Optional<Client> clientOptional = service.findByEmailOrPhoneOrDni(paramSearch, paramSearch, paramSearch);
 
 	    if (clientOptional.isPresent()) {
 	        ClientDTO clientDTO = mapper.toDto(clientOptional.get());
