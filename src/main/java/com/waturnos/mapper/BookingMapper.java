@@ -64,7 +64,8 @@ public interface BookingMapper {
 			@Mapping(target = "serviceId", source = "service.id"),
 			@Mapping(target = "recurrenceId", source = "recurrence.id"),
 			@Mapping(target = "isRecurrent", expression = "java(e.getRecurrence() != null)"),
-			@Mapping(target = "recurrencePattern", expression = "java(getRecurrencePattern(e))") })
+			@Mapping(target = "recurrencePattern", expression = "java(getRecurrencePattern(e))"),
+			@Mapping(target = "isOverbooking", source = "isOverbooking") })
 	BookingDTO toDto(Booking e);
 	
 	/**

@@ -12,4 +12,5 @@ public class BookingSimpleDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private BookingStatus status;
+    private Boolean isOverbooking;
 }

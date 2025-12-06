@@ -34,6 +34,7 @@ public class ServiceBookingMapper {
         dto.setStartTime(b.getStartTime());
         dto.setEndTime(b.getEndTime());
         dto.setStatus(b.getStatus());
+        dto.setIsOverbooking(b.getIsOverbooking());
         return dto;
     }
 }

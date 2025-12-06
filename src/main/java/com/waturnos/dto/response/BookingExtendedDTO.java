@@ -26,6 +26,8 @@ public class BookingExtendedDTO {
     private String endTime;
 
     private Integer durationMinutes;
+    
+    private Boolean isOverbooking;
 
     // opcional si usás agenda por sede
     private Long locationId;
