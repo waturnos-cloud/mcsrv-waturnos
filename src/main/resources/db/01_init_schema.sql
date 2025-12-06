@@ -161,12 +161,14 @@ CREATE TABLE client (
     dni VARCHAR(20),
     password TEXT,
     avatar TEXT,
+    google_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
     modificator VARCHAR(100),
     CONSTRAINT uq_client_email_org UNIQUE (organization_id, email),
-    CONSTRAINT uq_client_dni UNIQUE (dni)
+    CONSTRAINT uq_client_dni UNIQUE (dni),
+    CONSTRAINT uq_client_google_id UNIQUE (google_id)
 );
 
 -- Tabla: client_props
@@ -423,6 +425,7 @@ CREATE INDEX idx_client_email ON client(email);
 CREATE INDEX idx_client_dni ON client(dni);
 CREATE INDEX idx_client_phone ON client(phone);
 CREATE INDEX idx_client_fullname ON client(full_name);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_client_google_id ON client(google_id) WHERE google_id IS NOT NULL;
 
 -- BOOKING
 CREATE INDEX idx_booking_service ON booking(service_id);

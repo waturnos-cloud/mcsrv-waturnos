@@ -19,6 +19,7 @@ import com.waturnos.controller.exceptions.ErrorResponse;
 import com.waturnos.dto.request.AccessTokenRequest;
 import com.waturnos.dto.request.AccessTokenValidateRequest;
 import com.waturnos.dto.request.ClientLoginRequest;
+import com.waturnos.dto.request.GoogleAuthRequest;
 import com.waturnos.dto.request.LoginRequest;
 import com.waturnos.dto.response.ClientLoginResponse;
 import com.waturnos.dto.response.LoginResponse;
@@ -29,10 +30,12 @@ import com.waturnos.repository.UserRepository;
 import com.waturnos.security.JwtUtil;
 import com.waturnos.service.AccessTokenService;
 import com.waturnos.service.ClientService;
+import com.waturnos.service.GoogleTokenVerifier;
 import com.waturnos.service.exceptions.ErrorCode;
 import com.waturnos.service.exceptions.ServiceException;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * The Class AuthController.
@@ -40,6 +43,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
 	/** The jwt util. */
@@ -59,6 +63,9 @@ public class AuthController {
     
     /** The access token service. */
     private final AccessTokenService accessTokenService;
+    
+    /** The Google token verifier. */
+    private final GoogleTokenVerifier googleTokenVerifier;
 	
 	/**
 	 * Solicita un código de acceso temporal (OTP) por email o teléfono.
@@ -311,6 +318,84 @@ public class AuthController {
 			ErrorResponse errorDetails = new ErrorResponse(
 					ErrorCode.GLOBAL_ERROR.getCode(),
 					"An error occurred during client registration: " + e.getMessage(),
+					webRequest.getDescription(false));
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
+		}
+	}
+	
+	/**
+	 * Google OAuth authentication endpoint.
+	 * Verifies Google ID token, creates client if doesn't exist, generates JWT.
+	 *
+	 * @param request the Google auth request with idToken and optional organizationId
+	 * @param webRequest the web request
+	 * @return the response entity with JWT token and client info
+	 */
+	@PostMapping("/google")
+	public ResponseEntity<?> googleAuth(@RequestBody GoogleAuthRequest request, WebRequest webRequest) {
+		try {
+			// 1. Verificar token de Google
+			com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload;
+			try {
+				payload = googleTokenVerifier.verifyToken(request.getIdToken());
+			} catch (Exception e) {
+				log.error("Error al verificar token de Google", e);
+				ErrorResponse errorDetails = new ErrorResponse(
+						ErrorCode.GLOBAL_ERROR.getCode(),
+						"Invalid Google token: " + e.getMessage(),
+						webRequest.getDescription(false));
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorDetails);
+			}
+			
+			// 2. Extraer información del payload
+			String googleId = payload.getSubject();
+			String email = payload.getEmail();
+			String fullName = (String) payload.get("name");
+			
+			// 3. Buscar cliente por googleId
+			Client client = clientService.findByGoogleId(googleId).orElse(null);
+			
+			// 4. Si no existe, crear nuevo cliente
+			if (client == null) {
+				try {
+					client = clientService.registerClientWithGoogle(
+							request.getOrganizationId(), 
+							email, 
+							fullName, 
+							googleId);
+					log.info("Nuevo cliente creado con Google ID: {}", googleId);
+				} catch (ServiceException e) {
+					ErrorResponse errorDetails = new ErrorResponse(
+							e.getErrorCode().getCode(),
+							e.getMessage(),
+							webRequest.getDescription(false));
+					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDetails);
+				}
+			}
+			
+			// 5. Generar token JWT
+			String identifier = client.getEmail() != null ? client.getEmail() : googleId;
+			Long organizationId = request.getOrganizationId();
+			
+			String token = jwtUtil.generateClientToken(
+					identifier,
+					client.getId(),
+					organizationId);
+			
+			// 6. Construir respuesta
+			ClientLoginResponse response = new ClientLoginResponse(
+					token, 
+					client.getId(), 
+					"Google authentication successful",
+					client.getAvatar());
+			
+			return ResponseEntity.ok(response);
+			
+		} catch (Exception e) {
+			log.error("Error en autenticación con Google", e);
+			ErrorResponse errorDetails = new ErrorResponse(
+					ErrorCode.GLOBAL_ERROR.getCode(),
+					"An error occurred during Google authentication: " + e.getMessage(),
 					webRequest.getDescription(false));
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorDetails);
 		}

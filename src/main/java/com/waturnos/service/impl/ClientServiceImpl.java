@@ -519,4 +519,52 @@ public class ClientServiceImpl implements ClientService {
 				.collect(Collectors.toList());
 	}
 
+	@Override
+	public Optional<Client> findByGoogleId(String googleId) {
+		return clientRepository.findByGoogleId(googleId);
+	}
+
+	@Override
+	public Client registerClientWithGoogle(Long organizationId, String email, String fullName, String googleId) {
+		// Verificar que no exista ya un cliente con ese googleId
+		Optional<Client> existing = clientRepository.findByGoogleId(googleId);
+		if (existing.isPresent()) {
+			throw new ServiceException(ErrorCode.CLIENT_EXISTS, "Client with Google ID already exists");
+		}
+		
+		// Si existe cliente con ese email, actualizar googleId
+		if (email != null && !email.isBlank()) {
+			Optional<Client> existingEmail = clientRepository.findByEmail(email);
+			if (existingEmail.isPresent()) {
+				Client client = existingEmail.get();
+				client.setGoogleId(googleId);
+				return clientRepository.save(client);
+			}
+		}
+		
+		// Crear nuevo cliente
+		Client client = new Client();
+		client.setEmail(email);
+		client.setFullName(fullName);
+		client.setGoogleId(googleId);
+		
+		// Guardar cliente
+		Client savedClient = clientRepository.save(client);
+		
+		// Si se especificó organización, vincular
+		if (organizationId != null) {
+			Organization organization = organizationRepository.findById(organizationId)
+					.orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, 
+							"Organization not found"));
+			
+			ClientOrganization clientOrg = new ClientOrganization();
+			clientOrg.setClient(savedClient);
+			clientOrg.setOrganization(organization);
+			clientOrganizationRepository.save(clientOrg);
+		}
+		
+		return savedClient;
+	}
+
 }
+

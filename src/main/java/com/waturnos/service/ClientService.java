@@ -163,5 +163,25 @@ public interface ClientService {
 	List<com.waturnos.dto.response.ClientBookingDTO> getUpcomingBookings(Long clientId, Long organizationId, 
 	                                                                       java.time.LocalDateTime fromDate, 
 	                                                                       java.time.LocalDateTime toDate);
+	
+	/**
+	 * Find client by Google ID.
+	 *
+	 * @param googleId the Google OAuth unique identifier
+	 * @return the optional client
+	 */
+	Optional<Client> findByGoogleId(String googleId);
+	
+	/**
+	 * Register a new client using Google OAuth.
+	 * Creates a client with email, fullName and googleId.
+	 *
+	 * @param organizationId the organization id (optional)
+	 * @param email the email from Google
+	 * @param fullName the full name from Google
+	 * @param googleId the Google unique identifier
+	 * @return the newly created client
+	 */
+	Client registerClientWithGoogle(Long organizationId, String email, String fullName, String googleId);
 
 }

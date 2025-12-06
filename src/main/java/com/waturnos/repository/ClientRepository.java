@@ -58,6 +58,14 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 			"(:phone IS NOT NULL AND c.phone = :phone)")
 	Optional<Client> findByEmailOrPhone(@Param("email") String email, @Param("phone") String phone);
 	
+	/**
+	 * Find client by Google ID.
+	 *
+	 * @param googleId the Google OAuth unique identifier
+	 * @return the optional client
+	 */
+	Optional<Client> findByGoogleId(String googleId);
+	
 	    @Query("SELECT DISTINCT c FROM Client c " +
 		    "JOIN c.clientOrganizations co " +
 		    "WHERE co.organization.id = :organizationId AND (" +

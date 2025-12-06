@@ -170,3 +170,8 @@ app:
     notify-clients-cron: "0 0 8 * * *"
     #PARA PRUEBAS USAR ESTA notify-clients-cron: "0 */1 * * * *"
     add-free-bookings-cron: "0 0 0 * * *"
+
+# Google OAuth configuration
+google:
+  client:
+    id: ${GOOGLE_CLIENT_ID:382879720068-v3mrbu4qr82fkorrc3al21ec751plh7f.apps.googleusercontent.com}
