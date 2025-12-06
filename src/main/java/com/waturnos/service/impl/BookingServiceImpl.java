@@ -590,23 +590,27 @@ public class BookingServiceImpl implements BookingService {
 		booking.setIsOverbooking(true);
 		booking.setCreatedAt(DateUtils.getCurrentDateTime());
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		
-		// Guardar el booking
+		booking.setFreeSlots(0);
+		booking.setStatus(BookingStatus.RESERVED);
+		// Guardar el booking primero
 		Booking savedBooking = bookingRepository.save(booking);
 		
+		// Crear y vincular el BookingClient
 		BookingClient bookingClient = new BookingClient();
 		bookingClient.setBooking(savedBooking);
 		bookingClient.setClient(client);
-		savedBooking.addBookingClient(bookingClient);
-		booking.setFreeSlots(0);
-		booking.setStatus(BookingStatus.RESERVED);
+		// Usar el método addBookingClient que gestiona la relación bidireccional
+		savedBooking.getBookingClients().add(bookingClient);
 		
+		// Guardar nuevamente para persistir la relación
 		savedBooking = bookingRepository.save(savedBooking);
 		
 		AuditContext.get().setObject(service.getName());
 		AuditContext.setService(service);
 		AuditContext.setProvider(service.getUser());
 		AuditContext.setOrganization(service.getUser().getOrganization());
+		
+		notificationFactory.sendAsync(buildRequest(booking, client));
 		
 		return savedBooking;
 	}
