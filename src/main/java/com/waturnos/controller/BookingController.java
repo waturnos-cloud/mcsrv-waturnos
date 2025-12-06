@@ -21,6 +21,7 @@ import com.waturnos.dto.beans.BookingDTO;
 import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
 import com.waturnos.dto.request.CreateRecurrenceRequest;
+import com.waturnos.dto.request.OverBookingDTO;
 import com.waturnos.dto.response.BookingDetailsDTO;
 import com.waturnos.dto.response.BookingExtendedDTO;
 import com.waturnos.dto.response.CheckRecurrenceResponse;
@@ -302,6 +303,25 @@ public class BookingController {
 			@PathVariable Long clientId) {
 		List<RecurrenceDTO> recurrences = recurrenceService.getRecurrencesByClient(clientId);
 		return ResponseEntity.ok(new ApiResponse<>(true, "Recurrencias obtenidas", recurrences));
+	}
+
+	/**
+	 * Create overbooking - creates a booking with status RESERVED and assigns it to a client.
+	 * The endTime is calculated automatically based on startTime + service duration.
+	 * Validates that the client belongs to the organization and the service is from the same organization.
+	 *
+	 * @param dto the overbooking DTO containing booking data and client ID
+	 * @return the created booking
+	 */
+	@PostMapping("/overbooking")
+	public ResponseEntity<ApiResponse<BookingDTO>> createOverBooking(@RequestBody OverBookingDTO dto) {
+		// Convertir BookingDTO a Booking entity
+		Booking booking = mapper.toEntity(dto.getBooking());
+		
+		// Crear el overbooking
+		Booking created = service.createOverBooking(booking, dto.getClientId());
+		
+		return ResponseEntity.ok(new ApiResponse<>(true, "Overbooking created successfully", mapper.toDto(created)));
 	}
 
 }

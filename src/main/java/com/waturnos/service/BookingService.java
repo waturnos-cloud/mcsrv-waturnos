@@ -127,4 +127,14 @@ public interface BookingService {
 	List<com.waturnos.dto.response.GroupedAvailabilityDTO> findGroupedAvailabilityByType(
 			Long categoryId, LocalDate date, Long providerId);
 
+	/**
+	 * Create overbooking - creates a booking with status RESERVED and assigns it to a client.
+	 * Validates that the client belongs to the organization and the service is from the same organization.
+	 *
+	 * @param booking the booking to create
+	 * @param clientId the client id to assign
+	 * @return the created booking
+	 */
+	Booking createOverBooking(Booking booking, Long clientId);
+
 }

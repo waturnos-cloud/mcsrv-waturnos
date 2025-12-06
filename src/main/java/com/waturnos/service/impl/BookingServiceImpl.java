@@ -553,4 +553,61 @@ public class BookingServiceImpl implements BookingService {
 				.sorted((a, b) -> a.getStartTime().compareTo(b.getStartTime()))
 				.collect(Collectors.toList());
 	}
+
+	/**
+	 * Create overbooking - creates a booking with status RESERVED and assigns it to a client.
+	 * Validates that the client belongs to the organization and the service is from the same organization.
+	 *
+	 * @param booking the booking to create
+	 * @param clientId the client id to assign
+	 * @return the created booking
+	 */
+	@Override
+	@Transactional
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
+	@AuditAspect("BOOKING_OVERBOOKING_CREATE")
+	public Booking createOverBooking(Booking booking, Long clientId) {
+		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
+				.orElseThrow(() -> new EntityNotFoundException("Service not found with id: " + booking.getService().getId()));
+		
+		Long organizationId = service.getUser().getOrganization().getId();
+		
+		// Validar que el cliente existe
+		Client client = clientRepository.findById(clientId)
+				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + clientId));
+		
+		// Validar que el cliente está vinculado a la organización
+		clientOrganizationRepository
+				.findByClientIdAndOrganizationId(clientId, organizationId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, 
+						"Client is not linked to the organization"));
+		
+		securityAccessEntity.controlValidAccessOrganization(organizationId);
+		
+		LocalDateTime endTime = booking.getStartTime().plusMinutes(service.getDurationMinutes());
+		booking.setEndTime(endTime);
+		
+		booking.setStatus(BookingStatus.RESERVED);
+		booking.setFreeSlots(0);
+		booking.setIsOverbooking(true);
+		booking.setCreatedAt(DateUtils.getCurrentDateTime());
+		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+		
+		// Guardar el booking
+		Booking savedBooking = bookingRepository.save(booking);
+		
+		BookingClient bookingClient = new BookingClient();
+		bookingClient.setBooking(savedBooking);
+		bookingClient.setClient(client);
+		savedBooking.addBookingClient(bookingClient);
+		
+		savedBooking = bookingRepository.save(savedBooking);
+		
+		AuditContext.get().setObject(service.getName());
+		AuditContext.setService(service);
+		AuditContext.setProvider(service.getUser());
+		AuditContext.setOrganization(service.getUser().getOrganization());
+		
+		return savedBooking;
+	}
 }

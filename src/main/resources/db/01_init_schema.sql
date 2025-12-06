@@ -209,6 +209,7 @@ CREATE TABLE booking (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     free_slots INTEGER NOT NULL,
+    is_overbooking BOOLEAN DEFAULT FALSE,
     CHECK (free_slots >= 0),
     CONSTRAINT chk_booking_times CHECK (start_time < end_time)
     
@@ -430,6 +431,12 @@ CREATE INDEX idx_booking_start_time ON booking(start_time);
 CREATE INDEX idx_booking_end_time ON booking(end_time);
 CREATE INDEX idx_booking_org ON booking(organization_id);
 CREATE INDEX idx_booking_recurrence ON booking(recurrence_id);
+-- Crear índice para optimizar consultas que filtran por overbooking
+CREATE INDEX IF NOT EXISTS idx_booking_overbooking ON booking(is_overbooking);
+
+-- Crear índice compuesto para queries comunes (servicio + overbooking)
+CREATE INDEX IF NOT EXISTS idx_booking_service_overbooking ON booking(service_id, is_overbooking);
+
 
 -- BOOKING_CLIENT
 CREATE INDEX idx_booking_client_booking ON booking_client(booking_id);

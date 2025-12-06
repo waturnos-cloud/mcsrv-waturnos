@@ -64,6 +64,10 @@ public class Booking {
     @Column(nullable = false)
     private Integer freeSlots;
     
+    @Builder.Default
+    @Column(name = "is_overbooking")
+    private Boolean isOverbooking = false;
+    
     @OneToMany(
         mappedBy = "booking", 
         cascade = CascadeType.ALL,

@@ -18,4 +18,5 @@ public class BookingDTO {
 	protected Long recurrenceId;
 	protected Boolean isRecurrent;
 	protected String recurrencePattern; // Ej: "MIÉRCOLES 20:00"
+	protected Boolean isOverbooking;
 }
