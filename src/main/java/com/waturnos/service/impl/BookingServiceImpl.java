@@ -587,8 +587,6 @@ public class BookingServiceImpl implements BookingService {
 		LocalDateTime endTime = booking.getStartTime().plusMinutes(service.getDurationMinutes());
 		booking.setEndTime(endTime);
 		
-		booking.setStatus(BookingStatus.RESERVED);
-		booking.setFreeSlots(0);
 		booking.setIsOverbooking(true);
 		booking.setCreatedAt(DateUtils.getCurrentDateTime());
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
@@ -600,6 +598,8 @@ public class BookingServiceImpl implements BookingService {
 		bookingClient.setBooking(savedBooking);
 		bookingClient.setClient(client);
 		savedBooking.addBookingClient(bookingClient);
+		booking.setFreeSlots(0);
+		booking.setStatus(BookingStatus.RESERVED);
 		
 		savedBooking = bookingRepository.save(savedBooking);
 		
