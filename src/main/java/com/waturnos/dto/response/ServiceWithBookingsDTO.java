@@ -11,4 +11,5 @@ public class ServiceWithBookingsDTO {
 	private String serviceDescription;
 	private Double servicePrice;
 	private List<BookingSimpleDTO> bookings;
+	private List<PaymentProviderResponse> paymentProviders;
 }

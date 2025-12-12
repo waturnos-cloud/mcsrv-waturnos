@@ -1,5 +1,8 @@
 package com.waturnos.dto.beans;
 
+import java.util.List;
+
+import com.waturnos.dto.response.PaymentProviderResponse;
 import com.waturnos.enums.UserRole;
 
 import lombok.Data;
@@ -15,4 +18,5 @@ public class UserDTO {
 	private String avatar;
 	private String photoUrl;
 	private String bio;
+	private List<PaymentProviderResponse> paymentProviders;
 }

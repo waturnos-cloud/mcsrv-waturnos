@@ -36,6 +36,7 @@ import com.waturnos.enums.BookingStatus;
 import com.waturnos.mapper.BookingMapper;
 import com.waturnos.security.ClientPrincipal;
 import com.waturnos.service.BookingService;
+import com.waturnos.service.PaymentProviderService;
 import com.waturnos.service.RecurrenceService;
 
 /**
@@ -53,6 +54,9 @@ public class BookingController {
 
 	/** The mapper. */
 	private final BookingMapper mapper;
+	
+	/** The payment provider service. */
+	private final PaymentProviderService paymentProviderService;
 
 	/**
 	 * Instantiates a new booking controller.
@@ -60,11 +64,13 @@ public class BookingController {
 	 * @param s the s
 	 * @param m the m
 	 * @param rs the recurrence service
+	 * @param pps the payment provider service
 	 */
-	public BookingController(BookingService s, BookingMapper m, RecurrenceService rs) {
+	public BookingController(BookingService s, BookingMapper m, RecurrenceService rs, PaymentProviderService pps) {
 		this.service = s;
 		this.mapper = m;
 		this.recurrenceService = rs;
+		this.paymentProviderService = pps;
 	}
 
 	/**
@@ -194,6 +200,14 @@ public class BookingController {
 
 	    Map<LocalDate, List<ServiceWithBookingsDTO>> result =
 	            service.findByRange(providerId, start, end, serviceId);
+	    
+	    // Agregar payment providers del provider a cada servicio
+	    var paymentProviders = paymentProviderService.getAllPaymentProviders(providerId);
+	    result.values().forEach(serviceList -> 
+	        serviceList.forEach(serviceDto -> 
+	            serviceDto.setPaymentProviders(paymentProviders)
+	        )
+	    );
 
 	    return ResponseEntity.ok(new ApiResponse<>(true, "Bookings grouped by day", result));
 	}

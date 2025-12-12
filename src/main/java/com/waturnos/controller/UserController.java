@@ -17,6 +17,7 @@ import com.waturnos.dto.beans.UserDTO;
 import com.waturnos.entity.User;
 import com.waturnos.enums.UserRole;
 import com.waturnos.mapper.UserMapper;
+import com.waturnos.service.PaymentProviderService;
 import com.waturnos.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,8 @@ public class UserController {
 	private final UserService service;
 
 	private final UserMapper mapper;
+	
+	private final PaymentProviderService paymentProviderService;
 
 	/**
 	 * Gets the all.
@@ -42,8 +45,16 @@ public class UserController {
 	@GetMapping("/providers/{organizationId}")
 	public ResponseEntity<List<UserDTO>> getProvidersByOrganization(@PathVariable(required = true) Long organizationId,
 			@RequestParam(required = false) UserRole role) {
-		return ResponseEntity
-				.ok(service.findProvidersByOrganization(organizationId).stream().map(u -> mapper.toDto(u)).toList());
+		return ResponseEntity.ok(
+				service.findProvidersByOrganization(organizationId).stream()
+					.map(u -> {
+						UserDTO dto = mapper.toDto(u);
+						// Agregar proveedores de pago configurados
+						dto.setPaymentProviders(paymentProviderService.getAllPaymentProviders(u.getId()));
+						return dto;
+					})
+					.toList()
+			);
 	}
 
 	/**

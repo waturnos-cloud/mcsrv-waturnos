@@ -34,7 +34,7 @@ public class SecurityAccessEntity {
 	
 	public void controlAccessToUserId(Long userId) {
 		UserRole role = SessionUtil.getRoleUser();
-		if (!UserRole.ADMIN.equals(role) && !(userId.equals(SessionUtil.getCurrentUser().getId()))) {
+		if (!UserRole.CLIENT.equals(role)  && !UserRole.ADMIN.equals(role) && !(userId.equals(SessionUtil.getCurrentUser().getId()))) {
 			throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Cannot admin another organization");
 		}
 	}

@@ -175,3 +175,16 @@ app:
 google:
   client:
     id: ${GOOGLE_CLIENT_ID:382879720068-v3mrbu4qr82fkorrc3al21ec751plh7f.apps.googleusercontent.com}
+# MercadoPago configuration (WATurnos platform account)
+mercadopago:
+  access-token: ${MERCADOPAGO_ACCESS_TOKEN}
+  public-key: ${MERCADOPAGO_PUBLIC_KEY}
+  app-id: ${MERCADOPAGO_APP_ID}
+  app-secret: ${MERCADOPAGO_APP_SECRET}
+  sandbox-mode: ${MERCADOPAGO_SANDBOX_MODE:true}
+  webhook-url: ${MERCADOPAGO_WEBHOOK_URL:https://www.waturnos.com/msvc-waturnos/v1.0/webhooks/mercadopago}
+# En desarrollo
+  backend.base.url: https://unbreeched-fastidiously-barabara.ngrok-free.dev
+  frontend.base.url: https://unbreeched-fastidiously-barabara.ngrok-free.dev
+  mercadopago.webhook-url: ${backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
+  oauth-redirect-uri: ${MERCADOPAGO_OAUTH_REDIRECT_URI:https://unbreeched-fastidiously-barabara.ngrok-free.dev/oauth/mercadopago/callback}
