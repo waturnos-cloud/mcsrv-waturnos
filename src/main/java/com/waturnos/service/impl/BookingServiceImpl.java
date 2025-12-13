@@ -163,6 +163,17 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = false)
 	@AuditAspect("BOOKING_ASSIGN_CLIENT")
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
+		return assignBooking(bookingId, clientId);
+	}
+	
+	/**
+	 * Assign booking.
+	 *
+	 * @param bookingId the booking id
+	 * @param clientId the client id
+	 * @return the booking
+	 */
+	private Booking assignBooking (Long bookingId, Long clientId) {
 		Booking booking = bookingRepository.findById(bookingId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
 
@@ -614,4 +625,42 @@ public class BookingServiceImpl implements BookingService {
 		
 		return savedBooking;
 	}
+
+	/**
+	 * Reassign booking - cancels the actual booking and assigns the client to a new booking.
+	 *
+	 * @param actualBookingId the actual booking id to cancel
+	 * @param newBookingId the new booking id to assign
+	 * @param clientId the client id to assign to the new booking
+	 * @return the new booking with the client assigned
+	 */
+	@Override
+	@Transactional
+	@AuditAspect("BOOKING_REASSIGN")
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
+	public Booking reassignBooking(Long actualBookingId, Long newBookingId, Long clientId) {
+		
+		// 1. Obtener el booking actual y validar que existe
+		Booking actualBooking = bookingRepository.findById(actualBookingId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, 
+						"Actual booking not found with id: " + actualBookingId));
+		
+		// 2. Validar que el booking actual tiene al cliente asignado
+		boolean clientWasAssigned = actualBooking.getBookingClients().stream()
+				.anyMatch(bc -> bc.getClient().getId().equals(clientId));
+		
+		if (!clientWasAssigned) {
+			throw new ServiceException(ErrorCode.CLIENT_NOT_ASSIGNED_TO_BOOKING, 
+					"Client " + clientId + " is not assigned to booking " + actualBookingId);
+		}
+		
+		// 3. Cancelar el booking actual con estado CANCELED_BY_PROVIDER
+		actualBooking.setStatus(BookingStatus.CANCELED_BY_PROVIDER);
+		actualBooking.setUpdatedAt(DateUtils.getCurrentDateTime());
+		bookingRepository.save(actualBooking);
+		
+		// 4. Asignar el cliente al nuevo booking
+		return assignBooking(newBookingId, clientId);
+	}
 }
+

@@ -33,7 +33,8 @@ public enum ErrorCode {
     CLIENT_EXISTS("1301","error.message.client.exist"),
     CLIENT_NOT_EXISTS_IN_ORGANIZATION("1302","error.message.client.not.exist.in.organization"),
     CLIENT_EXISTS_IN_ORGANIZATION("1303","error.message.client.exist.in.organization"),
-    
+    CLIENT_NOT_ASSIGNED_TO_BOOKING("1304","error.message.client.not.assigned.to.booking"),
+
     // WAITLIST
     WAITLIST_NOT_FOUND("1400","error.message.waitlist.not.found"),
     

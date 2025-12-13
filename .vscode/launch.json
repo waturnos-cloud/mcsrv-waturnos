@@ -9,7 +9,13 @@
             "mainClass": "com.waturnos.WaturnosApplication",
             "projectName": "waturnos-api",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "MERCADOPAGO_ACCESS_TOKEN": "APP_USR-7523345870016221-120914-7941204731c1ccccf616d5c5f75e88f6-3050749380",
+                "MERCADOPAGO_PUBLIC_KEY": "APP_USR-af026ae9-ba89-4947-b00f-c8dfc555fbfc",
+                "MERCADOPAGO_APP_ID": "3829891358541942",
+                "MERCADOPAGO_APP_SECRET": "NTfiTHVI1cTOTVWpCihrG152Eios2Bvd"
+            }
         }
     ]
 }

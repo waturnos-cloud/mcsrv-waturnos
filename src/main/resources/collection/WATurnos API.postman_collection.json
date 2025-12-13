@@ -1587,6 +1587,41 @@
 					"response": []
 				},
 				{
+					"name": "POST /bookings/reassign",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"actualBookingId\": 10,\n  \"newBookingId\": 15,\n  \"clientId\": 3\n}"
+						},
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/reassign",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"reassign"
+							]
+						},
+						"description": "Reasigna un turno cancelando el booking actual (CANCELED_BY_PROVIDER) y asignando el cliente a un nuevo booking"
+					},
+					"response": []
+				},
+				{
 					"name": "GET /bookings/{bookingId}",
 					"request": {
 						"method": "GET",

@@ -22,6 +22,7 @@ import com.waturnos.dto.request.AssignBooking;
 import com.waturnos.dto.request.CancelBooking;
 import com.waturnos.dto.request.CreateRecurrenceRequest;
 import com.waturnos.dto.request.OverBookingDTO;
+import com.waturnos.dto.request.ReassignBooking;
 import com.waturnos.dto.response.BookingDetailsDTO;
 import com.waturnos.dto.response.BookingExtendedDTO;
 import com.waturnos.dto.response.CheckRecurrenceResponse;
@@ -108,7 +109,6 @@ public class BookingController {
 		Booking updated = service.assignBookingToClient(dto.getId(), dto.getClientId());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking assigned", mapper.toDto(updated)));
 	}
-
 	/**
 	 * Update status.
 	 *
@@ -120,6 +120,19 @@ public class BookingController {
 
 		Booking canceled = service.cancelBooking(dto.getId(), dto.getReason());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
+	}
+
+	/**
+	 * Reassign booking.
+	 *
+	 * @param dto the dto
+	 * @return the response entity
+	 */
+	@PostMapping("/reassign")
+	public ResponseEntity<ApiResponse<BookingDTO>> reassignBooking(@RequestBody ReassignBooking dto) {
+
+		Booking newBooking = service.reassignBooking(dto.getActualBookingId(), dto.getNewBookingId(), dto.getClientId());
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking reassigned successfully", mapper.toDto(newBooking)));
 	}
 
 	/**

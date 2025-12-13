@@ -137,4 +137,14 @@ public interface BookingService {
 	 */
 	Booking createOverBooking(Booking booking, Long clientId);
 
+	/**
+	 * Reassign booking - cancels the actual booking and assigns the client to a new booking.
+	 *
+	 * @param actualBookingId the actual booking id to cancel
+	 * @param newBookingId the new booking id to assign
+	 * @param clientId the client id to assign to the new booking
+	 * @return the new booking with the client assigned
+	 */
+	Booking reassignBooking(Long actualBookingId, Long newBookingId, Long clientId);
+
 }
