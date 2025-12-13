@@ -1,26 +1,40 @@
 package com.waturnos.service.process.impl;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.waturnos.dto.beans.AvailabilityDTO;
+import com.waturnos.dto.response.AffectedBookingDTO;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.User;
+import com.waturnos.enums.BookingStatus;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
+import com.waturnos.service.BookingService;
 import com.waturnos.service.process.BatchProcessor;
 import com.waturnos.utils.DateUtils;
 
@@ -59,6 +73,10 @@ public class BatchProcessorImpl implements BatchProcessor {
 
 	/** The message source. */
 	private final MessageSource messageSource;
+	
+	/** The booking service. */
+	@Autowired
+	private BookingService bookingService;
 
 	/** The date forma email. */
 	@Value("${app.datetime.email-format}")
@@ -166,6 +184,126 @@ public class BatchProcessorImpl implements BatchProcessor {
             }
 		});
 		bookingRepository.deleteBookingsBetweenDates(startDate, endDate, serviceEntity.getId());
+	}
+	
+	/**
+	 * Procesa de forma asíncrona los bookings afectados por cambios en availability.
+	 *
+	 * @param serviceId el ID del servicio
+	 * @param newAvailability la nueva configuración de availability
+	 * @param authentication el contexto de autenticación del usuario
+	 */
+	@Override
+	@Async
+	@Transactional(readOnly = false)
+	public void processAffectedBookingsAsync(Long serviceId, List<AvailabilityDTO> newAvailability, Authentication authentication) {
+		// Propagar el SecurityContext al hilo asíncrono
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		
+		log.info("Processing affected bookings asynchronously for service {}", serviceId);
+		
+		try {
+			// Obtener todos los bookings futuros con clientes asignados
+			LocalDateTime now = LocalDateTime.now();
+			List<Booking> futureBookings = bookingService.findByServiceId(serviceId).stream()
+					.filter(b -> b.getStartTime().isAfter(now))
+					.filter(b -> b.getStatus() == BookingStatus.RESERVED || 
+							     b.getStatus() == BookingStatus.PARTIALLY_RESERVED)
+					.collect(Collectors.toList());
+			
+			// Identificar bookings que quedarían fuera del nuevo availability
+			List<AffectedBookingDTO> affectedBookings = new ArrayList<>();
+			
+			for (Booking booking : futureBookings) {
+				if (!isBookingWithinAvailability(booking, newAvailability)) {
+					// Este booking queda fuera del nuevo horario
+					// Obtener info de cada cliente en este booking
+					for (BookingClient bc : booking.getBookingClients()) {
+						Client client = bc.getClient();
+						
+						affectedBookings.add(AffectedBookingDTO.builder()
+								.bookingId(booking.getId())
+								.clientFullName(client.getFullName())
+								.clientPhone(client.getPhone())
+								.clientEmail(client.getEmail())
+								.startTime(booking.getStartTime())
+								.build());
+					}
+				}
+			}
+			
+			if (!affectedBookings.isEmpty()) {
+				log.info("Found {} affected bookings for service {}", affectedBookings.size(), serviceId);
+				
+				// Agrupar por bookingId para cancelar cada booking una vez
+				Map<Long, List<AffectedBookingDTO>> bookingGroups = affectedBookings.stream()
+						.collect(Collectors.groupingBy(AffectedBookingDTO::getBookingId));
+				
+				bookingGroups.forEach((bookingId, affectedClients) -> {
+					try {
+						// Cancelar el booking
+						bookingService.cancelBooking(bookingId, "Cambio en horarios de disponibilidad del servicio");
+						
+						// Notificar a cada cliente afectado
+						affectedClients.forEach(clientData -> {
+							try {
+								Map<String, String> properties = new HashMap<>();
+								properties.put("USERNAME", clientData.getClientFullName());
+								properties.put("DATEBOOKING", DateUtils.format(clientData.getStartTime(), dateFormaEmail));
+								properties.put("URLHOME", urlHome);
+								properties.put("REASON", "El provider ha modificado los horarios de atención");
+								
+								NotificationRequest notificationRequest = NotificationRequest.builder()
+										.email(clientData.getClientEmail())
+										.language("ES")
+										.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", 
+												null, LocaleContextHolder.getLocale()))
+										.type(NotificationType.CANCELBOOKING_BY_PROVIDER)
+										.properties(properties)
+										.build();
+								
+								notificationFactory.send(notificationRequest);
+								
+								log.info("Notified client {} about booking {} cancellation", 
+										clientData.getClientEmail(), bookingId);
+							} catch (Exception e) {
+								log.error("Error notifying client {} about booking cancellation", 
+										clientData.getClientEmail(), e);
+							}
+						});
+						
+					} catch (Exception e) {
+						log.error("Error processing affected booking {}", bookingId, e);
+					}
+				});
+				
+				log.info("Finished processing {} affected bookings for service {}", 
+						bookingGroups.size(), serviceId);
+			} else {
+				log.info("No affected bookings found for service {}", serviceId);
+			}
+			
+		} catch (Exception e) {
+			log.error("Error processing affected bookings for service {}", serviceId, e);
+		}
+	}
+	
+	/**
+	 * Verifica si un booking está dentro de los rangos de availability.
+	 */
+	private boolean isBookingWithinAvailability(Booking booking, List<AvailabilityDTO> availabilities) {
+		DayOfWeek bookingDay = booking.getStartTime().getDayOfWeek();
+		LocalTime bookingStartTime = booking.getStartTime().toLocalTime();
+		LocalTime bookingEndTime = booking.getEndTime().toLocalTime();
+		
+		// Buscar si existe un availability para ese día que cubra el horario
+		return availabilities.stream()
+				.filter(av -> av.getDayOfWeek() == bookingDay.getValue())
+				.anyMatch(av -> {
+					// El booking debe estar completamente dentro del rango
+					return !bookingStartTime.isBefore(av.getStartTime()) && 
+						   !bookingEndTime.isAfter(av.getEndTime());
+				});
 	}
 
 }

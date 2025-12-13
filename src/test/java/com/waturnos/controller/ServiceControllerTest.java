@@ -168,7 +168,7 @@ class ServiceControllerTest {
 	void testUpdateService_Success() throws Exception {
 		// Arrange
 		when(serviceMapper.toEntity(any(ServiceDTO.class), anyBoolean())).thenReturn(testServiceEntity);
-		when(serviceEntityService.update(any(ServiceEntity.class))).thenReturn(testServiceEntity);
+		when(serviceEntityService.update(any(ServiceEntity.class), anyList())).thenReturn(testServiceEntity);
 		when(serviceMapper.toDTO(any(ServiceEntity.class))).thenReturn(testServiceDTO);
 
 		// Act & Assert

@@ -3,6 +3,8 @@ package com.waturnos.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.waturnos.dto.beans.AvailabilityDTO;
+import com.waturnos.dto.response.AvailabilityImpactResponse;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.ServiceEntity;
 
@@ -53,9 +55,10 @@ public interface ServiceEntityService {
 	 * Update.
 	 *
 	 * @param service the service
+	 * @param newAvailability the new availability list
 	 * @return the service entity
 	 */
-	ServiceEntity update(ServiceEntity service);
+	ServiceEntity update(ServiceEntity service, List<AvailabilityDTO> newAvailability);
 	
 	/**
 	 * Delete.
@@ -72,6 +75,16 @@ public interface ServiceEntityService {
 	 * @param serviceId the service id
 	 */
 	void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId);
+
+	/**
+	 * Valida el impacto de cambios en availability sobre bookings existentes.
+	 * Identifica bookings que quedarían fuera del nuevo horario.
+	 *
+	 * @param serviceId el ID del servicio
+	 * @param newAvailability la nueva configuración de availability
+	 * @return el impacto con la lista de bookings afectados
+	 */
+	AvailabilityImpactResponse validateAvailabilityChange(Long serviceId, List<AvailabilityDTO> newAvailability);
 
 	
 }

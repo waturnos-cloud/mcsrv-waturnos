@@ -8,14 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.waturnos.audit.AuditContext;
 import com.waturnos.audit.annotations.AuditAspect;
+import com.waturnos.dto.beans.AvailabilityDTO;
+import com.waturnos.dto.response.AffectedBookingDTO;
+import com.waturnos.dto.response.AvailabilityImpactResponse;
 import com.waturnos.entity.AvailabilityEntity;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.BookingClient;
+import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.UnavailabilityEntity;
 import com.waturnos.entity.User;
@@ -230,13 +238,14 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 *
 	 * @param id      the id
 	 * @param service the service
+	 * @param newAvailability the new availability list
 	 * @return the service entity
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@Transactional(readOnly = false)
 	@AuditAspect("SERVICE_UPDATE")
-	public ServiceEntity update(ServiceEntity service) {
+	public ServiceEntity update(ServiceEntity service, List<AvailabilityDTO> newAvailability) {
 
 		Optional<ServiceEntity> serviceDBExists = serviceRepository.findById(service.getId());
 		if (!serviceDBExists.isPresent()) {
@@ -250,6 +259,31 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		AuditContext.setService(serviceDB);
 		AuditContext.setProvider(service.getUser());
 		AuditContext.get().setObject(service.getName());
+		
+		// Verificar si hay cambios en availability y procesar bookings afectados de forma asíncrona
+		List<AvailabilityEntity> currentAvailability = availabilityRepository.findByServiceId(service.getId());
+		
+		if (newAvailability != null && !newAvailability.isEmpty() && hasAvailabilityChanged(currentAvailability, newAvailability)) {
+			log.info("Availability changed for service {}, triggering async processing of affected bookings", service.getId());
+			
+			// Capturar el SecurityContext antes de ejecutar async
+			Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+			
+			// Procesar de forma asíncrona (no bloquea la respuesta)
+			batchProcessor.processAffectedBookingsAsync(service.getId(), newAvailability, authentication);
+			
+			// Actualizar availability
+			availabilityRepository.deleteByServiceId(service.getId());
+			newAvailability.forEach(av -> {
+				AvailabilityEntity entity = new AvailabilityEntity();
+				entity.setServiceId(service.getId());
+				entity.setDayOfWeek(av.getDayOfWeek());
+				entity.setStartTime(av.getStartTime());
+				entity.setEndTime(av.getEndTime());
+				availabilityRepository.save(entity);
+			});
+		}
+		
 		serviceDB.setUpdatedAt(LocalDateTime.now());
 		serviceDB.setModificator(SessionUtil.getUserName());
 		serviceDB.setName(service.getName());
@@ -259,6 +293,30 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		serviceDB.setPrice(service.getPrice());
 
 		return serviceRepository.save(serviceDB);
+	}
+	
+	/**
+	 * Verifica si hubo cambios en la configuración de availability.
+	 */
+	private boolean hasAvailabilityChanged(List<AvailabilityEntity> current, List<AvailabilityDTO> newList) {
+		if (current.size() != newList.size()) {
+			return true;
+		}
+		
+		// Comparar cada elemento
+		for (AvailabilityEntity currentAv : current) {
+			boolean found = newList.stream().anyMatch(newAv ->
+				newAv.getDayOfWeek() == currentAv.getDayOfWeek() &&
+				newAv.getStartTime().equals(currentAv.getStartTime()) &&
+				newAv.getEndTime().equals(currentAv.getEndTime())
+			);
+			
+			if (!found) {
+				return true; // Hubo un cambio
+			}
+		}
+		
+		return false;
 	}
 
 	/**
@@ -313,4 +371,76 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
         
 		batchProcessor.deleteBookings(startDate, endDate, serviceEntity.get());
 	}
+
+	/**
+	 * Valida el impacto de cambios en availability sobre bookings existentes.
+	 *
+	 * @param serviceId el ID del servicio
+	 * @param newAvailability la nueva configuración de availability
+	 * @return el impacto con la lista de bookings afectados
+	 */
+	@Override
+	@Transactional(readOnly = true)
+	public AvailabilityImpactResponse validateAvailabilityChange(Long serviceId, List<AvailabilityDTO> newAvailability) {
+		// Verificar que el servicio existe
+		ServiceEntity service = serviceRepository.findById(serviceId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Service not found"));
+		
+		// Obtener todos los bookings futuros con clientes asignados
+		LocalDateTime now = LocalDateTime.now();
+		List<Booking> futureBookings = bookingService.findByServiceId(serviceId).stream()
+				.filter(b -> b.getStartTime().isAfter(now))
+				.filter(b -> b.getStatus() == BookingStatus.RESERVED || 
+						     b.getStatus() == BookingStatus.PARTIALLY_RESERVED)
+				.collect(Collectors.toList());
+		
+		// Identificar bookings que quedarían fuera del nuevo availability
+		List<AffectedBookingDTO> affectedBookings = new ArrayList<>();
+		
+		for (Booking booking : futureBookings) {
+			if (!isBookingWithinAvailability(booking, newAvailability)) {
+				// Este booking queda fuera del nuevo horario
+				// Obtener info de cada cliente en este booking
+				for (BookingClient bc : booking.getBookingClients()) {
+					Client client = bc.getClient();
+					
+					affectedBookings.add(AffectedBookingDTO.builder()
+							.bookingId(booking.getId())
+							.clientFullName(client.getFullName())
+							.clientPhone(client.getPhone())
+							.clientEmail(client.getEmail())
+							.startTime(booking.getStartTime())
+							.build());
+				}
+			}
+		}
+		
+		return AvailabilityImpactResponse.builder()
+				.affectedCount(affectedBookings.size())
+				.affectedBookings(affectedBookings)
+				.build();
+	}
+	
+	/**
+	 * Verifica si un booking está dentro de los rangos de availability.
+	 *
+	 * @param booking el booking a verificar
+	 * @param availabilities la lista de availability
+	 * @return true si el booking está cubierto, false si queda fuera
+	 */
+	private boolean isBookingWithinAvailability(Booking booking, List<AvailabilityDTO> availabilities) {
+		DayOfWeek bookingDay = booking.getStartTime().getDayOfWeek();
+		LocalTime bookingStartTime = booking.getStartTime().toLocalTime();
+		LocalTime bookingEndTime = booking.getEndTime().toLocalTime();
+		
+		// Buscar si existe un availability para ese día que cubra el horario
+		return availabilities.stream()
+				.filter(av -> av.getDayOfWeek() == bookingDay.getValue())
+				.anyMatch(av -> {
+					// El booking debe estar completamente dentro del rango
+					return !bookingStartTime.isBefore(av.getStartTime()) && 
+						   !bookingEndTime.isAfter(av.getEndTime());
+				});
+	}
 }
+

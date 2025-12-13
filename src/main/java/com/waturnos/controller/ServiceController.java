@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.waturnos.dto.beans.ServiceDTO;
 import com.waturnos.dto.beans.UnavailabilityDTO;
 import com.waturnos.dto.request.CreateService;
+import com.waturnos.dto.request.ValidateAvailabilityChangeRequest;
+import com.waturnos.dto.response.AvailabilityImpactResponse;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.mapper.AvailabilityMapper;
 import com.waturnos.mapper.ServiceMapper;
@@ -102,7 +104,7 @@ public class ServiceController {
 	 */
 	@PutMapping
 	public ResponseEntity<ApiResponse<ServiceDTO>> update(@RequestBody ServiceDTO serviceDto) {
-		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true));
+		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true), serviceDto.getListAvailability());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
 
@@ -122,5 +124,23 @@ public class ServiceController {
 	public ResponseEntity<ApiResponse<Void>> lockCalendar(@RequestBody UnavailabilityDTO unavailableDto) {
 		service.lockCalendar(unavailableDto.getStartTime(), unavailableDto.getEndTime(), unavailableDto.getServiceId());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Lock calendar", null));
+	}
+	
+	/**
+	 * Valida el impacto de cambios en availability sobre bookings existentes.
+	 * Retorna una lista de turnos/clientes que se verían afectados.
+	 *
+	 * @param request los datos de validación (serviceId y nueva availability)
+	 * @return el impacto con cantidad y lista de bookings afectados
+	 */
+	@PostMapping("/availability/validate")
+	public ResponseEntity<ApiResponse<AvailabilityImpactResponse>> validateAvailabilityChange(
+			@RequestBody ValidateAvailabilityChangeRequest request) {
+		
+		AvailabilityImpactResponse impact = service.validateAvailabilityChange(
+				request.getServiceId(), 
+				request.getNewAvailability());
+		
+		return ResponseEntity.ok(new ApiResponse<>(true, "Validation completed", impact));
 	}
 }
