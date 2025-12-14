@@ -71,38 +71,39 @@ public class BookingServiceImpl implements BookingService {
 
 	/** The client repository. */
 	private final ClientRepository clientRepository;
-	
+
 	/** The service repository. */
 	private final ServiceRepository serviceRepository;
 
 	/** The security access entity. */
 	private final SecurityAccessEntity securityAccessEntity;
-	
+
 	/** The client organization repository. */
 	private final ClientOrganizationRepository clientOrganizationRepository;
-	
+
 	/** The notification factory. */
 	private final NotificationFactory notificationFactory;
 
-    /** The mapper. */
-    private final ServiceBookingMapper mapper; 
-    
+	/** The mapper. */
+	private final ServiceBookingMapper mapper;
+
 	/** The message source. */
 	private final MessageSource messageSource;
-	
+
 	/** The waitlist service. */
 	private final WaitlistService waitlistService;
 
 	/** The Constant DATE_FORMATTER. */
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	
+
 	/** The date forma email. */
 	@Value("${app.datetime.email-format}")
 	private String dateFormaEmail;
-	
+
 	/** The url home. */
 	@Value("${app.notification.HOME}")
 	private String urlHome;
+
 	/**
 	 * Creates the.
 	 *
@@ -120,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
 				Integer capacity = service.getCapacity();
 				if (capacity == null) {
 					ServiceEntity fullService = serviceRepository.findById(service.getId())
-						.orElseThrow(() -> new IllegalArgumentException("Service not found: " + service.getId()));
+							.orElseThrow(() -> new IllegalArgumentException("Service not found: " + service.getId()));
 					capacity = fullService.getCapacity();
 				}
 				booking.setFreeSlots(capacity);
@@ -137,12 +138,13 @@ public class BookingServiceImpl implements BookingService {
 	 * @return the booking
 	 */
 	@Override
-	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT  })
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	@AuditAspect("BOOKING_UPDATE_STATUS")
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
-		if (existing.getService() != null && existing.getService().getUser() != null && existing.getService().getUser().getOrganization() != null) {
+		if (existing.getService() != null && existing.getService().getUser() != null
+				&& existing.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(existing.getService().getUser().getOrganization());
 			AuditContext.setProvider(existing.getService().getUser());
 			AuditContext.setService(existing.getService());
@@ -155,7 +157,7 @@ public class BookingServiceImpl implements BookingService {
 	 * AssignBookingToClient (Inscribe a un cliente en un booking multi-plaza).
 	 *
 	 * @param bookingId the id del Booking
-	 * @param clientId the client id
+	 * @param clientId  the client id
 	 * @return the updated Booking
 	 */
 	@Override
@@ -163,21 +165,23 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = false)
 	@AuditAspect("BOOKING_ASSIGN_CLIENT")
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
-		return assignBooking(bookingId, clientId);
+		return assignBooking(bookingId, clientId,true);
 	}
-	
+
 	/**
 	 * Assign booking.
 	 *
 	 * @param bookingId the booking id
-	 * @param clientId the client id
+	 * @param clientId  the client id
+	 * @param sendEmail the send email
 	 * @return the booking
 	 */
-	private Booking assignBooking (Long bookingId, Long clientId) {
+	private Booking assignBooking(Long bookingId, Long clientId, Boolean sendEmail) {
 		Booking booking = bookingRepository.findById(bookingId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
 
-		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
+		if (booking.getService() != null && booking.getService().getUser() != null
+				&& booking.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
 			AuditContext.setProvider(booking.getService().getUser());
 			AuditContext.setService(booking.getService());
@@ -185,35 +189,36 @@ public class BookingServiceImpl implements BookingService {
 
 		ClientOrganization clientOrganization = clientOrganizationRepository
 				.findByClientIdAndOrganizationId(clientId, booking.getService().getUser().getOrganization().getId())
-				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Booking not found"));
+				.orElseThrow(
+						() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Booking not found"));
 
 		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
 
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
-		
+
 		AuditContext.setObject(client.getFullName());
 
 		if (booking.getFreeSlots() <= 0) {
 			throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
 		}
 
-		if (booking.getBookingClients().stream()
-					.anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
-			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT, "Client is already registered for this booking.");
+		if (booking.getBookingClients().stream().anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
+			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT,
+					"Client is already registered for this booking.");
 		}
 
 		// Agregar el cliente al booking (mantener lógica original HEAD)
-		BookingClient bookingClient = BookingClient.builder()
-				.booking(booking)
-				.client(client)
-				.build();
+		BookingClient bookingClient = BookingClient.builder().booking(booking).client(client).build();
 		booking.addBookingClient(bookingClient);
 
 		// Actualizar timestamp y disparar notificación
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		notificationFactory.sendAsync(buildRequest(booking, client));
-
+		
+		if (sendEmail) {
+			notificationFactory.sendAsync(
+					buildRequest(booking, client, NotificationType.BOOKING_ASSIGN, "notification.subject.assign.booking"));
+		}
 		// Guardar booking
 		Booking savedBooking = bookingRepository.save(booking);
 
@@ -225,17 +230,18 @@ public class BookingServiceImpl implements BookingService {
 
 		return savedBooking;
 	}
-	
-	
+
 	/**
 	 * Builds the request.
 	 *
-	 * @param booking     the booking
-	 * @param client the client
-	 * @param serviceName the service name
+	 * @param booking          the booking
+	 * @param client           the client
+	 * @param notificationType the notification type
+	 * @param subject          the subject
 	 * @return the notification request
 	 */
-	private NotificationRequest buildRequest(Booking booking, Client client) {
+	private NotificationRequest buildRequest(Booking booking, Client client, NotificationType notificationType,
+			String subject) {
 		Map<String, String> properties = new HashMap<>();
 		properties.put("USERNAME", client.getFullName());
 		properties.put("SERVICENAME", booking.getService().getName());
@@ -243,15 +249,14 @@ public class BookingServiceImpl implements BookingService {
 		properties.put("URLHOME", urlHome);
 
 		return NotificationRequest.builder().email(client.getEmail()).language("ES")
-				.subject(messageSource.getMessage("notification.subject.assign.booking", null,
-						LocaleContextHolder.getLocale()))
-				.type(NotificationType.BOOKING_ASSIGN).properties(properties).build();
+				.subject(messageSource.getMessage(subject, null, LocaleContextHolder.getLocale()))
+				.type(notificationType).properties(properties).build();
 	}
-	
+
 	/**
 	 * Cancel booking.
 	 *
-	 * @param id the id
+	 * @param id     the id
 	 * @param reason the reason
 	 * @return the booking
 	 */
@@ -263,7 +268,8 @@ public class BookingServiceImpl implements BookingService {
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
-		if (booking.getService() != null && booking.getService().getUser() != null && booking.getService().getUser().getOrganization() != null) {
+		if (booking.getService() != null && booking.getService().getUser() != null
+				&& booking.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
 			AuditContext.setProvider(booking.getService().getUser());
 			AuditContext.setService(booking.getService());
@@ -432,17 +438,17 @@ public class BookingServiceImpl implements BookingService {
 
 		Map<LocalDate, List<ServiceWithBookingsDTO>> response = new TreeMap<>();
 
-		// 4) Dentro de cada día: agrupar por servicio (usando ID para evitar lazy loading en hashCode)
+		// 4) Dentro de cada día: agrupar por servicio (usando ID para evitar lazy
+		// loading en hashCode)
 		groupedByDay.forEach((day, dayList) -> {
 
 			Map<Long, List<Booking>> byServiceId = dayList.stream()
 					.collect(Collectors.groupingBy(b -> b.getService().getId()));
 
-			List<ServiceWithBookingsDTO> dtoList = byServiceId.entrySet().stream()
-					.map(e -> {
-						ServiceEntity service = e.getValue().get(0).getService();
-						return mapper.toServiceGroup(service, e.getValue());
-					}).toList();
+			List<ServiceWithBookingsDTO> dtoList = byServiceId.entrySet().stream().map(e -> {
+				ServiceEntity service = e.getValue().get(0).getService();
+				return mapper.toServiceGroup(service, e.getValue());
+			}).toList();
 
 			response.put(day, dtoList);
 		});
@@ -462,7 +468,7 @@ public class BookingServiceImpl implements BookingService {
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found with id: " + bookingId));
 
 		com.waturnos.dto.response.BookingDetailsDTO detailsDTO = new com.waturnos.dto.response.BookingDetailsDTO();
-		
+
 		// Mapear datos básicos del booking
 		detailsDTO.setId(booking.getId());
 		detailsDTO.setStartTime(booking.getStartTime());
@@ -471,22 +477,20 @@ public class BookingServiceImpl implements BookingService {
 		detailsDTO.setNotes(booking.getNotes());
 		detailsDTO.setServiceId(booking.getService().getId());
 		detailsDTO.setFreeSlots(booking.getFreeSlots());
-		
+
 		// Mapear los clientes vinculados
-		List<com.waturnos.dto.beans.ClientDTO> clientDTOs = booking.getBookingClients().stream()
-				.map(bc -> {
-					com.waturnos.dto.beans.ClientDTO clientDTO = new com.waturnos.dto.beans.ClientDTO();
-					clientDTO.setId(bc.getClient().getId());
-					clientDTO.setFullName(bc.getClient().getFullName());
-					clientDTO.setDni(bc.getClient().getDni());
-					clientDTO.setEmail(bc.getClient().getEmail());
-					clientDTO.setPhone(bc.getClient().getPhone());
-					return clientDTO;
-				})
-				.collect(Collectors.toList());
-		
+		List<com.waturnos.dto.beans.ClientDTO> clientDTOs = booking.getBookingClients().stream().map(bc -> {
+			com.waturnos.dto.beans.ClientDTO clientDTO = new com.waturnos.dto.beans.ClientDTO();
+			clientDTO.setId(bc.getClient().getId());
+			clientDTO.setFullName(bc.getClient().getFullName());
+			clientDTO.setDni(bc.getClient().getDni());
+			clientDTO.setEmail(bc.getClient().getEmail());
+			clientDTO.setPhone(bc.getClient().getPhone());
+			return clientDTO;
+		}).collect(Collectors.toList());
+
 		detailsDTO.setClients(clientDTOs);
-		
+
 		return detailsDTO;
 	}
 
@@ -507,69 +511,55 @@ public class BookingServiceImpl implements BookingService {
 	 * with availability count across all services.
 	 *
 	 * @param categoryId the category/type id
-	 * @param date the date to check availability
+	 * @param date       the date to check availability
 	 * @param providerId the provider id
 	 * @return list of grouped availability slots
 	 */
 	@Override
-	public List<com.waturnos.dto.response.GroupedAvailabilityDTO> findGroupedAvailabilityByType(
-			Long categoryId, LocalDate date, Long providerId) {
-		
+	public List<com.waturnos.dto.response.GroupedAvailabilityDTO> findGroupedAvailabilityByType(Long categoryId,
+			LocalDate date, Long providerId) {
+
 		LocalDateTime startOfDay = date.atStartOfDay();
 		LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-		
+
 		// Buscar todos los bookings del día, filtrados por provider y tipo de servicio
-		List<Booking> bookings = bookingRepository
-				.findByProviderAndTypeAndDateRange(providerId, categoryId, startOfDay, endOfDay);
-		
+		List<Booking> bookings = bookingRepository.findByProviderAndTypeAndDateRange(providerId, categoryId, startOfDay,
+				endOfDay);
+
 		// Agrupar por time slot (startTime)
 		Map<LocalDateTime, List<Booking>> groupedByTime = bookings.stream()
 				.collect(Collectors.groupingBy(Booking::getStartTime));
-		
+
 		// Contar cuántos servicios únicos del provider tiene este tipo
-		Long totalServices = bookings.stream()
-				.map(b -> b.getService().getId())
-				.distinct()
-				.count();
-		
+		Long totalServices = bookings.stream().map(b -> b.getService().getId()).distinct().count();
+
 		// Construir DTOs
-		return groupedByTime.entrySet().stream()
-				.map(entry -> {
-					LocalDateTime timeSlot = entry.getKey();
-					List<Booking> slotsAtThisTime = entry.getValue();
-					
-					// Filtrar los que están FREE
-					List<Booking> availableSlots = slotsAtThisTime.stream()
-							.filter(b -> b.getStatus() == BookingStatus.FREE)
-							.collect(Collectors.toList());
-					
-					List<Long> availableBookingIds = availableSlots.stream()
-							.map(Booking::getId)
-							.collect(Collectors.toList());
-					
-					// Si hay al menos un servicio de este tipo, endTime es el mismo para todos
-					LocalDateTime endTime = slotsAtThisTime.isEmpty() 
-							? timeSlot.plusHours(1) 
-							: slotsAtThisTime.get(0).getEndTime();
-					
-					return com.waturnos.dto.response.GroupedAvailabilityDTO.builder()
-							.startTime(timeSlot)
-							.endTime(endTime)
-							.totalServices(totalServices.intValue())
-							.availableCount(availableSlots.size())
-							.availableBookingIds(availableBookingIds)
-							.isFullyBooked(availableSlots.isEmpty())
-							.build();
-				})
-				.sorted((a, b) -> a.getStartTime().compareTo(b.getStartTime()))
-				.collect(Collectors.toList());
+		return groupedByTime.entrySet().stream().map(entry -> {
+			LocalDateTime timeSlot = entry.getKey();
+			List<Booking> slotsAtThisTime = entry.getValue();
+
+			// Filtrar los que están FREE
+			List<Booking> availableSlots = slotsAtThisTime.stream().filter(b -> b.getStatus() == BookingStatus.FREE)
+					.collect(Collectors.toList());
+
+			List<Long> availableBookingIds = availableSlots.stream().map(Booking::getId).collect(Collectors.toList());
+
+			// Si hay al menos un servicio de este tipo, endTime es el mismo para todos
+			LocalDateTime endTime = slotsAtThisTime.isEmpty() ? timeSlot.plusHours(1)
+					: slotsAtThisTime.get(0).getEndTime();
+
+			return com.waturnos.dto.response.GroupedAvailabilityDTO.builder().startTime(timeSlot).endTime(endTime)
+					.totalServices(totalServices.intValue()).availableCount(availableSlots.size())
+					.availableBookingIds(availableBookingIds).isFullyBooked(availableSlots.isEmpty()).build();
+		}).sorted((a, b) -> a.getStartTime().compareTo(b.getStartTime())).collect(Collectors.toList());
 	}
 
 	/**
-	 * Create overbooking - creates a booking with status RESERVED and assigns it to a client.
-	 * Validates that the client belongs to the organization and the service is from the same organization.
+	 * Create overbooking - creates a booking with status RESERVED and assigns it to
+	 * a client. Validates that the client belongs to the organization and the
+	 * service is from the same organization.
 	 *
-	 * @param booking the booking to create
+	 * @param booking  the booking to create
 	 * @param clientId the client id to assign
 	 * @return the created booking
 	 */
@@ -578,26 +568,24 @@ public class BookingServiceImpl implements BookingService {
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@AuditAspect("BOOKING_OVERBOOKING_CREATE")
 	public Booking createOverBooking(Booking booking, Long clientId) {
-		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
-				.orElseThrow(() -> new EntityNotFoundException("Service not found with id: " + booking.getService().getId()));
-		
+		ServiceEntity service = serviceRepository.findById(booking.getService().getId()).orElseThrow(
+				() -> new EntityNotFoundException("Service not found with id: " + booking.getService().getId()));
+
 		Long organizationId = service.getUser().getOrganization().getId();
-		
+
 		// Validar que el cliente existe
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new EntityNotFoundException("Client not found with id: " + clientId));
-		
+
 		// Validar que el cliente está vinculado a la organización
-		clientOrganizationRepository
-				.findByClientIdAndOrganizationId(clientId, organizationId)
-				.orElseThrow(() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, 
-						"Client is not linked to the organization"));
-		
+		clientOrganizationRepository.findByClientIdAndOrganizationId(clientId, organizationId).orElseThrow(
+				() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Client is not linked to the organization"));
+
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
-		
+
 		LocalDateTime endTime = booking.getStartTime().plusMinutes(service.getDurationMinutes());
 		booking.setEndTime(endTime);
-		
+
 		booking.setIsOverbooking(true);
 		booking.setCreatedAt(DateUtils.getCurrentDateTime());
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
@@ -605,33 +593,35 @@ public class BookingServiceImpl implements BookingService {
 		booking.setStatus(BookingStatus.RESERVED);
 		// Guardar el booking primero
 		Booking savedBooking = bookingRepository.save(booking);
-		
+
 		// Crear y vincular el BookingClient
 		BookingClient bookingClient = new BookingClient();
 		bookingClient.setBooking(savedBooking);
 		bookingClient.setClient(client);
 		// Usar el método addBookingClient que gestiona la relación bidireccional
 		savedBooking.getBookingClients().add(bookingClient);
-		
+
 		// Guardar nuevamente para persistir la relación
 		savedBooking = bookingRepository.save(savedBooking);
-		
+
 		AuditContext.get().setObject(service.getName());
 		AuditContext.setService(service);
 		AuditContext.setProvider(service.getUser());
 		AuditContext.setOrganization(service.getUser().getOrganization());
-		
-		notificationFactory.sendAsync(buildRequest(booking, client));
-		
+
+		notificationFactory.sendAsync(
+				buildRequest(booking, client, NotificationType.BOOKING_ASSIGN, "notification.subject.assign.booking"));
+
 		return savedBooking;
 	}
 
 	/**
-	 * Reassign booking - cancels the actual booking and assigns the client to a new booking.
+	 * Reassign booking - cancels the actual booking and assigns the client to a new
+	 * booking.
 	 *
 	 * @param actualBookingId the actual booking id to cancel
-	 * @param newBookingId the new booking id to assign
-	 * @param clientId the client id to assign to the new booking
+	 * @param newBookingId    the new booking id to assign
+	 * @param clientId        the client id to assign to the new booking
 	 * @return the new booking with the client assigned
 	 */
 	@Override
@@ -639,28 +629,36 @@ public class BookingServiceImpl implements BookingService {
 	@AuditAspect("BOOKING_REASSIGN")
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER })
 	public Booking reassignBooking(Long actualBookingId, Long newBookingId, Long clientId) {
-		
+
 		// 1. Obtener el booking actual y validar que existe
 		Booking actualBooking = bookingRepository.findById(actualBookingId)
-				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, 
+				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND,
 						"Actual booking not found with id: " + actualBookingId));
-		
+
 		// 2. Validar que el booking actual tiene al cliente asignado
 		boolean clientWasAssigned = actualBooking.getBookingClients().stream()
 				.anyMatch(bc -> bc.getClient().getId().equals(clientId));
-		
+
 		if (!clientWasAssigned) {
-			throw new ServiceException(ErrorCode.CLIENT_NOT_ASSIGNED_TO_BOOKING, 
+			throw new ServiceException(ErrorCode.CLIENT_NOT_ASSIGNED_TO_BOOKING,
 					"Client " + clientId + " is not assigned to booking " + actualBookingId);
 		}
-		
+
 		// 3. Cancelar el booking actual con estado CANCELED_BY_PROVIDER
 		actualBooking.setStatus(BookingStatus.CANCELED_BY_PROVIDER);
 		actualBooking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		bookingRepository.save(actualBooking);
 		
 		// 4. Asignar el cliente al nuevo booking
-		return assignBooking(newBookingId, clientId);
+		Booking newBooking = assignBooking(newBookingId, clientId, false);
+		
+		Client client = clientRepository.findById(clientId)
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
+		
+		notificationFactory.sendAsync(
+				buildRequest(newBooking, client, NotificationType.BOOKING_REASSIGN, "notification.subject.reassign.booking"));
+
+		
+		return newBooking;
 	}
 }
-
