@@ -165,7 +165,7 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = false)
 	@AuditAspect("BOOKING_ASSIGN_CLIENT")
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
-		return assignBooking(bookingId, clientId,true);
+		return assignBooking(bookingId, clientId, true);
 	}
 
 	/**
@@ -214,10 +214,10 @@ public class BookingServiceImpl implements BookingService {
 
 		// Actualizar timestamp y disparar notificación
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		
+
 		if (sendEmail) {
-			notificationFactory.sendAsync(
-					buildRequest(booking, client, NotificationType.BOOKING_ASSIGN, "notification.subject.assign.booking"));
+			notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_ASSIGN,
+					"notification.subject.assign.booking"));
 		}
 		// Guardar booking
 		Booking savedBooking = bookingRepository.save(booking);
@@ -273,23 +273,38 @@ public class BookingServiceImpl implements BookingService {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
 			AuditContext.setProvider(booking.getService().getUser());
 			AuditContext.setService(booking.getService());
+			AuditContext.setObject(booking.getStartTime().toString().concat(" - ").concat(reason));
 		}
 
 		if (!booking.getStatus().equals(BookingStatus.RESERVED)) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
+		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
+				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
+		
+		boolean waitList = service != null && Boolean.TRUE.equals(service.getWaitList());
+
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		booking.setStatus(BookingStatus.CANCELLED);
+		booking.setStatus(BookingStatus.FREE_AFTER_CANCEL);
+		if (waitList) {
+			booking.setStatus(BookingStatus.CANCELLED);
+		}
 		booking.setCancelReason(reason);
 
 		Booking savedBooking = bookingRepository.save(booking);
 
 		// Notificar waitlist solo si el servicio tiene habilitada la lista de espera
-		ServiceEntity service = savedBooking.getService();
-		if (service != null && Boolean.TRUE.equals(service.getWaitList())) {
+		if (waitList) {
 			waitlistService.notifyNextInLine(savedBooking);
 		}
+		
+		savedBooking.getBookingClients().stream()
+        .map(bookingClient -> bookingClient.getClient())
+        .forEach(client -> {
+        	notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
+    				"notification.subject.canceled.booking"));
+        });
 
 		return savedBooking;
 	}
@@ -648,17 +663,16 @@ public class BookingServiceImpl implements BookingService {
 		actualBooking.setStatus(BookingStatus.CANCELED_BY_PROVIDER);
 		actualBooking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		bookingRepository.save(actualBooking);
-		
+
 		// 4. Asignar el cliente al nuevo booking
 		Booking newBooking = assignBooking(newBookingId, clientId, false);
-		
+
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
-		
-		notificationFactory.sendAsync(
-				buildRequest(newBooking, client, NotificationType.BOOKING_REASSIGN, "notification.subject.reassign.booking"));
 
-		
+		notificationFactory.sendAsync(buildRequest(newBooking, client, NotificationType.BOOKING_REASSIGN,
+				"notification.subject.reassign.booking"));
+
 		return newBooking;
 	}
 }

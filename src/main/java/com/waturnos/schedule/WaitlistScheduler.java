@@ -1,9 +1,14 @@
 package com.waturnos.schedule;
 
+import com.waturnos.entity.Booking;
 import com.waturnos.entity.WaitlistEntry;
+import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.WaitlistStatus;
+import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.WaitlistEntryRepository;
 import com.waturnos.service.WaitlistService;
+import com.waturnos.utils.DateUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +30,7 @@ public class WaitlistScheduler {
 
     private final WaitlistEntryRepository waitlistEntryRepository;
     private final WaitlistService waitlistService;
+    private final BookingRepository bookingRepository;
 
     /**
      * Ejecuta cada minuto para buscar y expirar notificaciones que superaron su tiempo límite.
@@ -69,6 +75,10 @@ public class WaitlistScheduler {
                         waitlistService.notifyNextInLine(entry.getSpecificBooking());
                     } else {
                         log.info("Entrada de waitlist tipo TIME_WINDOW expirada, no hay booking específico para notificar");
+                        Booking booking = entry.getSpecificBooking();
+                        booking.setStatus(BookingStatus.FREE_AFTER_CANCEL);
+                        booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+                        bookingRepository.save(booking);
                     }
                     
                     log.info("Notificación expirada exitosamente");
