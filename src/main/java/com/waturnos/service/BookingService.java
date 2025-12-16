@@ -146,5 +146,13 @@ public interface BookingService {
 	 * @return the new booking with the client assigned
 	 */
 	Booking reassignBooking(Long actualBookingId, Long newBookingId, Long clientId);
+	
+	/**
+	 * Assign.
+	 *
+	 * @param id       the id
+	 * @return the booking
+	 */
+	Booking completedBookingToClient(Long id);
 
 }

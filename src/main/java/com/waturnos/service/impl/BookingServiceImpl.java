@@ -50,6 +50,7 @@ import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class BookingServiceImpl.
  */
@@ -131,6 +132,23 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	/**
+	 * Completed booking to client.
+	 *
+	 * @param id the id
+	 * @return the booking
+	 */
+	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
+	public Booking completedBookingToClient(Long id) {
+		Booking existing = bookingRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+
+		return updateBookingStatus(existing,
+				existing.getStatus().equals(BookingStatus.RESERVED) ? BookingStatus.COMPLETED
+						: BookingStatus.COMPLETED_AFTER_CANCEL);
+	}
+
+	/**
 	 * Update status.
 	 *
 	 * @param id     the id
@@ -139,15 +157,28 @@ public class BookingServiceImpl implements BookingService {
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
-	@AuditAspect("BOOKING_UPDATE_STATUS")
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+		return updateBookingStatus(existing, status);
+	}
+
+	/**
+	 * Update booking status.
+	 *
+	 * @param existing the existing
+	 * @param status   the status
+	 * @return the booking
+	 */
+	@AuditAspect("BOOKING_UPDATE_STATUS")
+	private Booking updateBookingStatus(Booking existing, BookingStatus status) {
 		if (existing.getService() != null && existing.getService().getUser() != null
 				&& existing.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(existing.getService().getUser().getOrganization());
 			AuditContext.setProvider(existing.getService().getUser());
 			AuditContext.setService(existing.getService());
+			AuditContext.setObject(
+					"Booking: ".concat(existing.getStartTime().toString().concat(" - ").concat(status.name())));
 		}
 		existing.setStatus(status);
 		return bookingRepository.save(existing);
@@ -276,13 +307,14 @@ public class BookingServiceImpl implements BookingService {
 			AuditContext.setObject(booking.getStartTime().toString().concat(" - ").concat(reason));
 		}
 
-		if (!booking.getStatus().equals(BookingStatus.RESERVED)) {
+		if ((!booking.getStatus().equals(BookingStatus.RESERVED))
+				&& (!booking.getStatus().equals(BookingStatus.RESERVED_AFTER_CANCEL))) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
 		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
-		
+
 		boolean waitList = service != null && Boolean.TRUE.equals(service.getWaitList());
 
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
@@ -298,13 +330,11 @@ public class BookingServiceImpl implements BookingService {
 		if (waitList) {
 			waitlistService.notifyNextInLine(savedBooking);
 		}
-		
-		savedBooking.getBookingClients().stream()
-        .map(bookingClient -> bookingClient.getClient())
-        .forEach(client -> {
-        	notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
-    				"notification.subject.canceled.booking"));
-        });
+
+		savedBooking.getBookingClients().stream().map(bookingClient -> bookingClient.getClient()).forEach(client -> {
+			notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
+					"notification.subject.canceled.booking"));
+		});
 
 		return savedBooking;
 	}
@@ -675,4 +705,5 @@ public class BookingServiceImpl implements BookingService {
 
 		return newBooking;
 	}
+
 }
