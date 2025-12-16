@@ -1,7 +1,7 @@
 package com.waturnos.security;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 /**
