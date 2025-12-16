@@ -706,4 +706,62 @@ public class BookingServiceImpl implements BookingService {
 		return newBooking;
 	}
 
+	/**
+	 * Reserve booking after cancel. Reserva un turno y lo marca con estado
+	 * RESERVED_AFTER_CANCEL.
+	 *
+	 * @param bookingId the booking id
+	 * @param clientId  the client id
+	 * @return the booking reserved
+	 */
+	@Override
+	@Transactional
+	public Booking reserveBookingAfterCancel(Long bookingId, Long clientId) {
+
+		// 1. Obtener el booking y validar que existe
+		Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+				() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found with id: " + bookingId));
+
+		// 2. Validar que el cliente existe
+		Client client = clientRepository.findById(clientId).orElseThrow(
+				() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found with id: " + clientId));
+
+		// 3. Validar que el cliente pertenece a la organización del servicio
+		ClientOrganization clientOrganization = clientOrganizationRepository
+				.findByClientIdAndOrganizationId(clientId, booking.getService().getUser().getOrganization().getId())
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION,
+						"Client does not belong to the organization"));
+		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
+
+		// 4. Validar que hay slots disponibles
+		if (booking.getFreeSlots() <= 0) {
+			throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
+		}
+
+		// 5. Validar que el cliente no esté ya asignado
+		if (booking.getBookingClients().stream().anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
+			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT,
+					"Client is already registered for this booking.");
+		}
+
+		// 6. Crear la relación BookingClient
+		BookingClient bookingClient = BookingClient.builder().booking(booking).client(client).build();
+
+		// 7. Agregar el cliente al booking
+		booking.addBookingClient(bookingClient);
+
+		// 8. Establecer el estado RESERVED_AFTER_CANCEL
+		booking.setStatus(BookingStatus.RESERVED_AFTER_CANCEL);
+		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+
+		// 9. Guardar el booking
+		Booking savedBooking = bookingRepository.save(booking);
+
+		// 10. Enviar notificación
+		notificationFactory.sendAsync(buildRequest(savedBooking, client, NotificationType.BOOKING_ASSIGN,
+				"notification.subject.assign.booking"));
+
+		return savedBooking;
+	}
+
 }

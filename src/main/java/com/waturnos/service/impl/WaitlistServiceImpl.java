@@ -289,7 +289,7 @@ public class WaitlistServiceImpl implements WaitlistService {
 			properties.put("DATEBOOKING", dateBooking);
 			properties.put("EXPIRATION_MINUTES", String.valueOf(entry.getExpirationMinutes()));
 			properties.put("ORGANIZATIONNAME", organization.getName());
-			properties.put("BOOKING_URL", "https://app.waturnos.com/bookings/" + booking.getId());
+			properties.put("BOOKING_URL", "https://app.waturnos.com/public/bookings/reserve?bookingId=" + booking.getId() + "&clientId=" + client.getId());
 
 			// Construir request de notificación
 			NotificationRequest request = NotificationRequest.builder().type(NotificationType.WAITLIST_AVAILABLE)

@@ -155,4 +155,14 @@ public interface BookingService {
 	 */
 	Booking completedBookingToClient(Long id);
 
+	/**
+	 * Reserve booking after cancel.
+	 * Reserva un turno y lo marca con estado RESERVED_AFTER_CANCEL.
+	 *
+	 * @param bookingId the booking id
+	 * @param clientId the client id
+	 * @return the booking reserved
+	 */
+	Booking reserveBookingAfterCancel(Long bookingId, Long clientId);
+
 }
