@@ -50,6 +50,7 @@ import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class BookingServiceImpl.
  */
@@ -131,6 +132,23 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 	/**
+	 * Completed booking to client.
+	 *
+	 * @param id the id
+	 * @return the booking
+	 */
+	@Override
+	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
+	public Booking completedBookingToClient(Long id) {
+		Booking existing = bookingRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+
+		return updateBookingStatus(existing,
+				existing.getStatus().equals(BookingStatus.RESERVED) ? BookingStatus.COMPLETED
+						: BookingStatus.COMPLETED_AFTER_CANCEL);
+	}
+
+	/**
 	 * Update status.
 	 *
 	 * @param id     the id
@@ -139,15 +157,28 @@ public class BookingServiceImpl implements BookingService {
 	 */
 	@Override
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
-	@AuditAspect("BOOKING_UPDATE_STATUS")
 	public Booking updateStatus(Long id, BookingStatus status) {
 		Booking existing = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
+		return updateBookingStatus(existing, status);
+	}
+
+	/**
+	 * Update booking status.
+	 *
+	 * @param existing the existing
+	 * @param status   the status
+	 * @return the booking
+	 */
+	@AuditAspect("BOOKING_UPDATE_STATUS")
+	private Booking updateBookingStatus(Booking existing, BookingStatus status) {
 		if (existing.getService() != null && existing.getService().getUser() != null
 				&& existing.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(existing.getService().getUser().getOrganization());
 			AuditContext.setProvider(existing.getService().getUser());
 			AuditContext.setService(existing.getService());
+			AuditContext.setObject(
+					"Booking: ".concat(existing.getStartTime().toString().concat(" - ").concat(status.name())));
 		}
 		existing.setStatus(status);
 		return bookingRepository.save(existing);
@@ -276,13 +307,14 @@ public class BookingServiceImpl implements BookingService {
 			AuditContext.setObject(booking.getStartTime().toString().concat(" - ").concat(reason));
 		}
 
-		if (!booking.getStatus().equals(BookingStatus.RESERVED)) {
+		if ((!booking.getStatus().equals(BookingStatus.RESERVED))
+				&& (!booking.getStatus().equals(BookingStatus.RESERVED_AFTER_CANCEL))) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
 		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
 				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
-		
+
 		boolean waitList = service != null && Boolean.TRUE.equals(service.getWaitList());
 
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
@@ -298,13 +330,11 @@ public class BookingServiceImpl implements BookingService {
 		if (waitList) {
 			waitlistService.notifyNextInLine(savedBooking);
 		}
-		
-		savedBooking.getBookingClients().stream()
-        .map(bookingClient -> bookingClient.getClient())
-        .forEach(client -> {
-        	notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
-    				"notification.subject.canceled.booking"));
-        });
+
+		savedBooking.getBookingClients().stream().map(bookingClient -> bookingClient.getClient()).forEach(client -> {
+			notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
+					"notification.subject.canceled.booking"));
+		});
 
 		return savedBooking;
 	}
@@ -675,4 +705,63 @@ public class BookingServiceImpl implements BookingService {
 
 		return newBooking;
 	}
+
+	/**
+	 * Reserve booking after cancel. Reserva un turno y lo marca con estado
+	 * RESERVED_AFTER_CANCEL.
+	 *
+	 * @param bookingId the booking id
+	 * @param clientId  the client id
+	 * @return the booking reserved
+	 */
+	@Override
+	@Transactional
+	public Booking reserveBookingAfterCancel(Long bookingId, Long clientId) {
+
+		// 1. Obtener el booking y validar que existe
+		Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+				() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found with id: " + bookingId));
+
+		// 2. Validar que el cliente existe
+		Client client = clientRepository.findById(clientId).orElseThrow(
+				() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found with id: " + clientId));
+
+		// 3. Validar que el cliente pertenece a la organización del servicio
+		ClientOrganization clientOrganization = clientOrganizationRepository
+				.findByClientIdAndOrganizationId(clientId, booking.getService().getUser().getOrganization().getId())
+				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION,
+						"Client does not belong to the organization"));
+		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
+
+		// 4. Validar que hay slots disponibles
+		if (booking.getFreeSlots() <= 0) {
+			throw new ServiceException(ErrorCode.BOOKING_FULL, "Booking is full, no free slots available");
+		}
+
+		// 5. Validar que el cliente no esté ya asignado
+		if (booking.getBookingClients().stream().anyMatch(bc -> bc.getClient().getId().equals(clientId))) {
+			throw new ServiceException(ErrorCode.BOOKING_ALREADY_RESERVED_BYCLIENT,
+					"Client is already registered for this booking.");
+		}
+
+		// 6. Crear la relación BookingClient
+		BookingClient bookingClient = BookingClient.builder().booking(booking).client(client).build();
+
+		// 7. Agregar el cliente al booking
+		booking.addBookingClient(bookingClient);
+
+		// 8. Establecer el estado RESERVED_AFTER_CANCEL
+		booking.setStatus(BookingStatus.RESERVED_AFTER_CANCEL);
+		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
+
+		// 9. Guardar el booking
+		Booking savedBooking = bookingRepository.save(booking);
+
+		// 10. Enviar notificación
+		notificationFactory.sendAsync(buildRequest(savedBooking, client, NotificationType.BOOKING_ASSIGN,
+				"notification.subject.assign.booking"));
+
+		return savedBooking;
+	}
+
 }

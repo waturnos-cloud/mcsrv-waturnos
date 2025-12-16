@@ -146,5 +146,23 @@ public interface BookingService {
 	 * @return the new booking with the client assigned
 	 */
 	Booking reassignBooking(Long actualBookingId, Long newBookingId, Long clientId);
+	
+	/**
+	 * Assign.
+	 *
+	 * @param id       the id
+	 * @return the booking
+	 */
+	Booking completedBookingToClient(Long id);
+
+	/**
+	 * Reserve booking after cancel.
+	 * Reserva un turno y lo marca con estado RESERVED_AFTER_CANCEL.
+	 *
+	 * @param bookingId the booking id
+	 * @param clientId the client id
+	 * @return the booking reserved
+	 */
+	Booking reserveBookingAfterCancel(Long bookingId, Long clientId);
 
 }

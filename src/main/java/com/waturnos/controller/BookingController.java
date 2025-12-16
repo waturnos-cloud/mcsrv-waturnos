@@ -152,6 +152,20 @@ public class BookingController {
 	}
 
 	/**
+	 * Completed booking.
+	 *
+	 * @param bookingId the booking id
+	 * @return the response entity
+	 */
+	@PutMapping("completed/{bookingId}")
+	public ResponseEntity<ApiResponse<BookingDTO>> completedBooking (
+			@PathVariable Long bookingId) {
+		
+		Booking updated = service.completedBookingToClient(bookingId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Booking status updated", mapper.toDto(updated)));
+	}
+	
+	/**
 	 * Gets the today bookings.
 	 *
 	 * @param providerId the provider id

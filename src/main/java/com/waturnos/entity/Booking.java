@@ -33,16 +33,12 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"service", "bookingClients"})
-@EqualsAndHashCode(exclude = {"bookingClients"})
+@ToString(exclude = { "service", "bookingClients" })
+@EqualsAndHashCode(exclude = { "bookingClients" })
 public class Booking {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_sequence")
-    @SequenceGenerator(
-            name = "booking_sequence", 
-            sequenceName = "booking_id_seq", 
-            allocationSize = 100
-        )
+	@SequenceGenerator(name = "booking_sequence", sequenceName = "booking_id_seq", allocationSize = 100)
 	private Long id;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
@@ -56,65 +52,79 @@ public class Booking {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "service_id")
 	private ServiceEntity service;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recurrence_id")
 	private Recurrence recurrence;
+
+	@Column(nullable = false)
+	private Integer freeSlots;
+
+	@Builder.Default
+	@Column(name = "is_overbooking")
+	private Boolean isOverbooking = false;
+
+	@OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@Builder.Default
+	private Set<BookingClient> bookingClients = new HashSet<>();
+
 	
-    @Column(nullable = false)
-    private Integer freeSlots;
-    
-    @Builder.Default
-    @Column(name = "is_overbooking")
-    private Boolean isOverbooking = false;
-    
-    @OneToMany(
-        mappedBy = "booking", 
-        cascade = CascadeType.ALL,
-        fetch = FetchType.LAZY,
-        orphanRemoval = true 
-    )
-    @Builder.Default 
-    private Set<BookingClient> bookingClients = new HashSet<>();
-    
-    
-    /**
-     * Añade una inscripción de cliente, decrementa freeSlots y actualiza el estado 
-     * solo si se llenó completamente el turno.
-     */
-    public void addBookingClient(BookingClient bookingClient) {
-        
-        this.bookingClients.add(bookingClient);
-        this.freeSlots--;
-        
-        if (bookingClient.getBooking() != this) {
-            bookingClient.setBooking(this);
-        }
+	/**
+	 * Checks if is reservable status.
+	 *
+	 * @return true, if is reservable status
+	 */
+	private boolean isReservableStatus() {
+	    return this.status == BookingStatus.FREE
+	        || this.status == BookingStatus.FREE_AFTER_CANCEL
+	        || this.status == BookingStatus.PARTIALLY_RESERVED;
+	}
+	
+	/**
+	 * Añade una inscripción de cliente, decrementa freeSlots y actualiza el estado
+	 * solo si se llenó completamente el turno.
+	 */
+	public void addBookingClient(BookingClient bookingClient) {
 
-        if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
-            if (this.freeSlots <= 0) {
-                this.status = BookingStatus.RESERVED; 
-            }else {
-                this.status = BookingStatus.PARTIALLY_RESERVED; 
-            } 
-        }
-    }
+	    if (this.freeSlots < 0) {
+	        throw new IllegalStateException("No free slots available for booking " + this.id);
+	    }
 
-    /**
-     * Elimina una inscripción de cliente, incrementa freeSlots y actualiza el estado 
-     * solo si pasa de lleno a libre.
-     */
-    public void removeBookingClient(BookingClient bookingClient, Integer serviceCapacity) {
-        
-        this.bookingClients.remove(bookingClient);
-        this.freeSlots++;
-        
-        if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
-            if (this.freeSlots.equals(serviceCapacity)) {
-                this.status = BookingStatus.FREE; 
-            }else {
-            	this.status = BookingStatus.PARTIALLY_RESERVED;
-            }
-        }
-    }
+	    this.bookingClients.add(bookingClient);
+	    this.freeSlots--;
+
+	    if (bookingClient.getBooking() != this) {
+	        bookingClient.setBooking(this);
+	    }
+
+	    if (!isReservableStatus()) {
+	        return;
+	    }
+
+	    if (this.freeSlots == 0) {
+	        this.status = (this.status == BookingStatus.FREE_AFTER_CANCEL)
+	                ? BookingStatus.RESERVED_AFTER_CANCEL
+	                : BookingStatus.RESERVED;
+	    } else {
+	        this.status = BookingStatus.PARTIALLY_RESERVED;
+	    }
+	}
+
+	/**
+	 * Elimina una inscripción de cliente, incrementa freeSlots y actualiza el
+	 * estado solo si pasa de lleno a libre.
+	 */
+	public void removeBookingClient(BookingClient bookingClient, Integer serviceCapacity) {
+
+		this.bookingClients.remove(bookingClient);
+		this.freeSlots++;
+
+		if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
+			if (this.freeSlots.equals(serviceCapacity)) {
+				this.status = BookingStatus.FREE;
+			} else {
+				this.status = BookingStatus.PARTIALLY_RESERVED;
+			}
+		}
+	}
 }

@@ -41,6 +41,46 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "Bookings",
+					"item": [
+						{
+							"name": "POST /public/bookings/reserve-after-cancel",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/public/bookings/reserve-after-cancel?bookingId=10&clientId=3",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{hostname}}"
+									],
+									"path": [
+										"msvc-waturnos",
+										"v1.0",
+										"public",
+										"bookings",
+										"reserve-after-cancel"
+									],
+									"query": [
+										{
+											"key": "bookingId",
+											"value": "10",
+											"description": "ID del booking a reservar"
+										},
+										{
+											"key": "clientId",
+											"value": "3",
+											"description": "ID del cliente que reserva"
+										}
+									]
+								},
+								"description": "Reserva un turno y lo marca con estado RESERVED_AFTER_CANCEL. Endpoint público sin autenticación."
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1680,6 +1720,34 @@
 							]
 						},
 						"description": "Actualiza el estado de un booking. Estados válidos: FREE, PARTIALLY_RESERVED, RESERVED, CANCELLED, COMPLETED, NO_SHOW"
+					},
+					"response": []
+				},
+				{
+					"name": "PUT /bookings/completed/{bookingId}",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwtToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/bookings/completed/{{bookingId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{hostname}}"
+							],
+							"path": [
+								"msvc-waturnos",
+								"v1.0",
+								"bookings",
+								"completed",
+								"{{bookingId}}"
+							]
+						},
+						"description": "Marca un booking como completado"
 					},
 					"response": []
 				}
