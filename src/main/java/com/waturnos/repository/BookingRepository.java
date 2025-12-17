@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingReminder;
 import com.waturnos.entity.extended.BookingSummaryDetail;
+import com.waturnos.enums.BookingStatus;
 
 /**
  * The Interface BookingRepository.
@@ -312,5 +313,20 @@ List<BookingReminder> findBookingsForTomorrow();
 			@Param("serviceId") Long serviceId,
 			@Param("start") LocalDateTime start,
 			@Param("end") LocalDateTime end);
+	
+	/**
+	 * Find bookings with RESERVED or RESERVED_AFTER_CANCEL status before given time.
+	 * Used by the nightly job to complete reserved bookings.
+	 * 
+	 * @param endTime the end time to search (inclusive)
+	 * @param statuses the list of statuses to search for
+	 * @return the list of bookings
+	 */
+	@Query("SELECT b FROM Booking b WHERE b.startTime <= :endTime " +
+	       "AND b.status IN :statuses " +
+	       "ORDER BY b.startTime ASC")
+	List<Booking> findByStartTimeBeforeAndStatusIn(
+			@Param("endTime") LocalDateTime endTime,
+			@Param("statuses") List<BookingStatus> statuses);
 
 }

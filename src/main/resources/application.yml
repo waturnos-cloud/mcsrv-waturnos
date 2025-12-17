@@ -173,6 +173,8 @@ app:
     notify-clients-cron: "0 0 8 * * *"
     #PARA PRUEBAS USAR ESTA notify-clients-cron: "0 */1 * * * *"
     add-free-bookings-cron: "0 0 0 * * *"
+    complete-reserved-bookings-cron: "0 50 23 * * *"
+    #PARA PRUEBAS USAR ESTA complete-reserved-bookings-cron: "0 */1 * * * *"
 
 # Google OAuth configuration
 google:

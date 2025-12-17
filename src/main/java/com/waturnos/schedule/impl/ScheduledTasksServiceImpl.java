@@ -1,5 +1,6 @@
 package com.waturnos.schedule.impl;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,9 +10,12 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.waturnos.entity.Booking;
 import com.waturnos.entity.extended.BookingReminder;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.enums.BookingStatus;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
@@ -127,6 +131,66 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 		}
 		String details = String.format("{\"successCount\":%d,\"errorCount\":%d}", success, error);
 		syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(), ExecutionStatus.SUCCESS, details);
+	}
+	
+	/**
+	 * Completes reserved bookings at end of day.
+	 * Runs at 23:50 to convert RESERVED to COMPLETED and RESERVED_AFTER_CANCEL to COMPLETED_AFTER_CANCEL.
+	 * Processes all bookings up to current time to handle any missed executions from previous days.
+	 */
+	@Override
+	@Scheduled(cron = "${app.scheduling.complete-reserved-bookings-cron:0 50 23 * * *}")
+	@Transactional
+	public void completeReservedBookings() {
+		java.time.LocalDate today = java.time.LocalDate.now();
+		
+		// Evitar doble ejecución en el mismo día si ya fue registrada
+		if (syncTaskService.wasExecutedOn(ScheduleType.COMPLETE_RESERVED_BOOKINGS, today)) {
+			log.info("COMPLETE_RESERVED_BOOKINGS ya se ejecutó hoy, se omite ejecución.");
+			return;
+		}
+		
+		// Procesar todos los bookings hasta el momento actual (23:50)
+		// Esto garantiza que si falló la ejecución anterior, se procesen los pendientes
+		LocalDateTime now = LocalDateTime.now();
+		List<BookingStatus> statusesToComplete = List.of(BookingStatus.RESERVED, BookingStatus.RESERVED_AFTER_CANCEL);
+		
+		List<Booking> bookingsToComplete = bookingRepository.findByStartTimeBeforeAndStatusIn(now, statusesToComplete);
+		
+		if (bookingsToComplete.isEmpty()) {
+			log.info("No hay turnos para completar hasta las {}", now);
+			syncTaskService.recordExecution(ScheduleType.COMPLETE_RESERVED_BOOKINGS, today,
+					ExecutionStatus.SUCCESS, String.format("{\"processedCount\":%d,\"reservedToCompleted\":%d,\"reservedAfterCancelToCompletedAfterCancel\":%d}", 0, 0, 0));
+			return;
+		}
+		
+		int reservedToCompleted = 0;
+		int reservedAfterCancelToCompletedAfterCancel = 0;
+		
+		for (Booking booking : bookingsToComplete) {
+			if (booking.getStatus() == BookingStatus.RESERVED) {
+				booking.setStatus(BookingStatus.COMPLETED);
+				booking.setUpdatedAt(LocalDateTime.now());
+				reservedToCompleted++;
+				log.debug("Turno {} cambiado de RESERVED a COMPLETED (startTime: {})", 
+						booking.getId(), booking.getStartTime());
+			} else if (booking.getStatus() == BookingStatus.RESERVED_AFTER_CANCEL) {
+				booking.setStatus(BookingStatus.COMPLETED_AFTER_CANCEL);
+				booking.setUpdatedAt(LocalDateTime.now());
+				reservedAfterCancelToCompletedAfterCancel++;
+				log.debug("Turno {} cambiado de RESERVED_AFTER_CANCEL a COMPLETED_AFTER_CANCEL (startTime: {})", 
+						booking.getId(), booking.getStartTime());
+			}
+		}
+		
+		bookingRepository.saveAll(bookingsToComplete);
+		
+		log.info("Turnos completados exitosamente: {} RESERVED->COMPLETED, {} RESERVED_AFTER_CANCEL->COMPLETED_AFTER_CANCEL", 
+				reservedToCompleted, reservedAfterCancelToCompletedAfterCancel);
+		
+		String details = String.format("{\"processedCount\":%d,\"reservedToCompleted\":%d,\"reservedAfterCancelToCompletedAfterCancel\":%d}", 
+				bookingsToComplete.size(), reservedToCompleted, reservedAfterCancelToCompletedAfterCancel);
+		syncTaskService.recordExecution(ScheduleType.COMPLETE_RESERVED_BOOKINGS, today, ExecutionStatus.SUCCESS, details);
 	}
 	
 
