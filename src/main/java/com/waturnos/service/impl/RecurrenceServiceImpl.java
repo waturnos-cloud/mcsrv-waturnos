@@ -91,12 +91,15 @@ public class RecurrenceServiceImpl implements RecurrenceService {
             .collect(Collectors.toList());
         
         // Separar en disponibles y ocupados
+        // FREE_AFTER_CANCEL también se considera disponible
         List<Booking> available = matchingSlots.stream()
-            .filter(b -> b.getStatus() == BookingStatus.FREE)
+            .filter(b -> b.getStatus() == BookingStatus.FREE || b.getStatus() == BookingStatus.FREE_AFTER_CANCEL)
             .collect(Collectors.toList());
         
         List<Booking> conflicting = matchingSlots.stream()
-            .filter(b -> b.getStatus() != BookingStatus.FREE && b.getStatus() != BookingStatus.CANCELLED)
+            .filter(b -> b.getStatus() != BookingStatus.FREE 
+                    && b.getStatus() != BookingStatus.FREE_AFTER_CANCEL 
+                    && b.getStatus() != BookingStatus.CANCELLED)
             .collect(Collectors.toList());
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -215,10 +218,11 @@ public class RecurrenceServiceImpl implements RecurrenceService {
         );
         
         // Filtrar por día de la semana y hora exacta
+        // FREE_AFTER_CANCEL también se considera disponible
         List<Booking> matchingSlots = futureBookings.stream()
             .filter(b -> b.getStartTime().getDayOfWeek().getValue() == recurrence.getDayOfWeek())
             .filter(b -> b.getStartTime().toLocalTime().equals(recurrence.getTimeSlot()))
-            .filter(b -> b.getStatus() == BookingStatus.FREE)
+            .filter(b -> b.getStatus() == BookingStatus.FREE || b.getStatus() == BookingStatus.FREE_AFTER_CANCEL)
             .sorted((b1, b2) -> b1.getStartTime().compareTo(b2.getStartTime()))
             .collect(Collectors.toList());
         
