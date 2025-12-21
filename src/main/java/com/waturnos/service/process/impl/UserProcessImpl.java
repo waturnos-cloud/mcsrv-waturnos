@@ -151,6 +151,7 @@ public class UserProcessImpl  implements UserProcess{
 		userDB.setFullName(user.getFullName());
 		userDB.setEmail(user.getEmail());
 		userDB.setPhone(user.getPhone());
+		userDB.setAvatar(user.getAvatar());
 		userDB.setBio(user.getBio());
 		userDB.setPhotoUrl(user.getPhotoUrl());
 		userDB.setModificator(SessionUtil.getUserName());
