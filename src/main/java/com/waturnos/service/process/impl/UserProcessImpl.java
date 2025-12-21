@@ -89,6 +89,10 @@ public class UserProcessImpl  implements UserProcess{
 			throw new ServiceException(ErrorCode.EMAIL_ALREADY_EXIST_EXCEPTION, "Email already exists exception");
 		}
 		
+		// Asegurar que exclusiveServices tenga un valor por defecto
+		if (manager.getExclusiveServices() == null) {
+			manager.setExclusiveServices(false);
+		}
 		return createUserPrivate(organizationDB, UserRole.MANAGER,
 				manager);
 	}
@@ -108,6 +112,10 @@ public class UserProcessImpl  implements UserProcess{
 		user.setRole(role);
 		user.setCreatedAt(DateUtils.getCurrentDateTime());
 		user.setCreator(SessionUtil.getUserName());
+		// Asegurar que exclusiveServices nunca sea null
+		if (user.getExclusiveServices() == null) {
+			user.setExclusiveServices(false);
+		}
 		String passwordUser = Utils.buildPassword(user.getFullName(), user.getPhone());
 		log.error("Password inicial: "+ passwordUser);
 		user.setPassword(passwordEncoder.encode(passwordUser));
@@ -153,6 +161,12 @@ public class UserProcessImpl  implements UserProcess{
 		userDB.setPhone(user.getPhone());
 		userDB.setBio(user.getBio());
 		userDB.setPhotoUrl(user.getPhotoUrl());
+		// Actualizar exclusiveServices solo si viene el valor, sino mantener el actual o false
+		if (user.getExclusiveServices() != null) {
+			userDB.setExclusiveServices(user.getExclusiveServices());
+		} else if (userDB.getExclusiveServices() == null) {
+			userDB.setExclusiveServices(false);
+		}
 		userDB.setModificator(SessionUtil.getUserName());
 		userDB.setUpdatedAt(DateUtils.getCurrentDateTime());
 		return userRepository.save(userDB);
@@ -170,13 +184,11 @@ public class UserProcessImpl  implements UserProcess{
 		if(existUser.isPresent()) {
 			throw new ServiceException(ErrorCode.EMAIL_ALREADY_EXIST_EXCEPTION, "Email already exists exception");
 		}
-		return createUserPrivate(organizationDB, UserRole.PROVIDER, User.builder()
-				.email(provider.getEmail())
-				.fullName(provider.getFullName())
-				.bio(provider.getBio())
-				.photoUrl(provider.getPhotoUrl())
-				.phone(provider.getPhone())
-				.build());
+		return createUserPrivate(organizationDB, UserRole.PROVIDER,
+				User.builder().email(provider.getEmail()).fullName(provider.getFullName()).bio(provider.getBio())
+						.photoUrl(provider.getPhotoUrl()).phone(provider.getPhone())
+						.exclusiveServices(provider.getExclusiveServices() != null ? provider.getExclusiveServices() : false)
+						.build());
 	}
 
 
