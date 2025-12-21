@@ -159,6 +159,7 @@ public class UserProcessImpl  implements UserProcess{
 		userDB.setFullName(user.getFullName());
 		userDB.setEmail(user.getEmail());
 		userDB.setPhone(user.getPhone());
+		userDB.setAvatar(user.getAvatar());
 		userDB.setBio(user.getBio());
 		userDB.setPhotoUrl(user.getPhotoUrl());
 		// Actualizar exclusiveServices solo si viene el valor, sino mantener el actual o false

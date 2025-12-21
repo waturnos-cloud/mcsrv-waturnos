@@ -13,19 +13,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.entity.Booking;
-import com.waturnos.entity.extended.BookingReminder;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.extended.BookingReminder;
 import com.waturnos.enums.BookingStatus;
+import com.waturnos.enums.ExecutionStatus;
+import com.waturnos.enums.ScheduleType;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.schedule.ScheduledTasks;
-import com.waturnos.service.impl.ServiceEntityServiceImpl;
 import com.waturnos.service.SyncTaskService;
-import com.waturnos.enums.ScheduleType;
-import com.waturnos.enums.ExecutionStatus;
+import com.waturnos.service.impl.ServiceEntityServiceImpl;
 import com.waturnos.utils.DateUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -57,6 +57,9 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 
 	/** Service logic to generate bookings per day. */
 	private final ServiceEntityServiceImpl serviceEntityService;
+
+	/** Unavailability service for holidays. */
+	private final com.waturnos.service.UnavailabilityService unavailabilityService;
 
 	private final SyncTaskService syncTaskService;
 	
@@ -100,8 +103,12 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 	 * Extends bookings by one day from the last existing booking date.
 	 * Ejecuta a medianoche: extiende la agenda de cada servicio agregando 1 día más.
 	 */
+
+	@Value("${app.scheduling.add-bookings-page-size:15}")
+	private int addBookingsPageSize;
+
 	@Override
-    @Scheduled(cron = "${app.scheduling.add-free-bookings-cron}")
+	@Scheduled(cron = "${app.scheduling.add-free-bookings-cron}")
 	public void addBookingNextDay() {
 		java.time.LocalDate today = java.time.LocalDate.now();
 		// Evitar doble ejecución en el mismo día si ya fue registrada
@@ -109,26 +116,37 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 			log.info("ADD_NEW_BOOKINGS ya se ejecutó hoy, se omite ejecución.");
 			return;
 		}
-		// Extiende bookings: agrega 1 día más desde la última fecha de cada servicio
-		// Solo procesar servicios activos (no borrados)
-		List<ServiceEntity> services = serviceRepository.findAllActive();
-		if (services.isEmpty()) {
-			log.info("No hay servicios para extender bookings");
-			syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(),
-					ExecutionStatus.SUCCESS, String.format("{\"successCount\":%d,\"errorCount\":%d}", 0, 0));
-			return;
-		}
+
+		int page = 0;
 		int success = 0;
 		int error = 0;
-		for (ServiceEntity service : services) {
-			try {
-				serviceEntityService.extendBookingsByOneDay(service);
-				success++;
-			} catch (Exception e) {
-				log.error("Error extendiendo bookings para servicio {}", service.getId(), e);
-				error++;
+		boolean hasMore = true;
+		org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, addBookingsPageSize, org.springframework.data.domain.Sort.by("id").ascending());
+		java.util.Set<java.time.LocalDate> unavailabilities = unavailabilityService.getHolidays();
+
+		do {
+			org.springframework.data.domain.Page<ServiceEntity> servicePage = serviceRepository.findAllActive(pageable);
+			List<ServiceEntity> services = servicePage.getContent();
+			if (services.isEmpty() && page == 0) {
+				log.info("No hay servicios para extender bookings");
+				syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(),
+						ExecutionStatus.SUCCESS, String.format("{\"successCount\":%d,\"errorCount\":%d}", 0, 0));
+				return;
 			}
-		}
+			for (ServiceEntity service : services) {
+				try {
+					serviceEntityService.extendBookingsByOneDay(service, unavailabilities);
+					success++;
+				} catch (Exception e) {
+					log.error("Error extendiendo bookings para servicio {}", service.getId(), e);
+					error++;
+				}
+			}
+			hasMore = servicePage.hasNext();
+			page++;
+			pageable = org.springframework.data.domain.PageRequest.of(page, addBookingsPageSize, org.springframework.data.domain.Sort.by("id").ascending());
+		} while (hasMore);
+
 		String details = String.format("{\"successCount\":%d,\"errorCount\":%d}", success, error);
 		syncTaskService.recordExecution(ScheduleType.ADD_NEW_BOOKINGS, java.time.LocalDate.now(), ExecutionStatus.SUCCESS, details);
 	}

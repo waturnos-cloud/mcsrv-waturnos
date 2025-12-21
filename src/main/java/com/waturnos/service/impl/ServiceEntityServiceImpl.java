@@ -148,31 +148,52 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @param service the service
 	 * @param date the date to generate bookings for
 	 */
-	public void generateBookingsForDate(ServiceEntity service, LocalDate date) {
-		Set<LocalDate> unavailabilities = unavailabilityService.getHolidays();
+	public void generateBookingsForDate(ServiceEntity service, LocalDate date, Set<LocalDate> unavailabilities) {
 		List<AvailabilityEntity> availabilities = availabilityRepository.findByServiceId(service.getId());
 		List<Booking> bookings = new ArrayList<>();
 		DayOfWeek dayOfWeek = date.getDayOfWeek();
 		if (unavailabilities == null || !unavailabilities.contains(date)) {
-			availabilities.stream().filter(a -> a.getDayOfWeek() == dayOfWeek.getValue()).forEach(a -> {
-				LocalTime currentTime = a.getStartTime();
-				// Calcular el intervalo real entre turnos: duración + offset
-				int intervalMinutes = service.getDurationMinutes() + 
-									(service.getOffsetMinutes() != null ? service.getOffsetMinutes() : 0);
-				
-				while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
-					Booking booking = new Booking();
-					booking.setStartTime(LocalDateTime.of(date, currentTime));
-					booking.setEndTime(LocalDateTime.of(date, currentTime.plusMinutes(service.getDurationMinutes())));
-					booking.setStatus(BookingStatus.FREE);
-					booking.setService(service);
-					booking.setFreeSlots(service.getCapacity());
-					booking.setCreatedAt(DateUtils.getCurrentDateTime());
-					bookings.add(booking);
-					// Avanzar usando el intervalo (duración + offset)
-					currentTime = currentTime.plusMinutes(intervalMinutes);
-				}
-			});
+			availabilities.stream()
+		    .filter(a -> a.getDayOfWeek() == dayOfWeek.getValue())
+		    .forEach(a -> {
+		        LocalTime currentTime = a.getStartTime();
+		        int duration = service.getDurationMinutes();
+		        int offset = (service.getOffsetMinutes() != null ? service.getOffsetMinutes() : 0);
+		        int intervalMinutes = duration + offset;
+
+		        // Convertimos el final a LocalDateTime para una comparación absoluta
+		        LocalDateTime endDateTime = LocalDateTime.of(date, a.getEndTime());
+
+		        while (true) {
+		            LocalDateTime currentStart = LocalDateTime.of(date, currentTime);
+		            LocalDateTime currentEnd = currentStart.plusMinutes(duration);
+
+		            // 1. Validar que el turno no exceda la hora de fin de disponibilidad
+		            // 2. Validar que no hayamos saltado al día siguiente (overflow de LocalTime)
+		            if (currentEnd.isAfter(endDateTime) || currentStart.toLocalDate().isAfter(date)) {
+		                break;
+		            }
+
+		            Booking booking = Booking.builder()
+		                .startTime(currentStart)
+		                .endTime(currentEnd)
+		                .status(BookingStatus.FREE)
+		                .service(service)
+		                .freeSlots(service.getCapacity())
+		                .createdAt(DateUtils.getCurrentDateTime())
+		                .build();
+		            
+		            bookings.add(booking);
+
+		            // Avanzar el tiempo
+		            currentTime = currentTime.plusMinutes(intervalMinutes);
+		            
+		            // Si el nuevo currentTime es menor al anterior, significa que cruzamos la medianoche
+		            if (currentTime.isBefore(currentStart.toLocalTime()) && intervalMinutes > 0) {
+		                break; 
+		            }
+		        }
+		    });
 		}
 		if (!bookings.isEmpty()) {
 			bookingService.create(bookings);
@@ -300,7 +321,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 *
 	 * @param service the service entity
 	 */
-	public void extendBookingsByOneDay(ServiceEntity service) {
+	public void extendBookingsByOneDay(ServiceEntity service, Set<LocalDate> unavailabilities) {
 		LocalDate lastBookingDate = bookingService.findMaxBookingDateByServiceId(service.getId());
 		LocalDate dateToGenerate;
 		if (lastBookingDate == null) {
@@ -310,7 +331,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 			// Extender un día más desde la última fecha
 			dateToGenerate = lastBookingDate.plusDays(1);
 		}
-		generateBookingsForDate(service, dateToGenerate);
+		generateBookingsForDate(service, dateToGenerate, unavailabilities);
 	}
 
 	/**

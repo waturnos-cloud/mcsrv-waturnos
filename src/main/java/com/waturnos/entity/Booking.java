@@ -33,7 +33,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = { "service", "bookingClients" })
+@ToString(exclude = { "service", "bookingClients","recurrence" })
 @EqualsAndHashCode(exclude = { "bookingClients" })
 public class Booking {
 	@Id
