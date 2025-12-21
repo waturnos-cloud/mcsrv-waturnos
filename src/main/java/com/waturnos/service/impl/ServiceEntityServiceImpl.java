@@ -437,7 +437,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		serviceDB.setAdvancePayment(service.getAdvancePayment());
 		serviceDB.setLocation(service.getLocation());
 		serviceDB.setPrice(service.getPrice());
-
+		serviceDB.setIsBasic(service.getIsBasic());
 		return serviceRepository.save(serviceDB);
 	}
 	

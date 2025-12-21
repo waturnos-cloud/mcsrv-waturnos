@@ -20,5 +20,6 @@ public class ServiceDTO {
 	private boolean waitList;
 	private Integer waitListTime;
 	private Integer offsetMinutes;
+	private Boolean isBasic;
 	private List<AvailabilityDTO> listAvailability;
 }

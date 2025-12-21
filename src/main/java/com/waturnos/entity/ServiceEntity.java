@@ -65,4 +65,7 @@ public class ServiceEntity {
     
     @Builder.Default
     private Boolean deleted = false;
+    
+    @Builder.Default
+    private Boolean isBasic = false;
 }
