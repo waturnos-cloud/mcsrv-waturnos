@@ -715,7 +715,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"ProfesionalNuevo2@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\"\n}"
+							"raw": "{\n    \"fullName\": \"Profesional Perez Dos\",\n    \"email\": \"ProfesionalNuevo2@centromedico.com\",\n    \"phone\": \"2494000002\",\n    \"fotoUrl\": \"http://photo.jpeg\",\n    \"bio\": \"Médico especialista en recuperación de rodillas.\",\n    \"exclusiveServices\": false\n}"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users/providers/{{organizationId}}",
@@ -788,7 +788,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\n        \"id\": 5,\n        \"fullName\": \"Nicolás A Bacci\",\n        \"email\": \"nicolas.bacci@gmail.com\",\n        \"phone\": \"24943690544\",\n        \"photoUrl\": \"http://myphoto2.jpeg\",\n        \"bio\": \"Bio xyzz\"\n    }"
+							"raw": "    {\n        \"id\": 5,\n        \"fullName\": \"Nicolás A Bacci\",\n        \"email\": \"nicolas.bacci@gmail.com\",\n        \"phone\": \"24943690544\",\n        \"photoUrl\": \"http://myphoto2.jpeg\",\n        \"bio\": \"Bio xyzz\",\n        \"exclusiveServices\": false\n    }"
 						},
 						"url": {
 							"raw": "{{protocol}}://{{hostname}}/msvc-waturnos/v1.0/users",
