@@ -18,5 +18,6 @@ public class UserDTO {
 	private String avatar;
 	private String photoUrl;
 	private String bio;
+	private Boolean exclusiveServices;
 	private List<PaymentProviderResponse> paymentProviders;
 }

@@ -2,6 +2,7 @@ package com.waturnos.config;
 
 import java.time.LocalDate;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -24,14 +25,23 @@ public class StartupTasksChecker {
 
     private final SyncTaskService syncTaskService;
     private final ScheduledTasksServiceImpl scheduledTasksService;
+    
+    @Value("${app.scheduling.run-tasks-on-startup:false}")
+    private boolean runTasksOnStartup;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
+        if (!runTasksOnStartup) {
+            log.info("StartupTasksChecker desactivado (app.scheduling.run-tasks-on-startup=false). Las tareas se ejecutarán según su programación cron.");
+            return;
+        }
+        
+        log.info("StartupTasksChecker activado. Verificando tareas pendientes...");
         LocalDate today = LocalDate.now();
+        
         try {
             if (!syncTaskService.wasExecutedOn(ScheduleType.ADD_NEW_BOOKINGS, today)) {
                 log.info("ADD_NEW_BOOKINGS no se ejecutó hoy. Ejecutando now...");
-                // La implementación ya procesa todos los servicios y registra ejecución
                 scheduledTasksService.addBookingNextDay();
             }
         } catch (Exception e) {
@@ -41,7 +51,6 @@ public class StartupTasksChecker {
         try {
             if (!syncTaskService.wasExecutedOn(ScheduleType.REMEMBER_BOOKING_TO_USERS, today)) {
                 log.info("REMEMBER_BOOKING_TO_USERS no se ejecutó hoy. Ejecutando now...");
-                // Delegamos el registro de ejecución al servicio interno
                 scheduledTasksService.rememberBookingToUsers();
             }
         } catch (Exception e) {

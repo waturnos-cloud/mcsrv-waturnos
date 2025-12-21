@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.User;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.enums.UserRole;
@@ -39,6 +42,8 @@ import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
 import com.waturnos.repository.ServiceRepository;
+import com.waturnos.repository.UserRepository;
+import com.waturnos.repository.WaitlistEntryRepository;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
@@ -93,6 +98,11 @@ public class BookingServiceImpl implements BookingService {
 
 	/** The waitlist service. */
 	private final WaitlistService waitlistService;
+	
+	/** The user repositoy. */
+	private final UserRepository userRepositoy;
+
+	private final WaitlistEntryRepository waitlistRepo;
 
 	/** The Constant DATE_FORMATTER. */
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -258,8 +268,94 @@ public class BookingServiceImpl implements BookingService {
 		if (service != null && Boolean.TRUE.equals(service.getWaitList())) {
 			waitlistService.fulfillWaitlist(savedBooking, clientId);
 		}
+		
+		validateBookingLockByExclusion(booking);
 
 		return savedBooking;
+	}
+	
+	/**
+	 * Validate booking lock by exclusion.
+	 * Si el proveedor tiene servicios exclusivos, bloquea todos los bookings
+	 * de otros servicios del mismo proveedor que coincidan en horario.
+	 *
+	 * @param booking the booking
+	 */
+	@Async
+	private void validateBookingLockByExclusion(Booking booking) {
+		processExclusiveBookings(
+			booking, 
+			Arrays.asList(BookingStatus.FREE, BookingStatus.FREE_AFTER_CANCEL),
+			BookingStatus.LOCK_BY_EXCLUSION
+		);
+	}
+	
+	/**
+	 * Unlock bookings by exclusion.
+	 * Desbloquea los bookings de otros servicios del mismo proveedor
+	 * que fueron bloqueados por exclusión en el mismo rango horario.
+	 *
+	 * @param booking the booking cancelado
+	 */
+	@Async
+	private void unlockBookingsByExclusion(Booking booking) {
+		processExclusiveBookings(
+			booking,
+			Arrays.asList(BookingStatus.LOCK_BY_EXCLUSION),
+			BookingStatus.FREE
+		);
+	}
+	
+	/**
+	 * Process exclusive bookings.
+	 * Método genérico que procesa bookings de servicios exclusivos del mismo proveedor,
+	 * cambiando su estado según los parámetros especificados.
+	 *
+	 * @param booking the booking de referencia
+	 * @param sourceStatuses los estados origen a filtrar
+	 * @param targetStatus el estado destino a establecer
+	 */
+	private void processExclusiveBookings(Booking booking, List<BookingStatus> sourceStatuses, BookingStatus targetStatus) {
+		// 1. Obtener el servicio y validar que existe
+		ServiceEntity service = serviceRepository.findById(booking.getService().getId())
+				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
+		
+		// 2. Obtener el proveedor y validar que existe
+		User provider = userRepositoy.findById(service.getUser().getId())
+				.orElseThrow(() -> new EntityNotFoundException("Provider not found"));
+		
+		// 3. Verificar si el proveedor tiene servicios exclusivos activados
+		if(Boolean.TRUE.equals(provider.getExclusiveServices())) {
+			// 4. Obtener todos los servicios del proveedor
+			List<ServiceEntity> serviceProviderList = serviceRepository.findByUserId(provider.getId());
+			
+			// 5. Extraer IDs de servicios excluyendo el servicio del booking actual
+			List<Long> otherServiceIds = serviceProviderList.stream()
+					.map(ServiceEntity::getId)
+					.filter(id -> !id.equals(service.getId()))
+					.collect(Collectors.toList());
+			
+			// 6. Si no hay otros servicios, no hay nada que procesar
+			if(otherServiceIds.isEmpty()) {
+				return;
+			}
+			
+			// 7. Buscar todos los bookings de otros servicios que coincidan en horario
+			List<Booking> affectedBookings = bookingRepository.findByServiceIdInAndStartTimeBetween(
+					otherServiceIds, 
+					booking.getStartTime(), 
+					booking.getEndTime()
+			);
+			
+			// 8. Cambiar estado de los bookings que coinciden con los estados origen
+			affectedBookings.stream()
+					.filter(b -> sourceStatuses.contains(b.getStatus()))
+					.forEach(b -> {
+						b.setStatus(targetStatus);
+						b.setUpdatedAt(DateUtils.getCurrentDateTime());
+						bookingRepository.save(b);
+					});
+		}
 	}
 
 	/**
@@ -319,8 +415,12 @@ public class BookingServiceImpl implements BookingService {
 
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		booking.setStatus(BookingStatus.FREE_AFTER_CANCEL);
-		if (waitList) {
+		if (waitList &&  !waitlistRepo.findCandidatesForBooking(booking.getService().getId(),
+				booking.getStartTime().toLocalDate(), booking.getStartTime().toLocalTime(), booking.getId()).isEmpty()) {
 			booking.setStatus(BookingStatus.CANCELLED);
+		} else {
+			// Si NO tiene waitList, desbloquear bookings bloqueados por exclusión
+			unlockBookingsByExclusion(booking);
 		}
 		booking.setCancelReason(reason);
 

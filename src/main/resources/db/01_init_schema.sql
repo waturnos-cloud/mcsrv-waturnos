@@ -103,6 +103,12 @@ CREATE TABLE users (
     CONSTRAINT uq_users_email_org UNIQUE (organization_id, email)
 );
 
+ALTER TABLE users 
+  ADD COLUMN exclusive_services BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Agregar comentarios
+COMMENT ON COLUMN users.exclusive_services IS 'Determina si el proveedor tiene servicios excluyentes';
+
 -- Tabla: users_props
 CREATE TABLE users_props (
     id BIGSERIAL PRIMARY KEY,
@@ -202,7 +208,7 @@ CREATE TABLE booking (
     id BIGSERIAL PRIMARY KEY,
     start_time TIMESTAMPTZ NOT NULL,
     end_time TIMESTAMPTZ NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','PARTIALLY_RESERVED','RESERVED','NO_SHOW','COMPLETED','CANCELLED', 'FREE_AFTER_CANCEL', 'RESERVED_AFTER_CANCEL', 'COMPLETED_AFTER_CANCEL', 'CANCELED_BY_PROVIDER')),
+    status VARCHAR(50) NOT NULL CHECK (status IN ('FREE','PARTIALLY_RESERVED','RESERVED','NO_SHOW','COMPLETED','CANCELLED', 'FREE_AFTER_CANCEL', 'RESERVED_AFTER_CANCEL', 'COMPLETED_AFTER_CANCEL', 'CANCELED_BY_PROVIDER', 'LOCK_BY_EXCLUSION')),
     notes TEXT,
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,
     recurrence_id BIGINT REFERENCES recurrence(id) ON DELETE SET NULL,

@@ -328,5 +328,24 @@ List<BookingReminder> findBookingsForTomorrow();
 	List<Booking> findByStartTimeBeforeAndStatusIn(
 			@Param("endTime") LocalDateTime endTime,
 			@Param("statuses") List<BookingStatus> statuses);
+			
+	/**
+	 * Find bookings by service IDs and time range overlap.
+	 * Busca bookings de múltiples servicios que se solapen con el rango horario dado.
+	 * Un booking se solapa si: startTime < rangeEnd AND endTime > rangeStart
+	 * 
+	 * @param serviceIds the service IDs to search
+	 * @param rangeStart the start of the time range
+	 * @param rangeEnd the end of the time range
+	 * @return the list of overlapping bookings
+	 */
+	@Query("SELECT b FROM Booking b WHERE b.service.id IN :serviceIds " +
+	       "AND b.startTime < :rangeEnd " +
+	       "AND b.endTime > :rangeStart " +
+	       "ORDER BY b.startTime ASC")
+	List<Booking> findByServiceIdInAndStartTimeBetween(
+			@Param("serviceIds") List<Long> serviceIds,
+			@Param("rangeStart") LocalDateTime rangeStart,
+			@Param("rangeEnd") LocalDateTime rangeEnd);
 
 }

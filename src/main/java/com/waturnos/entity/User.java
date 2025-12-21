@@ -47,6 +47,8 @@ public class User implements CommonUser {
 	private UserRole role;
 	@Builder.Default
 	private Boolean active = true;
+	@Builder.Default
+	private Boolean exclusiveServices = false;
 	private LocalDateTime lastLoginAt;
 	private String creator;
 	private String modificator;
