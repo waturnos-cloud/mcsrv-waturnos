@@ -68,4 +68,7 @@ public class ServiceEntity {
     
     @Builder.Default
     private Boolean isBasic = false;
+    
+    @Builder.Default
+    private Boolean allowsRecurrence = false;
 }

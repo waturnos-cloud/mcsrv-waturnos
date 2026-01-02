@@ -165,4 +165,13 @@ public interface BookingService {
 	 */
 	Booking reserveBookingAfterCancel(Long bookingId, Long clientId);
 
+	/**
+	 * Save booking properties.
+	 * Guarda propiedades personalizadas para una reserva.
+	 *
+	 * @param bookingId the booking id
+	 * @param bookingProps map of key-value pairs to save
+	 */
+	void saveBookingProps(Long bookingId, Map<String, String> bookingProps);
+
 }

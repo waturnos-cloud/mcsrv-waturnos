@@ -21,5 +21,7 @@ public class ServiceDTO {
 	private Integer waitListTime;
 	private Integer offsetMinutes;
 	private Boolean isBasic;
+	private Boolean allowsRecurrence;
 	private List<AvailabilityDTO> listAvailability;
+	private List<ServicePropsDTO> serviceProps;
 }

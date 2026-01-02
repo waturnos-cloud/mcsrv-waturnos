@@ -16,6 +16,10 @@ import com.waturnos.entity.Location;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.User;
 import com.waturnos.repository.AvailabilityRepository;
+import com.waturnos.repository.ServicePropsRepository;
+import com.waturnos.entity.ServicePropsEntity;
+import com.waturnos.dto.beans.ServicePropsDTO;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public abstract class ServiceMapper {
@@ -25,6 +29,9 @@ public abstract class ServiceMapper {
 	
 	@Autowired
 	private AvailabilityMapper availabilityMapper;
+	
+	@Autowired
+	private ServicePropsRepository servicePropsRepository;
 
 	/**
 	 * To entity.
@@ -48,6 +55,7 @@ public abstract class ServiceMapper {
 	 */
 	@Mapping(target = "listAvailability", ignore = true)
 	@Mapping(target = "type", ignore = true)
+	@Mapping(target = "serviceProps", ignore = true)
 	public abstract ServiceDTO toDTO(ServiceEntity entity);
 	
 	/**
@@ -61,6 +69,21 @@ public abstract class ServiceMapper {
 					availabilityRepository.findByServiceId(entity.getId())
 				)
 			);
+			
+			// Cargar serviceProps
+			List<ServicePropsEntity> propsEntities = servicePropsRepository.findByServiceId(entity.getId());
+			if (propsEntities != null && !propsEntities.isEmpty()) {
+				List<ServicePropsDTO> propsDTOs = propsEntities.stream()
+					.map(prop -> {
+						ServicePropsDTO propDTO = new ServicePropsDTO();
+						propDTO.setId(prop.getId());
+						propDTO.setKey(prop.getKey());
+						propDTO.setValue(prop.getValue());
+						return propDTO;
+					})
+					.collect(Collectors.toList());
+				dto.setServiceProps(propsDTOs);
+			}
 			
 			// Mapear solo la categoría sin sus hijos para evitar loops
 			if (entity.getType() != null) {

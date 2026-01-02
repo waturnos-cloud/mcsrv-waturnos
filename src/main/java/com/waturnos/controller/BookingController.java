@@ -107,6 +107,12 @@ public class BookingController {
 	public ResponseEntity<ApiResponse<BookingDTO>> assingBooking(@RequestBody AssignBooking dto) {
 
 		Booking updated = service.assignBookingToClient(dto.getId(), dto.getClientId());
+		
+		// Guardar booking props si existen
+		if (dto.getBookingProps() != null && !dto.getBookingProps().isEmpty()) {
+			service.saveBookingProps(dto.getId(), dto.getBookingProps());
+		}
+		
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking assigned", mapper.toDto(updated)));
 	}
 	/**

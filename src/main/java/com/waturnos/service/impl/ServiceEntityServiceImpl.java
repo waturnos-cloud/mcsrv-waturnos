@@ -36,7 +36,10 @@ import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.LocationRepository;
 import com.waturnos.repository.RecurrenceRepository;
 import com.waturnos.repository.ServiceRepository;
+import com.waturnos.repository.ServicePropsRepository;
 import com.waturnos.repository.UserRepository;
+import com.waturnos.entity.ServicePropsEntity;
+import com.waturnos.dto.beans.ServicePropsDTO;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingGeneratorService;
@@ -93,6 +96,9 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	/** The booking repository. */
 	private final BookingRepository bookingRepository;
 	
+	/** The service props repository. */
+	private final ServicePropsRepository servicePropsRepository;
+	
 	/**
 	 * Creates the.
 	 *
@@ -139,6 +145,34 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		bookingGeneratorService.generateBookingsAsync(serviceEntity, listAvailability, 
 				workInHollidays ? unavailabilityService.getHolidays() : null);
 		return serviceEntityResponse;
+	}
+	
+	/**
+	 * Guarda las propiedades personalizadas del servicio.
+	 * 
+	 * @param serviceId el ID del servicio
+	 * @param serviceProps lista de propiedades a guardar
+	 */
+	@Transactional(readOnly = false)
+	public void saveServiceProps(Long serviceId, List<ServicePropsDTO> serviceProps) {
+		if (serviceProps == null || serviceProps.isEmpty()) {
+			return;
+		}
+		
+		ServiceEntity service = serviceRepository.findById(serviceId)
+			.orElseThrow(() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Service not found"));
+		
+		// Eliminar props existentes y guardar las nuevas
+		servicePropsRepository.deleteByServiceId(serviceId);
+		
+		serviceProps.forEach(propDTO -> {
+			ServicePropsEntity propEntity = ServicePropsEntity.builder()
+				.service(service)
+				.key(propDTO.getKey())
+				.value(propDTO.getValue())
+				.build();
+			servicePropsRepository.save(propEntity);
+		});
 	}
 
 	/**

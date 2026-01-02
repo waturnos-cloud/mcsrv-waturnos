@@ -143,7 +143,8 @@ ALTER TABLE service
   ADD COLUMN wait_list_time INTEGER DEFAULT 15, -- minutos por defecto
   ADD COLUMN offset_minutes INTEGER NOT NULL DEFAULT 0, -- tiempo adicional entre turnos
   ADD COLUMN deleted BOOLEAN DEFAULT FALSE, -- soft delete flag
-  ADD COLUMN is_basic BOOLEAN NOT NULL DEFAULT FALSE; -- indica si es un servicio básico
+  ADD COLUMN is_basic BOOLEAN NOT NULL DEFAULT FALSE, -- indica si es un servicio básico
+  ADD COLUMN allows_recurrence BOOLEAN NOT NULL DEFAULT FALSE; -- permite turnos recurrentes
 
 -- Agregar comentarios
 COMMENT ON COLUMN service.wait_list IS 'Habilita lista de espera para este servicio';
@@ -151,6 +152,7 @@ COMMENT ON COLUMN service.wait_list_time IS 'Minutos que tiene el cliente para r
 COMMENT ON COLUMN service.deleted IS 'Soft delete flag - TRUE cuando el servicio está marcado para borrado';
 COMMENT ON COLUMN service.offset_minutes IS 'Tiempo adicional entre turnos (ej: 15 min para preparar gabinete)';
 COMMENT ON COLUMN service.is_basic IS 'Indica si el servicio es básico o no';
+COMMENT ON COLUMN service.allows_recurrence IS 'Permite que el servicio tenga turnos recurrentes/fijos';
 
 -- Tabla: service_props
 CREATE TABLE service_props (
@@ -304,6 +306,20 @@ CREATE TABLE booking_client (
         REFERENCES client (id) 
         ON DELETE CASCADE -- Si se borra el cliente, se borran las entradas aquí
 );
+
+-- Tabla: booking_props
+-- Almacena propiedades personalizadas por servicio para cada reserva
+CREATE TABLE booking_props (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL REFERENCES booking(id) ON DELETE CASCADE,
+    key VARCHAR(255) NOT NULL,
+    value TEXT,
+    CONSTRAINT uk_booking_props UNIQUE (booking_id, key)
+);
+
+COMMENT ON TABLE booking_props IS 'Almacena propiedades personalizadas de cada reserva según configuración del servicio';
+COMMENT ON COLUMN booking_props.key IS 'Nombre del campo personalizado (ej: obra_social, numero_carnet)';
+COMMENT ON COLUMN booking_props.value IS 'Valor ingresado por el cliente para este campo';
 
 CREATE TABLE client_organization (
     id BIGSERIAL PRIMARY KEY, 

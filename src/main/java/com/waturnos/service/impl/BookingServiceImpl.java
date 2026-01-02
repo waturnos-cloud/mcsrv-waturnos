@@ -44,6 +44,8 @@ import com.waturnos.repository.ClientRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.repository.WaitlistEntryRepository;
+import com.waturnos.repository.BookingPropsRepository;
+import com.waturnos.entity.BookingPropsEntity;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
@@ -103,6 +105,9 @@ public class BookingServiceImpl implements BookingService {
 	private final UserRepository userRepositoy;
 
 	private final WaitlistEntryRepository waitlistRepo;
+	
+	/** The booking props repository. */
+	private final BookingPropsRepository bookingPropsRepository;
 
 	/** The Constant DATE_FORMATTER. */
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -862,6 +867,34 @@ public class BookingServiceImpl implements BookingService {
 				"notification.subject.assign.booking"));
 
 		return savedBooking;
+	}
+
+	/**
+	 * Save booking properties.
+	 * Guarda propiedades personalizadas para una reserva.
+	 *
+	 * @param bookingId the booking id
+	 * @param bookingProps map of key-value pairs to save
+	 */
+	@Override
+	@Transactional(readOnly = false)
+	public void saveBookingProps(Long bookingId, Map<String, String> bookingProps) {
+		if (bookingProps == null || bookingProps.isEmpty()) {
+			return;
+		}
+		
+		Booking booking = bookingRepository.findById(bookingId)
+			.orElseThrow(() -> new EntityNotFoundException("Booking not found with id: " + bookingId));
+		
+		// Guardar cada propiedad
+		bookingProps.forEach((key, value) -> {
+			BookingPropsEntity propEntity = BookingPropsEntity.builder()
+				.booking(booking)
+				.key(key)
+				.value(value)
+				.build();
+			bookingPropsRepository.save(propEntity);
+		});
 	}
 
 }

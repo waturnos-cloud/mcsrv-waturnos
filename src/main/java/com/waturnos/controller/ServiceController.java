@@ -60,6 +60,15 @@ public class ServiceController {
 				availabilityMapper.toEntityList(createService.getListAvailability()),
 				createService.getServiceDto().getUser().getId(), createService.getServiceDto().getLocation().getId(),
 				createService.isWorkInHollidays());
+		
+		// Guardar service props si existen
+		if (createService.getServiceDto().getServiceProps() != null && !createService.getServiceDto().getServiceProps().isEmpty()) {
+			((com.waturnos.service.impl.ServiceEntityServiceImpl) service).saveServiceProps(
+				created.getId(), 
+				createService.getServiceDto().getServiceProps()
+			);
+		}
+		
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service created", serviceMapper.toDTO(created)));
 	}
 
@@ -105,6 +114,15 @@ public class ServiceController {
 	@PutMapping
 	public ResponseEntity<ApiResponse<ServiceDTO>> update(@RequestBody ServiceDTO serviceDto) {
 		ServiceEntity updated = service.update(serviceMapper.toEntity(serviceDto, true), serviceDto.getListAvailability());
+		
+		// Actualizar service props si existen
+		if (serviceDto.getServiceProps() != null) {
+			((com.waturnos.service.impl.ServiceEntityServiceImpl) service).saveServiceProps(
+				updated.getId(), 
+				serviceDto.getServiceProps()
+			);
+		}
+		
 		return ResponseEntity.ok(new ApiResponse<>(true, "Service updated", serviceMapper.toDTO(updated)));
 	}
 
