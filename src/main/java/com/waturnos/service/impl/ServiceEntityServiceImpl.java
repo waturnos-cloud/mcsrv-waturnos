@@ -539,7 +539,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @param serviceId the service id
 	 */
 	@Override
-	@RequireRole({ UserRole.MANAGER, UserRole.PROVIDER })
+	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@AuditAspect("SERVICE_LOCK_CALENDAR")
 	public void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId) {
 		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(serviceId);
