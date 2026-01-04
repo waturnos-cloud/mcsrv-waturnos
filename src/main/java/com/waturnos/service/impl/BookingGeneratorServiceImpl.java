@@ -86,6 +86,11 @@ public class BookingGeneratorServiceImpl implements BookingGeneratorService {
                                 int intervalMinutes = service.getDurationMinutes() + 
                                                     (service.getOffsetMinutes() != null ? service.getOffsetMinutes() : 0);
                                 
+                                if (intervalMinutes <= 0) {
+                                	log.warn("Interval minutes must be greater than 0 for service {}. Skipping generation for day {}.", service.getId(), currentDate);
+                                	return;
+                                }
+                                
                                 while (!currentTime.plusMinutes(service.getDurationMinutes()).isAfter(a.getEndTime())) {
                                     Booking booking = new Booking();
                                     booking.setStartTime(LocalDateTime.of(currentDate, currentTime));

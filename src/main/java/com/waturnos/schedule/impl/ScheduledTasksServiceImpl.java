@@ -104,7 +104,7 @@ public class ScheduledTasksServiceImpl implements ScheduledTasks{
 	 * Ejecuta a medianoche: extiende la agenda de cada servicio agregando 1 día más.
 	 */
 
-	@Value("${app.scheduling.add-bookings-page-size:15}")
+	@Value("${app.scheduling.add-bookings-page-size:10}")
 	private int addBookingsPageSize;
 
 	@Override

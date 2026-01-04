@@ -194,6 +194,11 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 		        int duration = service.getDurationMinutes();
 		        int offset = (service.getOffsetMinutes() != null ? service.getOffsetMinutes() : 0);
 		        int intervalMinutes = duration + offset;
+		        
+		        if (intervalMinutes <= 0) {
+		        	log.error("Interval minutes must be greater than 0 for service {}. Skipping availability processing.", service.getId());
+		        	return;
+		        }
 
 		        // Convertimos el final a LocalDateTime para una comparación absoluta
 		        LocalDateTime endDateTime = LocalDateTime.of(date, a.getEndTime());
@@ -355,6 +360,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 *
 	 * @param service the service entity
 	 */
+	@Transactional
 	public void extendBookingsByOneDay(ServiceEntity service, Set<LocalDate> unavailabilities) {
 		LocalDate lastBookingDate = bookingService.findMaxBookingDateByServiceId(service.getId());
 		LocalDate dateToGenerate;
