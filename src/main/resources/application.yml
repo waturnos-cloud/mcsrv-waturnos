@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: ${PORT:8085}
   servlet:
     context-path: /msvc-waturnos/v1.0
 
@@ -11,12 +11,12 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
   datasource:
-    url: jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos
+    url: ${DB_URL}
     #url: jdbc:postgresql://localhost:5432/waturnos
     #username: postgres
     #password: postgres
-    username: neondb_owner
-    password: npg_cpViMu5TF2Jx
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       # max-lifetime should be shorter than any DB/network pooler timeout to avoid
@@ -55,8 +55,8 @@ spring:
   mail:
     host: smtp.gmail.com # O el host de tu proveedor
     port: 587             # El puerto estándar para TLS/STARTTLS
-    username: waturnos@gmail.com # Tu cuenta de correo
-    password: drjp qvlr bgiw pmtv
+    username: ${MAIL_USERNAME} # Tu cuenta de correo
+    password: ${MAIL_PASSWORD}
  # ¡Usa una contraseña de aplicación, no la principal!
     properties:
       mail:
@@ -72,7 +72,7 @@ spring:
     encoding: UTF-8
     cache: false                      # Desactivar caché en desarrollo                      
 jwt:
-  secret: "cambiaEsteSecretoLargoConLetrasYNumeros1234567890abcdef"
+  secret: ${JWT_SECRET}
   expiration-ms: 32400000 #9 horas
   
 logging:
@@ -181,7 +181,7 @@ app:
 # Google OAuth configuration
 google:
   client:
-    id: ${GOOGLE_CLIENT_ID:382879720068-v3mrbu4qr82fkorrc3al21ec751plh7f.apps.googleusercontent.com}
+    id: ${GOOGLE_CLIENT_ID}
 # MercadoPago configuration (WATurnos platform account)
 mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
