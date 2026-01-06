@@ -1,16 +1,16 @@
 -- =============================================
 -- CONFIGURACIÓN DE ESQUEMA Y LIMPIEZA
 -- =============================================
-CREATE SCHEMA IF NOT EXISTS public;
-SET search_path TO public;
+CREATE SCHEMA IF NOT EXISTS waturnos_schema;
+SET search_path TO waturnos_schema;
 
 DO
 $$
 DECLARE
     r RECORD;
 BEGIN
-    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
-        EXECUTE 'DROP TABLE IF EXISTS public.' || quote_ident(r.tablename) || ' CASCADE';
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'waturnos_schema') LOOP
+        EXECUTE 'DROP TABLE IF EXISTS waturnos_schema.' || quote_ident(r.tablename) || ' CASCADE';
     END LOOP;
 END
 $$;
@@ -129,7 +129,6 @@ CREATE TABLE service (
     future_days INT,
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     location_id BIGINT REFERENCES location(id) ON DELETE SET NULL,
-    organization_id BIGINT REFERENCES organization(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
@@ -176,7 +175,6 @@ CREATE TABLE client (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator VARCHAR(100),
     modificator VARCHAR(100),
-    CONSTRAINT uq_client_email_org UNIQUE (organization_id, email),
     CONSTRAINT uq_client_dni UNIQUE (dni),
     CONSTRAINT uq_client_google_id UNIQUE (google_id)
 );
@@ -216,7 +214,6 @@ CREATE TABLE booking (
     notes TEXT,
     service_id BIGINT REFERENCES service(id) ON DELETE SET NULL,
     recurrence_id BIGINT REFERENCES recurrence(id) ON DELETE SET NULL,
-    organization_id BIGINT REFERENCES organization(id) ON DELETE CASCADE,
     cancel_reason TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
@@ -439,7 +436,6 @@ CREATE INDEX idx_users_fullname ON users(full_name);
 -- SERVICE
 CREATE INDEX idx_service_user ON service(user_id);
 CREATE INDEX idx_service_location ON service(location_id);
-CREATE INDEX idx_service_organization ON service(organization_id);
 CREATE INDEX idx_service_price ON service(price);
 CREATE INDEX idx_service_name ON service(name);
 CREATE INDEX idx_service_duration ON service(duration_minutes);
@@ -456,7 +452,6 @@ CREATE INDEX idx_booking_service ON booking(service_id);
 CREATE INDEX idx_booking_status ON booking(status);
 CREATE INDEX idx_booking_start_time ON booking(start_time);
 CREATE INDEX idx_booking_end_time ON booking(end_time);
-CREATE INDEX idx_booking_org ON booking(organization_id);
 CREATE INDEX idx_booking_recurrence ON booking(recurrence_id);
 -- Crear índice para optimizar consultas que filtran por overbooking
 CREATE INDEX IF NOT EXISTS idx_booking_overbooking ON booking(is_overbooking);
@@ -518,10 +513,10 @@ DO $$
 DECLARE
     tbl RECORD;
 BEGIN
-    FOR tbl IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+    FOR tbl IN SELECT tablename FROM pg_tables WHERE schemaname = 'waturnos_schema' LOOP
         EXECUTE format(
             'SELECT setval(pg_get_serial_sequence(''%I.%I'', ''id''), COALESCE(MAX(id), 1), false) FROM %I.%I;',
-            'public', tbl.tablename, 'public', tbl.tablename
+            'waturnos_schema', tbl.tablename, 'waturnos_schema', tbl.tablename
         );
     END LOOP;
 END $$;
