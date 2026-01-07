@@ -51,14 +51,18 @@ public class AppConfig {
 		// Orígenes hardcodeados (para desarrollo local y dominios legacy)
 		allAllowedOrigins.addAll(List.of(
 		    "http://localhost:*",
+		    "https://localhost:*",
+		    "http://127.0.0.1:*",
+		    "https://127.0.0.1:*",
 		    "http://*.waturnos.com.ar:*",
-		    "https://waturnos-admin.vercel.app",
+		    "https://*.waturnos.com.ar:*",
+		    "https://*.waturnos.com.ar",
 		    "http://waturnos.com.ar",
 		    "http://www.waturnos.com.ar",
-		    "http://*.waturnos.com.ar",
 		    "https://waturnos.com.ar",
 		    "https://www.waturnos.com.ar",
-		    "https://*.waturnos.com.ar"
+		    "https://waturnos-admin.vercel.app",
+		    "https://*.onrender.com"
 		));
 		
 		System.out.println("✅ Total CORS allowed origins: " + allAllowedOrigins.size());
