@@ -181,7 +181,27 @@ app:
 # Google OAuth configuration
 google:
   client:
-    id: ${GOOGLE_CLIENT_ID}
+    id: ${GOOGLE_CLIENT_ID:382879720068-v3mrbu4qr82fkorrc3al21ec751plh7f.apps.googleusercontent.com}
+
+# CORS Configuration
+cors:
+  allowed-origins:
+    # Dominios de producción/demo en Render
+    - https://backoffice-demo.waturnos.com
+    - https://client-demo.waturnos.com
+    - https://waturnos-landing-demo.onrender.com
+    - https://waturnos-backoffice-demo.onrender.com
+    - https://waturnos-client-demo.onrender.com
+    # Dominios legacy waturnos.com.ar
+    - https://waturnos-admin.vercel.app
+    - http://waturnos.com.ar
+    - http://www.waturnos.com.ar
+    - https://waturnos.com.ar
+    - https://www.waturnos.com.ar
+    - http://*.waturnos.com.ar
+    - https://*.waturnos.com.ar
+    - http://*.waturnos.com.ar:*
+
 # MercadoPago configuration (WATurnos platform account)
 mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}

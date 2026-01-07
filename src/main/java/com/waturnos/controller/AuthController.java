@@ -147,7 +147,9 @@ public class AuthController {
 			}
 			}
 			if (checkStatus && user.getOrganization().getStatus() != OrganizationStatus.ACTIVE) {
-				throw new ServiceException(ErrorCode.ORGANIZATION_NOT_ACTIVE, "Organization not active");
+				throw new ServiceException(ErrorCode.ORGANIZATION_NOT_ACTIVE, 
+					messageSource.getMessage(ErrorCode.ORGANIZATION_NOT_ACTIVE.getMessageKey(), null,
+							LocaleContextHolder.getLocale()));
 			}
 			// ✅ Respuesta extendida
 			LoginResponse response = new LoginResponse(token, user.getId(), role, organizationId, providerId,user.getAvatar());
