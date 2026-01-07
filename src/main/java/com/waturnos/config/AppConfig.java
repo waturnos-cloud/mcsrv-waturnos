@@ -1,7 +1,9 @@
 package com.waturnos.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,9 @@ import com.waturnos.security.JwtAuthFilter;
 public class AppConfig {
 
 	private final JwtAuthFilter jwtFilter;
+	
+	@Value("${cors.allowed-origins:}")
+	private List<String> allowedOrigins;
 
 	public AppConfig(JwtAuthFilter jwtFilter) {
 		this.jwtFilter = jwtFilter;
@@ -33,7 +38,17 @@ public class AppConfig {
 	public CorsFilter corsFilter() {
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOriginPatterns(List.of(
+		
+		// Combinar orígenes permitidos desde application.yml con los hardcodeados
+		List<String> allAllowedOrigins = new ArrayList<>();
+		
+		// Orígenes desde application.yml
+		if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
+			allAllowedOrigins.addAll(allowedOrigins);
+		}
+		
+		// Orígenes hardcodeados (para desarrollo local y dominios legacy)
+		allAllowedOrigins.addAll(List.of(
 		    "http://localhost:*",
 		    "http://*.waturnos.com.ar:*",
 		    "https://waturnos-admin.vercel.app",
@@ -44,6 +59,8 @@ public class AppConfig {
 		    "https://www.waturnos.com.ar",
 		    "https://*.waturnos.com.ar"
 		));
+		
+		config.setAllowedOriginPatterns(allAllowedOrigins);
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setExposedHeaders(List.of("Authorization"));
