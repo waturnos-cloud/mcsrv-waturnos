@@ -1,6 +1,8 @@
 # WATurnos API (MVP)
 **Stack:** Spring Boot 3, JPA, PostgreSQL, JWT, Swagger, MapStruct, Lombok
 
+**Branch:** demo (Render deployment with CORS configuration)
+
 ## Setup rápido
 1. Java 17, Maven 3.9+
 2. Crear DB `waturnos` en Postgres y ejecutar `db/ddl/waturnos.sql` (colocá tu DDL completo).
