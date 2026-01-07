@@ -45,6 +45,7 @@ public class AppConfig {
 		// Orígenes desde application.yml
 		if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
 			allAllowedOrigins.addAll(allowedOrigins);
+			System.out.println("✅ CORS origins from application.yml: " + allowedOrigins);
 		}
 		
 		// Orígenes hardcodeados (para desarrollo local y dominios legacy)
@@ -60,11 +61,13 @@ public class AppConfig {
 		    "https://*.waturnos.com.ar"
 		));
 		
+		System.out.println("✅ Total CORS allowed origins: " + allAllowedOrigins.size());
+		
 		config.setAllowedOriginPatterns(allAllowedOrigins);
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setExposedHeaders(List.of("Authorization"));
-		config.setAllowCredentials(true);
+		config.setMaxAge(3600L); // Cache preflight response for 1 hour
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
