@@ -192,6 +192,7 @@ cors:
     - https://waturnos-landing-demo.onrender.com
     - https://waturnos-backoffice-demo.onrender.com
     - https://waturnos-client-demo.onrender.com
+    - https://mcsrv-waturnos.onrender.com
     # Dominios legacy waturnos.com.ar
     - https://waturnos-admin.vercel.app
     - http://waturnos.com.ar
