@@ -1,0 +1,28 @@
+# Release environment configuration (Render - Staging)
+# Activate with: --spring.profiles.active=release
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+app:
+  upload:
+    base-dir: /tmp/waturnos-images/
+  notification:
+    WELCOME_USER: https://waturnos-backoffice-release.onrender.com/login
+    RESET_PASSWORD: https://waturnos-backoffice-release.onrender.com/user/resetpassword.html
+    HOME: https://waturnos-landing-release.onrender.com
+  scheduling:
+    run-tasks-on-startup: ${ENABLE_CRON_ONSTART:true}
+
+# CORS Configuration - Release
+cors:
+  allowed-origins:
+    - https://backoffice.waturnos.com
+    - https://client.waturnos.com
+    - https://waturnos-landing-release.onrender.com
+    - https://waturnos-backoffice-release.onrender.com
+    - https://waturnos-client-release.onrender.com
+    - https://mcsrv-waturnos-release.onrender.com

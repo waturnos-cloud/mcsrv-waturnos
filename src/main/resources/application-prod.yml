@@ -1,0 +1,35 @@
+# Production environment configuration
+# Activate with: --spring.profiles.active=prod
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: false  # Disable SQL logging in production
+
+app:
+  upload:
+    base-dir: /tmp/waturnos-images/
+  notification:
+    WELCOME_USER: https://app.waturnos.com/login
+    RESET_PASSWORD: https://app.waturnos.com/user/resetpassword.html
+    HOME: https://waturnos.com
+  scheduling:
+    run-tasks-on-startup: true
+  bypass:
+    accessToken: false  # Always send real emails in production
+
+logging:
+  level:
+    root: WARN
+    com.waturnos: INFO
+
+# CORS Configuration - Production
+cors:
+  allowed-origins:
+    - https://app.waturnos.com
+    - https://admin.waturnos.com
+    - https://waturnos.com
+    - https://www.waturnos.com

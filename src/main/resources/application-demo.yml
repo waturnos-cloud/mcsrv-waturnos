@@ -1,0 +1,28 @@
+# Demo environment configuration (Render)
+# Activate with: --spring.profiles.active=demo
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+app:
+  upload:
+    base-dir: /tmp/waturnos-images/
+  notification:
+    WELCOME_USER: https://waturnos-backoffice-demo.onrender.com/login
+    RESET_PASSWORD: https://waturnos-backoffice-demo.onrender.com/user/resetpassword.html
+    HOME: https://waturnos-landing-demo.onrender.com
+  scheduling:
+    run-tasks-on-startup: ${ENABLE_CRON_ONSTART:false}
+
+# CORS Configuration - Demo
+cors:
+  allowed-origins:
+    - https://backoffice-demo.waturnos.com
+    - https://client-demo.waturnos.com
+    - https://waturnos-landing-demo.onrender.com
+    - https://waturnos-backoffice-demo.onrender.com
+    - https://waturnos-client-demo.onrender.com
+    - https://mcsrv-waturnos.onrender.com
