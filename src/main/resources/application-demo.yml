@@ -1,15 +1,18 @@
 # Demo environment configuration (Render)
-# Activate with: --spring.profiles.active=demo
+# Activate with: SPRING_PROFILES_ACTIVE=demo
 
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
+    url: ${DB_URL:jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos}
+    username: ${DB_USERNAME:neondb_owner}
     password: ${DB_PASSWORD}
 
 app:
+  baseUrl: https://mcsrv-waturnos.onrender.com
   upload:
     base-dir: /tmp/waturnos-images/
+  bypass:
+    accessToken: false # En demo envía email real
   notification:
     WELCOME_USER: https://waturnos-backoffice-demo.onrender.com/login
     RESET_PASSWORD: https://waturnos-backoffice-demo.onrender.com/user/resetpassword.html
@@ -26,3 +29,10 @@ cors:
     - https://waturnos-backoffice-demo.onrender.com
     - https://waturnos-client-demo.onrender.com
     - https://mcsrv-waturnos.onrender.com
+
+# MercadoPago - Demo
+mercadopago:
+  backend.base.url: https://mcsrv-waturnos.onrender.com
+  frontend.base.url: https://waturnos-backoffice-demo.onrender.com
+  webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
+  oauth-redirect-uri: https://backoffice-demo.waturnos.com/oauth/mercadopago/callback

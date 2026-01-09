@@ -1,15 +1,18 @@
 # Development environment configuration
-# Activate with: --spring.profiles.active=dev
+# Activate with: SPRING_PROFILES_ACTIVE=dev
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/waturnos
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD}
 
 app:
+  baseUrl: http://localhost:8085
   upload:
     base-dir: /Users/waturnos/images/
+  bypass:
+    accessToken: true # Genera 111111 sin enviar email (solo para dev)
   notification:
     WELCOME_USER: http://localhost:5173/login
     RESET_PASSWORD: http://localhost:5173/user/resetpassword.html
@@ -25,3 +28,10 @@ cors:
     - http://localhost:3000
     - http://127.0.0.1:5173
     - http://127.0.0.1:5174
+
+# MercadoPago - Development
+mercadopago:
+  backend.base.url: http://localhost:8085
+  frontend.base.url: http://localhost:5173
+  webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
+  oauth-redirect-uri: http://localhost:5173/oauth/mercadopago/callback

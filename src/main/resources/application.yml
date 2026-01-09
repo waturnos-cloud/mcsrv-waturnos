@@ -4,6 +4,10 @@ server:
     context-path: /msvc-waturnos/v1.0
 
 spring:
+  # Perfil activo por defecto (puede sobreescribirse con SPRING_PROFILES_ACTIVE)
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  
   cache:
     type: simple
   servlet:
@@ -11,12 +15,7 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
   datasource:
-    url: ${DB_URL}
-    #url: jdbc:postgresql://localhost:5432/waturnos
-    #username: postgres
-    #password: postgres
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    # Las URLs de DB se definen en cada application-{env}.yml
     driver-class-name: org.postgresql.Driver
     hikari:
       # max-lifetime should be shorter than any DB/network pooler timeout to avoid
@@ -52,28 +51,29 @@ spring:
   jackson:
     default-property-inclusion: NON_NULL
 # 1. Configuración de Email (JavaMailSender)
+# Configuración de Email (JavaMailSender)
   mail:
-    host: smtp.gmail.com # O el host de tu proveedor
-    port: 587             # El puerto estándar para TLS/STARTTLS
-    username: ${MAIL_USERNAME} # Tu cuenta de correo
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
- # ¡Usa una contraseña de aplicación, no la principal!
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: true    
-# 2. Configuración de Thymeleaf para emails
+            enable: trueymeleaf para emails
+# Configuración de Thymeleaf para emails
   thymeleaf:
-    prefix: classpath:/templates/mail/ # Ubicación de tus plantillas de email
-    suffix: .html                     # Extensión de tus plantillas
+    prefix: classpath:/templates/mail/
+    suffix: .html
     mode: HTML
     encoding: UTF-8
-    cache: false                      # Desactivar caché en desarrollo                      
+    cache: false
+
 jwt:
   secret: ${JWT_SECRET}
-  expiration-ms: 32400000 #9 horas
+  expiration-ms: 32400000 # 9 horas
   
 logging:
   level:
@@ -154,28 +154,18 @@ notification:
     PUSH: APPOINTMENT_REMINDER
     
 app:
-  baseUrl:
-  upload:
-    base-dir: /Users/waturnos/images/
+  # Configuraciones comunes (las específicas van en application-{env}.yml)
   resetpassword:
     expiration:
-      timetoken: 15 #15 minutos dura el token para reset de contraseña
-  bypass:
-    accessToken: true # Si true genera 111111 y no envía email
-  notification:
-    WELCOME_USER: http://localhost:5173/login
-    RESET_PASSWORD: http://localhost:5173/user/resetpassword.html
-    HOME: https://www.waturnos.com
+      timetoken: 15 # 15 minutos dura el token para reset de contraseña
   datetime: 
     email-format: d 'de' MMMM 'de las' HH 'hs'
     booking-date-format: EEEE, dd 'de' MMMM 'de' yyyy
   scheduling: 
-    run-tasks-on-startup: ${ENABLE_CRON_ONSTART:false}  # Si true, ejecuta tareas pendientes al iniciar el servidor (consume más memoria)
+    run-tasks-on-startup: ${ENABLE_CRON_ONSTART:false}
     notify-clients-cron: "0 0 8 * * *"
-    #PARA PRUEBAS USAR ESTA notify-clients-cron: "0 */1 * * * *"
     add-free-bookings-cron: "0 0 0 * * *"
     complete-reserved-bookings-cron: "0 50 23 * * *"
-    #PARA PRUEBAS USAR ESTA complete-reserved-bookings-cron: "0 */1 * * * *"
     add-bookings-page-size: 10
 
 # Google OAuth configuration
@@ -183,36 +173,15 @@ google:
   client:
     id: ${GOOGLE_CLIENT_ID:382879720068-v3mrbu4qr82fkorrc3al21ec751plh7f.apps.googleusercontent.com}
 
-# CORS Configuration
+# CORS Configuration (se complementa con los origins de cada ambiente)
 cors:
-  allowed-origins:
-    # Dominios de producción/demo en Render
-    - https://backoffice-demo.waturnos.com
-    - https://client-demo.waturnos.com
-    - https://waturnos-landing-demo.onrender.com
-    - https://waturnos-backoffice-demo.onrender.com
-    - https://waturnos-client-demo.onrender.com
-    - https://mcsrv-waturnos.onrender.com
-    # Dominios legacy waturnos.com.ar
-    - https://waturnos-admin.vercel.app
-    - http://waturnos.com.ar
-    - http://www.waturnos.com.ar
-    - https://waturnos.com.ar
-    - https://www.waturnos.com.ar
-    - http://*.waturnos.com.ar
-    - https://*.waturnos.com.ar
-    - http://*.waturnos.com.ar:*
+  allowed-origins: []
 
-# MercadoPago configuration (WATurnos platform account)
+# MercadoPago configuration (credenciales vienen de variables de entorno)
 mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
   public-key: ${MERCADOPAGO_PUBLIC_KEY}
   app-id: ${MERCADOPAGO_APP_ID}
   app-secret: ${MERCADOPAGO_APP_SECRET}
   sandbox-mode: ${MERCADOPAGO_SANDBOX_MODE:true}
-  webhook-url: ${MERCADOPAGO_WEBHOOK_URL:https://www.waturnos.com/msvc-waturnos/v1.0/webhooks/mercadopago}
-# En desarrollo
-  backend.base.url: https://unbreeched-fastidiously-barabara.ngrok-free.dev
-  frontend.base.url: https://unbreeched-fastidiously-barabara.ngrok-free.dev
-  mercadopago.webhook-url: ${backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
-  oauth-redirect-uri: ${MERCADOPAGO_OAUTH_REDIRECT_URI:https://unbreeched-fastidiously-barabara.ngrok-free.dev/oauth/mercadopago/callback}
+  # URLs específicas se definen en cada application-{env}.yml

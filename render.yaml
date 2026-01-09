@@ -1,0 +1,41 @@
+services:
+  # Backend API - Demo
+  - type: web
+    name: mcsrv-waturnos
+    runtime: java
+    region: oregon
+    plan: free
+    branch: demo
+    buildCommand: mvn clean install -DskipTests
+    startCommand: java -jar target/waturnos-api-1.0.0.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: demo
+      - key: PORT
+        value: 8085
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_PUBLIC_KEY
+        sync: false
+      - key: MERCADOPAGO_APP_ID
+        sync: false
+      - key: MERCADOPAGO_APP_SECRET
+        sync: false
+      - key: MERCADOPAGO_SANDBOX_MODE
+        value: true
+      - key: ENABLE_CRON_ONSTART
+        value: false
