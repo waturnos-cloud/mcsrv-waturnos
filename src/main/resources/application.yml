@@ -185,3 +185,16 @@ mercadopago:
   app-secret: ${MERCADOPAGO_APP_SECRET}
   sandbox-mode: ${MERCADOPAGO_SANDBOX_MODE:true}
   # URLs específicas se definen en cada application-{env}.yml
+
+# Cloudinary configuration
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+  secure: true
+
+# Image Storage configuration
+# Valores permitidos: S3, CLOUDINARY, LOCALSTORAGE, GOOGLECLOUDSTORAGE
+storage:
+  images:
+    provider: ${STORAGE_IMAGES:CLOUDINARY}
