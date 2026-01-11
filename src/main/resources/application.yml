@@ -62,7 +62,7 @@ spring:
         smtp:
           auth: true
           starttls:
-            enable: trueymeleaf para emails
+            enable: true
 # Configuración de Thymeleaf para emails
   thymeleaf:
     prefix: classpath:/templates/mail/

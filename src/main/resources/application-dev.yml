@@ -6,6 +6,9 @@ spring:
     url: ${DB_URL:jdbc:postgresql://ep-blue-mountain-ad5nhyod-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb?sslmode=require&currentSchema=waturnos}
     username: ${DB_USERNAME:neondb_owner}
     password: ${DB_PASSWORD}
+  mail:
+    username: waturnos@gmail.com # Tu cuenta de correo
+    password: drjp qvlr bgiw pmtv
 
 app:
   baseUrl: http://localhost:8085
@@ -35,3 +38,9 @@ mercadopago:
   frontend.base.url: http://localhost:5173
   webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
   oauth-redirect-uri: http://localhost:5173/oauth/mercadopago/callback
+
+# Cloudinary - Development
+cloudinary:
+  cloud-name: dvnalh7ep
+  api-key: 368668989284547
+  api-secret: 5BFNTYKvzMXomXIbxEpjAAfokyE

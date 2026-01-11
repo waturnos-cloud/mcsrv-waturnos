@@ -94,7 +94,6 @@ class BookingControllerTest {
 	void testGetByServiceId_Success() throws Exception {
 		// Arrange
 		List<Booking> bookings = List.of(testBooking);
-		List<BookingDTO> bookingDTOs = List.of(testBookingDTO);
 
 		when(bookingService.findByServiceId(1L)).thenReturn(bookings);
 		when(bookingMapper.toDto(any(Booking.class))).thenReturn(testBookingDTO);
