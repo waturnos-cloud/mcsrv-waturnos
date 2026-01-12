@@ -429,6 +429,18 @@ public class BookingServiceImpl implements BookingService {
 		}
 		booking.setCancelReason(reason);
 
+		// Guardar los clientes ANTES de eliminarlos (para las notificaciones)
+		List<Client> clientsToNotify = booking.getBookingClients().stream()
+				.map(BookingClient::getClient)
+				.collect(Collectors.toList());
+
+		// Eliminar todas las relaciones BookingClient (desvincular clientes)
+		Integer serviceCapacity = service.getCapacity();
+		List<BookingClient> bookingClientsToRemove = new ArrayList<>(booking.getBookingClients());
+		for (BookingClient bc : bookingClientsToRemove) {
+			booking.removeBookingClient(bc, serviceCapacity);
+		}
+
 		Booking savedBooking = bookingRepository.save(booking);
 
 		// Notificar waitlist solo si el servicio tiene habilitada la lista de espera
@@ -436,7 +448,8 @@ public class BookingServiceImpl implements BookingService {
 			waitlistService.notifyNextInLine(savedBooking);
 		}
 
-		savedBooking.getBookingClients().stream().map(bookingClient -> bookingClient.getClient()).forEach(client -> {
+		// Notificar a los clientes que fueron desvinculados
+		clientsToNotify.forEach(client -> {
 			notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
 					"notification.subject.canceled.booking"));
 		});
