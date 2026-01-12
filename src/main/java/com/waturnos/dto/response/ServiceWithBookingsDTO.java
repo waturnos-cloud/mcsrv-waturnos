@@ -10,6 +10,7 @@ public class ServiceWithBookingsDTO {
 	private String serviceName;
 	private String serviceDescription;
 	private Double servicePrice;
+	private Integer advancePayment;
 	private List<BookingSimpleDTO> bookings;
 	private List<PaymentProviderResponse> paymentProviders;
 }

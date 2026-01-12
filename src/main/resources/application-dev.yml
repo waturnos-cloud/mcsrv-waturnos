@@ -35,9 +35,9 @@ cors:
 # MercadoPago - Development
 mercadopago:
   backend.base.url: http://localhost:8085
-  frontend.base.url: http://localhost:5173
+  frontend.base.url: http://localhost:5174
   webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
-  oauth-redirect-uri: http://localhost:5173/oauth/mercadopago/callback
+  oauth-redirect-uri: http://localhost:5174/oauth/mercadopago/callback
 
 # Cloudinary - Development
 cloudinary:

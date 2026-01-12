@@ -19,6 +19,7 @@ public class ServiceBookingMapper {
         dto.setServiceName(service.getName());
         dto.setServiceDescription(service.getDescription());
         dto.setServicePrice(service.getPrice());
+        dto.setAdvancePayment(service.getAdvancePayment());
 
         List<BookingSimpleDTO> simpleList = bookings.stream()
                 .map(this::toSimple)
