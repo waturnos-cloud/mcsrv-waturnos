@@ -90,6 +90,8 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		// 4. Construir el cuerpo de la preferencia
 		Map<String, Object> preferenceData = buildPreferenceData(request, booking);
 		
+		log.info("💳 MercadoPago Request Body: {}", preferenceData);
+		
 		// 5. Llamar a la API de MercadoPago
 		try {
 			HttpHeaders headers = new HttpHeaders();
