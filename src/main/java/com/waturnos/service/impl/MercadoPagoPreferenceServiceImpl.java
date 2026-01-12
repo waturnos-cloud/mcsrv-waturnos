@@ -139,6 +139,9 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		backUrls.put("pending", frontendBaseUrl + "/payment/pending");
 		preference.put("back_urls", backUrls);
 		
+		log.info("💳 MercadoPago Preference - frontendBaseUrl: {}", frontendBaseUrl);
+		log.info("💳 MercadoPago Preference - back_urls: {}", backUrls);
+		
 		preference.put("auto_return", "approved");
 		
 		// URL de notificación (webhook)
