@@ -166,6 +166,7 @@ app:
     notify-clients-cron: "0 0 8 * * *"
     add-free-bookings-cron: "0 0 0 * * *"
     complete-reserved-bookings-cron: "0 50 23 * * *"
+    expire-waitlist-notifications-cron: "0 */15 * * * *" # Cada 15 minutos
     add-bookings-page-size: 10
 
 # Google OAuth configuration

@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Scheduled task para gestionar expiración automática de notificaciones de waitlist.
- * Ejecuta cada minuto para verificar si hay notificaciones que superaron su tiempo de expiración
+ * Ejecuta cada 15 minutos para verificar si hay notificaciones que superaron su tiempo de expiración
  * configurado en service.waitListTime.
  */
 @Component
@@ -33,15 +33,15 @@ public class WaitlistScheduler {
     private final BookingRepository bookingRepository;
 
     /**
-     * Ejecuta cada minuto para buscar y expirar notificaciones que superaron su tiempo límite.
-     * El tiempo de expiración (waitListTime) está configurado por servicio, típicamente 15 minutos.
+     * Ejecuta cada 15 minutos para buscar y expirar notificaciones que superaron su tiempo límite.
+     * El tiempo de expiración (waitListTime) está configurado por servicio, típicamente 30 minutos.
      * 
      * Flujo:
      * 1. Busca entradas NOTIFIED donde expiresAt < now()
      * 2. Marca cada entrada como EXPIRED
      * 3. Notifica al siguiente cliente en la cola para ese servicio/fecha
      */
-    @Scheduled(cron = "0 * * * * *") // Cada minuto: segundo 0 de cada minuto
+    @Scheduled(cron = "${app.scheduling.expire-waitlist-notifications-cron}")
     @Transactional
     public void expireOldNotifications() {
         log.debug("Ejecutando tarea programada: expiración de notificaciones de waitlist");

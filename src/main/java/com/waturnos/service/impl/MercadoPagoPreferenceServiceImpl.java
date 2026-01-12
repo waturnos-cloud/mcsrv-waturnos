@@ -55,6 +55,15 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		log.info("💳 DEBUG - frontendBaseUrl value: '{}'", frontendBaseUrl);
 		log.info("💳 DEBUG - webhookUrl value: '{}'", webhookUrl);
 		
+		// Validar configuración
+		if (frontendBaseUrl == null || frontendBaseUrl.trim().isEmpty()) {
+			throw new IllegalStateException("mercadopago.frontend.base.url no está configurado");
+		}
+		if (frontendBaseUrl.contains("localhost") || frontendBaseUrl.contains("127.0.0.1")) {
+			log.error("⚠️ ERROR: frontendBaseUrl contiene localhost: '{}'. Esto causará errores en MercadoPago.", frontendBaseUrl);
+			throw new IllegalStateException("mercadopago.frontend.base.url no puede contener localhost en producción. Valor actual: " + frontendBaseUrl);
+		}
+		
 		// 1. Obtener el booking
 		Booking booking = bookingRepository.findById(request.getBookingId())
 				.orElseThrow(() -> new IllegalArgumentException("Booking no encontrado con ID: " + request.getBookingId()));

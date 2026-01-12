@@ -58,7 +58,7 @@ public class ServiceEntity {
     private Boolean waitList = false;
     
     @Builder.Default
-    private Integer waitListTime = 15;
+    private Integer waitListTime = 30;
     
     @Builder.Default
     private Integer offsetMinutes = 0;
