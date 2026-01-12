@@ -12,7 +12,7 @@ app:
   upload:
     base-dir: /tmp/waturnos-images/
   bypass:
-    accessToken: false # En demo envía email real
+    accessToken: true # En demo envía email real
   notification:
     WELCOME_USER: https://waturnos-backoffice-demo.onrender.com/login
     RESET_PASSWORD: https://waturnos-backoffice-demo.onrender.com/user/resetpassword.html
