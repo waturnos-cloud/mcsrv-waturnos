@@ -33,6 +33,6 @@ cors:
 # MercadoPago - Demo
 mercadopago:
   backend.base.url: https://mcsrv-waturnos.onrender.com
-  frontend.base.url: https://waturnos-backoffice-demo.onrender.com
+  frontend.base.url: https://waturnos-client-demo.onrender.com
   webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
-  oauth-redirect-uri: https://backoffice-demo.waturnos.com/oauth/mercadopago/callback
+  oauth-redirect-uri: https://waturnos-backoffice-demo.onrender.com/oauth/mercadopago/callback

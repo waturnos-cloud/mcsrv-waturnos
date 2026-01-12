@@ -6,11 +6,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.service.MercadoPagoWebhookService;
+import com.waturnos.service.impl.MercadoPagoWebhookServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MercadoPagoWebhookController {
 	
 	private final MercadoPagoWebhookService webhookService;
+	private final MercadoPagoWebhookServiceImpl webhookServiceImpl;
 	
 	/**
 	 * Endpoint para recibir notificaciones IPN de MercadoPago.
@@ -32,14 +35,17 @@ public class MercadoPagoWebhookController {
 	 *
 	 * @param payload el cuerpo de la notificación
 	 * @param topic el tipo de notificación (payment, merchant_order, etc.)
-	 * @param id el ID del recurso notificado
+	 * @param xSignature header con la firma para validar autenticidad
+	 * @param xRequestId header con el ID de request
 	 * @return respuesta 200 OK para confirmar recepción
 	 */
 	@PostMapping("/mercadopago")
 	public ResponseEntity<String> handleMercadoPagoWebhook(
 			@RequestBody(required = false) Map<String, Object> payload,
 			@RequestParam(required = false) String topic,
-			@RequestParam(required = false) String id) {
+			@RequestParam(required = false) String id,
+			@RequestHeader(value = "x-signature", required = false) String xSignature,
+			@RequestHeader(value = "x-request-id", required = false) String xRequestId) {
 		
 		try {
 			log.info("Received MercadoPago webhook - Topic: {}, ID: {}, Payload: {}", topic, id, payload);
@@ -73,6 +79,22 @@ public class MercadoPagoWebhookController {
 			if (paymentId == null || paymentId.isEmpty()) {
 				log.warn("Received webhook without payment ID");
 				return ResponseEntity.ok("OK");
+			}
+			
+			// VALIDAR FIRMA DEL WEBHOOK (seguridad crítica)
+			if (xSignature != null && xRequestId != null) {
+				boolean isValid = webhookServiceImpl.validateWebhookSignature(xSignature, xRequestId, paymentId);
+				
+				if (!isValid) {
+					log.error("Invalid webhook signature! Potential security issue. PaymentId: {}", paymentId);
+					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
+				}
+				
+				log.info("Webhook signature validated successfully for payment: {}", paymentId);
+			} else {
+				log.warn("Webhook received without signature headers. PaymentId: {}", paymentId);
+				// En producción considera rechazar webhooks sin firma
+				// return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing signature");
 			}
 			
 			// Procesar la notificación según el tipo
