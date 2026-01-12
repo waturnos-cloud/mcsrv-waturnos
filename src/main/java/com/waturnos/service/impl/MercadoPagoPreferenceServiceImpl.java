@@ -52,6 +52,8 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 	@Override
 	public PaymentPreferenceResponse createPreference(CreatePreferenceRequest request) {
 		log.info("Creando preferencia de pago para booking ID: {}", request.getBookingId());
+		log.info("💳 DEBUG - frontendBaseUrl value: '{}'", frontendBaseUrl);
+		log.info("💳 DEBUG - webhookUrl value: '{}'", webhookUrl);
 		
 		// 1. Obtener el booking
 		Booking booking = bookingRepository.findById(request.getBookingId())
@@ -134,13 +136,21 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		
 		// URLs de retorno
 		Map<String, String> backUrls = new HashMap<>();
-		backUrls.put("success", frontendBaseUrl + "/payment/success");
-		backUrls.put("failure", frontendBaseUrl + "/payment/failure");
-		backUrls.put("pending", frontendBaseUrl + "/payment/pending");
+		String successUrl = frontendBaseUrl + "/payment/success";
+		String failureUrl = frontendBaseUrl + "/payment/failure";
+		String pendingUrl = frontendBaseUrl + "/payment/pending";
+		
+		log.info("💳 MercadoPago - Constructed URLs:");
+		log.info("💳   - success: '{}'", successUrl);
+		log.info("💳   - failure: '{}'", failureUrl);
+		log.info("💳   - pending: '{}'", pendingUrl);
+		
+		backUrls.put("success", successUrl);
+		backUrls.put("failure", failureUrl);
+		backUrls.put("pending", pendingUrl);
 		preference.put("back_urls", backUrls);
 		
-		log.info("💳 MercadoPago Preference - frontendBaseUrl: {}", frontendBaseUrl);
-		log.info("💳 MercadoPago Preference - back_urls: {}", backUrls);
+		log.info("💳 MercadoPago Preference - backUrls map: {}", backUrls);
 		
 		preference.put("auto_return", "approved");
 		
