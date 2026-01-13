@@ -164,7 +164,6 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 			log.info("🔵 ========== FIN CREACIÓN DE PREFERENCIA (CON ERROR) ==========");
 			throw new RuntimeException("Error al crear preferencia de pago: " + e.getMessage(), e);
 		}
-		}
 	}
 	
 	/**
