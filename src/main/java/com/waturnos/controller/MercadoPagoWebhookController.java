@@ -48,7 +48,12 @@ public class MercadoPagoWebhookController {
 			@RequestHeader(value = "x-request-id", required = false) String xRequestId) {
 		
 		try {
-			log.info("Received MercadoPago webhook - Topic: {}, ID: {}, Payload: {}", topic, id, payload);
+			log.info("🌐 ========== WEBHOOK MERCADOPAGO RECIBIDO ==========");
+			log.info("🌐 Topic: {}", topic);
+			log.info("🌐 ID: {}", id);
+			log.info("🌐 Payload: {}", payload);
+			log.info("🌐 Headers - x-signature: {}", xSignature != null ? "present" : "absent");
+			log.info("🌐 Headers - x-request-id: {}", xRequestId);
 			
 			// MercadoPago puede enviar notificaciones de diferentes formas:
 			// 1. Query params: ?topic=payment&id=123456
@@ -76,39 +81,49 @@ public class MercadoPagoWebhookController {
 				paymentId = id;
 			}
 			
+			log.info("🌐 Extracted - Payment ID: {}, Notification Type: {}", paymentId, notificationType);
+			
 			if (paymentId == null || paymentId.isEmpty()) {
-				log.warn("Received webhook without payment ID");
+				log.warn("🌐 ⚠️ Received webhook without payment ID");
+				log.info("🌐 ========== FIN WEBHOOK (SIN PAYMENT ID) ==========");
 				return ResponseEntity.ok("OK");
 			}
 			
 			// VALIDAR FIRMA DEL WEBHOOK (seguridad crítica)
 			if (xSignature != null && xRequestId != null) {
+				log.info("🌐 Validating webhook signature...");
 				boolean isValid = webhookServiceImpl.validateWebhookSignature(xSignature, xRequestId, paymentId);
 				
 				if (!isValid) {
-					log.error("Invalid webhook signature! Potential security issue. PaymentId: {}", paymentId);
+					log.error("🌐 ❌ Invalid webhook signature! Potential security issue. PaymentId: {}", paymentId);
+					log.info("🌐 ========== FIN WEBHOOK (INVALID SIGNATURE) ==========");
 					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
 				}
 				
-				log.info("Webhook signature validated successfully for payment: {}", paymentId);
+				log.info("🌐 ✅ Webhook signature validated successfully for payment: {}", paymentId);
 			} else {
-				log.warn("Webhook received without signature headers. PaymentId: {}", paymentId);
+				log.warn("🌐 ⚠️ Webhook received without signature headers. PaymentId: {}", paymentId);
 				// En producción considera rechazar webhooks sin firma
 				// return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing signature");
 			}
 			
 			// Procesar la notificación según el tipo
+			log.info("🌐 Processing notification type: {}", notificationType);
 			if ("payment".equals(notificationType)) {
+				log.info("🌐 Calling webhookService.processPaymentNotification({})...", paymentId);
 				webhookService.processPaymentNotification(paymentId);
 			} else {
-				log.info("Webhook type {} not processed", notificationType);
+				log.info("🌐 ⚠️ Webhook type {} not processed", notificationType);
 			}
 			
 			// Siempre retornar 200 OK para que MercadoPago no reintente
+			log.info("🌐 ========== FIN WEBHOOK (SUCCESS) ==========");
 			return ResponseEntity.ok("OK");
 			
 		} catch (Exception e) {
-			log.error("Error processing MercadoPago webhook", e);
+			log.error("🌐 ❌ Error processing MercadoPago webhook", e);
+			log.error("🌐 Error details: {}", e.getMessage());
+			log.info("🌐 ========== FIN WEBHOOK (ERROR) ==========");
 			// Retornar 200 para evitar reintentos innecesarios
 			return ResponseEntity.ok("ERROR");
 		}

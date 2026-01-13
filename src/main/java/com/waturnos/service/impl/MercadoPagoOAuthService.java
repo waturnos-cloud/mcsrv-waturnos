@@ -54,10 +54,14 @@ public class MercadoPagoOAuthService {
 	 */
 	public void exchangeCodeForToken(Long userId, String code, String customRedirectUri) {
 		try {
-			log.info("Exchanging OAuth code for access token - User: {}", userId);
+			log.info("🔵 ========== INICIANDO OAUTH FLOW DE MERCADOPAGO ==========");
+			log.info("🔐 User ID: {}", userId);
+			log.info("🔐 Authorization Code: {}...", code.substring(0, Math.min(20, code.length())));
 			
 			// Usar redirect URI personalizada o la configurada
 			String effectiveRedirectUri = customRedirectUri != null ? customRedirectUri : redirectUri;
+			log.info("🔐 Redirect URI: {}", effectiveRedirectUri);
+			log.info("🔐 App ID: {}", appId);
 			
 			// Preparar request para MercadoPago
 			Map<String, String> requestBody = new HashMap<>();
@@ -89,25 +93,50 @@ public class MercadoPagoOAuthService {
 			String accessToken = jsonResponse.path("access_token").asText();
 			String publicKey = jsonResponse.path("public_key").asText();
 			String userId_mp = jsonResponse.path("user_id").asText();
+			String refreshToken = jsonResponse.path("refresh_token").asText();
+			long expiresIn = jsonResponse.path("expires_in").asLong();
+			boolean liveMode = jsonResponse.path("live_mode").asBoolean(false);
+			
+			log.info("🔐 OAuth Response:");
+			log.info("🔐   - Access Token: {}...", accessToken.substring(0, Math.min(20, accessToken.length())));
+			log.info("🔐   - Public Key: {}", publicKey);
+			log.info("🔐   - User ID (MP): {}", userId_mp);
+			log.info("🔐   - Live Mode (from OAuth): {}", liveMode);
+			log.info("🔐   - Expires In: {} seconds", expiresIn);
 			
 			if (accessToken.isEmpty() || publicKey.isEmpty()) {
+				log.error("🔐 ❌ Invalid OAuth response - missing accessToken or publicKey");
 				throw new ServiceException(ErrorCode.GLOBAL_ERROR, "Invalid OAuth response from MercadoPago");
 			}
 			
-			log.info("OAuth successful - User: {}, MP User ID: {}", userId, userId_mp);
+			log.info("🔐 ✅ OAuth successful - User: {}, MP User ID: {}", userId, userId_mp);
 			
 			// Guardar credenciales usando el servicio de payment providers
+			log.warn("⚠️ ⚠️ ⚠️ IMPORTANTE: OAuth está guardando sandboxMode=FALSE (hardcoded) ⚠️ ⚠️ ⚠️");
+			log.warn("⚠️ Esto puede causar que las credenciales sandbox se usen en producción!");
+			log.warn("⚠️ liveMode del OAuth response: {}", liveMode);
+			
+			// FIXME: Esto debería determinarse dinámicamente basado en el tipo de credenciales
+			// Las credenciales de prueba empiezan con TEST, las de producción con APP_USR
+			boolean isSandbox = publicKey.startsWith("TEST-") || publicKey.startsWith("APP_USR-");
+			log.info("🔐 Detectado tipo de credencial - isSandbox: {} (basado en publicKey: {})", isSandbox, publicKey.substring(0, Math.min(15, publicKey.length())));
+			
 			AddPaymentRequest paymentRequest = AddPaymentRequest.builder()
 					.type(PaymentProviderType.MERCADO_PAGO)
 					.accessToken(accessToken)
 					.publicKey(publicKey)
 					.accountId(userId_mp)
-					.sandboxMode(false) // OAuth siempre es producción
+					.sandboxMode(!liveMode) // Usar el liveMode del OAuth response
 					.build();
+			
+			log.info("🔐 Guardando Payment Provider con:");
+			log.info("🔐   - sandboxMode: {}", paymentRequest.getSandboxMode());
+			log.info("🔐   - liveMode (OAuth): {}", liveMode);
 			
 			paymentProviderService.addPaymentProvider(userId, paymentRequest);
 			
-			log.info("MercadoPago credentials saved successfully for user {}", userId);
+			log.info("🔐 ✅ MercadoPago credentials saved successfully for user {}", userId);
+			log.info("🔵 ========== FIN OAUTH FLOW ==========");
 			
 		} catch (ServiceException e) {
 			throw e;
