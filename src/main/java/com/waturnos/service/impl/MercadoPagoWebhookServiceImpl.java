@@ -124,24 +124,31 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	@Transactional
 	public void processPaymentNotification(String paymentId) {
 		try {
-			log.info("Processing payment notification for payment ID: {}", paymentId);
+			log.info("🔔 ========== INICIANDO PROCESAMIENTO DE WEBHOOK MERCADOPAGO ==========");
+			log.info("🔔 Payment ID: {}", paymentId);
 			
 			// 1. Consultar el pago en MercadoPago para verificar su estado
 			JsonNode paymentData = getPaymentFromMercadoPago(paymentId);
 			
 			if (paymentData == null) {
-				log.warn("Could not retrieve payment data from MercadoPago for ID: {}", paymentId);
+				log.warn("🔔 ⚠️ Could not retrieve payment data from MercadoPago for ID: {}", paymentId);
+				log.info("🔔 ========== FIN PROCESAMIENTO (SIN DATA) ==========");
 				return;
 			}
 			
 			// 2. Extraer información del pago
 			String status = paymentData.path("status").asText();
 			String externalReference = paymentData.path("external_reference").asText(); // Booking ID
+			String statusDetail = paymentData.path("status_detail").asText();
 			
-			log.info("Payment {} status: {}, external_reference: {}", paymentId, status, externalReference);
+			log.info("🔔 Payment Data:");
+			log.info("🔔   - Status: {}", status);
+			log.info("🔔   - Status Detail: {}", statusDetail);
+			log.info("🔔   - External Reference (Booking ID): {}", externalReference);
 			
 			if (externalReference == null || externalReference.isEmpty()) {
-				log.warn("Payment {} has no external_reference (booking ID)", paymentId);
+				log.warn("🔔 ⚠️ Payment {} has no external_reference (booking ID)", paymentId);
+				log.info("🔔 ========== FIN PROCESAMIENTO (SIN EXTERNAL REF) ==========");
 				return;
 			}
 			
@@ -149,30 +156,45 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			Long bookingId;
 			try {
 				bookingId = Long.parseLong(externalReference);
+				log.info("🔔 Booking ID parsed: {}", bookingId);
 			} catch (NumberFormatException e) {
-				log.error("Invalid booking ID in external_reference: {}", externalReference);
+				log.error("🔔 ❌ Invalid booking ID in external_reference: {}", externalReference);
+				log.info("🔔 ========== FIN PROCESAMIENTO (INVALID BOOKING ID) ==========");
 				return;
 			}
 			
+			log.info("🔔 Searching for booking with ID: {}", bookingId);
 			Booking booking = bookingRepository.findById(bookingId).orElse(null);
 			if (booking == null) {
-				log.warn("Booking not found for ID: {}", bookingId);
+				log.warn("🔔 ⚠️ Booking not found for ID: {}", bookingId);
+				log.info("🔔 ========== FIN PROCESAMIENTO (BOOKING NOT FOUND) ==========");
 				return;
 			}
+			
+			log.info("🔔 Booking found - Current status: {}", booking.getStatus());
 			
 			// 4. Actualizar el estado de la reserva según el estado del pago
 			BookingStatus newStatus = mapPaymentStatusToBookingStatus(status);
+			log.info("🔔 Mapped status '{}' to BookingStatus: {}", status, newStatus);
 			
 			if (newStatus != null && booking.getStatus() != newStatus) {
+				log.info("🔔 Updating booking {} status from {} to {}", bookingId, booking.getStatus(), newStatus);
 				booking.setStatus(newStatus);
 				bookingRepository.save(booking);
-				log.info("Updated booking {} status to {}", bookingId, newStatus);
+				log.info("🔔 ✅ Booking status updated successfully");
 				
 				// TODO: Enviar notificación al cliente sobre el estado del pago
+			} else if (newStatus == null) {
+				log.warn("🔔 ⚠️ No status mapping found for MercadoPago status: {}", status);
+			} else {
+				log.info("🔔 Booking status unchanged (already {})", booking.getStatus());
 			}
 			
+			log.info("🔔 ========== FIN PROCESAMIENTO WEBHOOK (SUCCESS) ==========");
+			
 		} catch (Exception e) {
-			log.error("Error processing payment notification for ID: {}", paymentId, e);
+			log.error("🔔 ❌ Error processing payment notification for ID: {}", paymentId, e);
+			log.info("🔔 ========== FIN PROCESAMIENTO WEBHOOK (ERROR) ==========");
 		}
 	}
 	
@@ -185,25 +207,35 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	private JsonNode getPaymentFromMercadoPago(String paymentId) {
 		try {
 			String url = MERCADOPAGO_API_URL + paymentId;
+			log.info("🔔 Fetching payment data from: {}", url);
 			
 			HttpHeaders headers = new HttpHeaders();
-			headers.set("Authorization", "Bearer " + accessToken);
+			headers.set("Authorization", "Bearer " + accessToken.substring(0, Math.min(20, accessToken.length())) + "...");
 			headers.set("Content-Type", "application/json");
 			
 			HttpEntity<String> entity = new HttpEntity<>(headers);
 			
+			log.info("🔔 Calling MercadoPago API...");
 			ResponseEntity<String> response = restTemplate.exchange(
 					url, 
 					HttpMethod.GET, 
 					entity, 
 					String.class);
 			
+			log.info("🔔 MercadoPago API response status: {}", response.getStatusCode());
+			
 			if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-				return objectMapper.readTree(response.getBody());
+				log.info("🔔 ✅ Payment data retrieved successfully");
+				JsonNode paymentData = objectMapper.readTree(response.getBody());
+				log.info("🔔 Payment JSON response: {}", paymentData.toPrettyString());
+				return paymentData;
+			} else {
+				log.warn("🔔 ⚠️ Unexpected response from MercadoPago: {}", response.getStatusCode());
 			}
 			
 		} catch (Exception e) {
-			log.error("Error calling MercadoPago API for payment {}", paymentId, e);
+			log.error("🔔 ❌ Error calling MercadoPago API for payment {}", paymentId, e);
+			log.error("🔔 Error details: {}", e.getMessage());
 		}
 		
 		return null;

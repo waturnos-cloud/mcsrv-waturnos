@@ -47,13 +47,20 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 	@Value("${mercadopago.frontend.base.url}")
 	private String frontendBaseUrl;
 	
+	@Value("${mercadopago.sandbox-mode:true}")
+	private Boolean sandboxMode;
+	
 	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/checkout/preferences";
 	
 	@Override
 	public PaymentPreferenceResponse createPreference(CreatePreferenceRequest request) {
-		log.info("Creando preferencia de pago para booking ID: {}", request.getBookingId());
-		log.info("💳 DEBUG - frontendBaseUrl value: '{}'", frontendBaseUrl);
-		log.info("💳 DEBUG - webhookUrl value: '{}'", webhookUrl);
+		log.info("🔵 ========== INICIANDO CREACIÓN DE PREFERENCIA DE MERCADOPAGO ==========");
+		log.info("💳 Booking ID: {}", request.getBookingId());
+		log.info("💳 Amount: {}", request.getAmount());
+		log.info("💳 Description: {}", request.getDescription());
+		log.info("💳 CONFIG - frontendBaseUrl: '{}'", frontendBaseUrl);
+		log.info("💳 CONFIG - webhookUrl: '{}'", webhookUrl);
+		log.info("💳 CONFIG - sandboxMode (from application.yml): {}", sandboxMode);
 		
 		// Validar configuración
 		if (frontendBaseUrl == null || frontendBaseUrl.trim().isEmpty()) {
@@ -87,6 +94,17 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 			throw new IllegalStateException("El provider no tiene configurado MercadoPago");
 		}
 		
+		log.info("💳 PAYMENT PROVIDER CONFIG:");
+		log.info("💳   - Access Token (first 20 chars): {}...", paymentConfig.getAccessToken() != null ? paymentConfig.getAccessToken().substring(0, Math.min(20, paymentConfig.getAccessToken().length())) : "null");
+		log.info("💳   - Public Key: {}", paymentConfig.getPublicKey());
+		log.info("💳   - Account ID: {}", paymentConfig.getAccountId());
+		log.info("💳   - Sandbox Mode (from DB): {}", paymentConfig.getSandboxMode());
+		log.info("💳   - Is Configured: {}", paymentConfig.getIsConfigured());
+		
+		// Determinar el modo sandbox final: usar el de DB si existe, sino el de configuración
+		Boolean effectiveSandboxMode = paymentConfig.getSandboxMode() != null ? paymentConfig.getSandboxMode() : sandboxMode;
+		log.info("💳 EFFECTIVE SANDBOX MODE (final): {}", effectiveSandboxMode);
+		
 		// 4. Construir el cuerpo de la preferencia
 		Map<String, Object> preferenceData = buildPreferenceData(request, booking);
 		
@@ -94,9 +112,19 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		
 		// 5. Llamar a la API de MercadoPago
 		try {
+			log.info("💳 ========== PREPARANDO REQUEST A MERCADOPAGO API ==========");
+			log.info("💳 API URL: {}", MERCADOPAGO_API_URL);
+			
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			headers.setBearerAuth(paymentConfig.getAccessToken());
+			// Agregar X-Idempotency-Key para evitar duplicados
+			headers.set("X-Idempotency-Key", "booking-" + request.getBookingId() + "-" + System.currentTimeMillis());
+			
+			log.info("💳 Request Headers:");
+			log.info("💳   - Content-Type: {}", headers.getContentType());
+			log.info("💳   - Authorization: Bearer {}...", paymentConfig.getAccessToken().substring(0, Math.min(20, paymentConfig.getAccessToken().length())));
+			log.info("💳   - X-Idempotency-Key: {}", headers.get("X-Idempotency-Key"));
 			
 			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(preferenceData, headers);
 			
@@ -110,10 +138,16 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 			
 			Map<String, Object> responseBody = response.getBody();
 			if (responseBody == null) {
+				log.error("💳 ❌ Respuesta vacía de MercadoPago");
 				throw new RuntimeException("Respuesta vacía de MercadoPago");
 			}
 			
-			log.info("Preferencia creada exitosamente: {}", responseBody.get("id"));
+			log.info("💳 ✅ Preferencia creada exitosamente");
+			log.info("💳 Response - Preference ID: {}", responseBody.get("id"));
+			log.info("💳 Response - Init Point: {}", responseBody.get("init_point"));
+			log.info("💳 Response - Sandbox Init Point: {}", responseBody.get("sandbox_init_point"));
+			log.info("💳 Response Status: {}", response.getStatusCode());
+			log.info("🔵 ========== FIN CREACIÓN DE PREFERENCIA ==========");
 			
 			return PaymentPreferenceResponse.builder()
 					.preferenceId((String) responseBody.get("id"))
@@ -122,8 +156,14 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 					.build();
 			
 		} catch (Exception e) {
-			log.error("Error al crear preferencia en MercadoPago", e);
+			log.error("💳 ❌ ERROR al crear preferencia en MercadoPago", e);
+			log.error("💳 Error message: {}", e.getMessage());
+			if (e.getCause() != null) {
+				log.error("💳 Error cause: {}", e.getCause().getMessage());
+			}
+			log.info("🔵 ========== FIN CREACIÓN DE PREFERENCIA (CON ERROR) ==========");
 			throw new RuntimeException("Error al crear preferencia de pago: " + e.getMessage(), e);
+		}
 		}
 	}
 	
