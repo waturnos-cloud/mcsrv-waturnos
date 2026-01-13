@@ -98,12 +98,14 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		log.info("💳   - Access Token (first 20 chars): {}...", paymentConfig.getAccessToken() != null ? paymentConfig.getAccessToken().substring(0, Math.min(20, paymentConfig.getAccessToken().length())) : "null");
 		log.info("💳   - Public Key: {}", paymentConfig.getPublicKey());
 		log.info("💳   - Account ID: {}", paymentConfig.getAccountId());
-		log.info("💳   - Sandbox Mode (from DB): {}", paymentConfig.getSandboxMode());
+		log.info("💳   - Sandbox Mode (from DB): {} ⚠️ (IGNORADO - puede estar desactualizado)", paymentConfig.getSandboxMode());
+		log.info("💳   - Sandbox Mode (from CONFIG): {} ✅ (ESTE SE USA)", sandboxMode);
 		log.info("💳   - Is Configured: {}", paymentConfig.getIsConfigured());
 		
-		// Determinar el modo sandbox final: usar el de DB si existe, sino el de configuración
-		Boolean effectiveSandboxMode = paymentConfig.getSandboxMode() != null ? paymentConfig.getSandboxMode() : sandboxMode;
-		log.info("💳 EFFECTIVE SANDBOX MODE (final): {}", effectiveSandboxMode);
+		// SIEMPRE usar configuración, IGNORAR DB
+		// El valor de DB puede estar incorrecto del OAuth anterior
+		Boolean effectiveSandboxMode = sandboxMode;
+		log.info("💳 ⭐ EFFECTIVE SANDBOX MODE (usando CONFIG, ignorando DB): {}", effectiveSandboxMode);
 		
 		// 4. Construir el cuerpo de la preferencia
 		Map<String, Object> preferenceData = buildPreferenceData(request, booking);

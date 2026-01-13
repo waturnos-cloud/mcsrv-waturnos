@@ -43,6 +43,9 @@ public class MercadoPagoOAuthService {
 	@Value("${mercadopago.oauth-redirect-uri}")
 	private String redirectUri;
 	
+	@Value("${mercadopago.sandbox-mode:true}")
+	private Boolean sandboxMode;
+	
 	private static final String OAUTH_TOKEN_URL = "https://api.mercadopago.com/oauth/token";
 	
 	/**
@@ -117,21 +120,27 @@ public class MercadoPagoOAuthService {
 			log.warn("⚠️ liveMode del OAuth response: {}", liveMode);
 			
 			// FIXME: Esto debería determinarse dinámicamente basado en el tipo de credenciales
-			// Las credenciales de prueba empiezan con TEST, las de producción con APP_USR
-			boolean isSandbox = publicKey.startsWith("TEST-") || publicKey.startsWith("APP_USR-");
-			log.info("🔐 Detectado tipo de credencial - isSandbox: {} (basado en publicKey: {})", isSandbox, publicKey.substring(0, Math.min(15, publicKey.length())));
+			// Detectar tipo de credencial por el prefijo
+			boolean isTestCredential = publicKey.startsWith("TEST-");
+			log.info("🔐 Tipo de credencial detectado:");
+			log.info("🔐   - Public Key prefix: {}", publicKey.substring(0, Math.min(15, publicKey.length())));
+			log.info("🔐   - Es credencial TEST: {}", isTestCredential);
+			log.info("🔐   - liveMode (OAuth response): {} (NOTA: puede estar mal, lo ignoramos)", liveMode);
+			log.info("🔐   - sandboxMode (CONFIG): {} (este es el que usamos)", sandboxMode);
 			
+			// IMPORTANTE: Usar el valor de configuración, NO el liveMode del OAuth
+			// MercadoPago puede devolver liveMode=true incluso con credenciales sandbox
 			AddPaymentRequest paymentRequest = AddPaymentRequest.builder()
 					.type(PaymentProviderType.MERCADO_PAGO)
 					.accessToken(accessToken)
 					.publicKey(publicKey)
 					.accountId(userId_mp)
-					.sandboxMode(!liveMode) // Usar el liveMode del OAuth response
+					.sandboxMode(sandboxMode) // USAR CONFIG, NO liveMode
 					.build();
 			
-			log.info("🔐 Guardando Payment Provider con:");
-			log.info("🔐   - sandboxMode: {}", paymentRequest.getSandboxMode());
-			log.info("🔐   - liveMode (OAuth): {}", liveMode);
+			log.info("🔐 ✅ Guardando Payment Provider con:");
+			log.info("🔐   - sandboxMode: {} (de configuración)", paymentRequest.getSandboxMode());
+			log.info("🔐   - accountId: {}", paymentRequest.getAccountId());
 			
 			paymentProviderService.addPaymentProvider(userId, paymentRequest);
 			
