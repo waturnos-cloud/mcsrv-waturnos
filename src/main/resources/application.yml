@@ -183,8 +183,8 @@ mercadopago:
   access-token: ${MERCADOPAGO_ACCESS_TOKEN}
   public-key: ${MERCADOPAGO_PUBLIC_KEY}
   app-id: ${MERCADOPAGO_APP_ID}
-  app-secret: ${MERCADOPAGO_APP_SECRET}
-  webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET}
+  app-secret: ${MERCADOPAGO_APP_SECRET:NA}
+  webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:NA}
   sandbox-mode: ${MERCADOPAGO_SANDBOX_MODE:true}
   # URLs específicas se definen en cada application-{env}.yml
 
