@@ -219,9 +219,7 @@ CREATE TABLE booking (
     updated_at TIMESTAMPTZ DEFAULT now(),
     free_slots INTEGER NOT NULL,
     is_overbooking BOOLEAN DEFAULT FALSE,
-    CHECK (free_slots >= 0),
-    CONSTRAINT chk_booking_times CHECK (start_time < end_time)
-    
+    CHECK (free_slots >= 0)    
 );
 
 -- Tabla: payment
