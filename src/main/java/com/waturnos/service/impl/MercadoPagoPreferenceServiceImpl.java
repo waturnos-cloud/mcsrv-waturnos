@@ -50,6 +50,15 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 	@Value("${mercadopago.sandbox-mode:true}")
 	private Boolean sandboxMode;
 	
+	@Value("${mercadopago.access-token}")
+	private String envAccessToken;
+	
+	@Value("${mercadopago.public-key}")
+	private String envPublicKey;
+	
+	@Value("${spring.profiles.active:dev}")
+	private String activeProfile;
+	
 	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/checkout/preferences";
 	
 	@Override
@@ -94,13 +103,28 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 			throw new IllegalStateException("El provider no tiene configurado MercadoPago");
 		}
 		
+		// EN DESARROLLO: Usar credenciales de variables de entorno para evitar mezclar prod/test
+		String effectiveAccessToken;
+		String effectivePublicKey;
+		
+		if ("dev".equals(activeProfile)) {
+			log.info("💳 🔧 MODO DESARROLLO: Usando credenciales de variables de entorno");
+			effectiveAccessToken = envAccessToken;
+			effectivePublicKey = envPublicKey;
+		} else {
+			log.info("💳 🏭 MODO PRODUCCIÓN/DEMO: Usando credenciales de OAuth (DB)");
+			effectiveAccessToken = paymentConfig.getAccessToken();
+			effectivePublicKey = paymentConfig.getPublicKey();
+		}
+		
 		log.info("💳 PAYMENT PROVIDER CONFIG:");
-		log.info("💳   - Access Token (first 20 chars): {}...", paymentConfig.getAccessToken() != null ? paymentConfig.getAccessToken().substring(0, Math.min(20, paymentConfig.getAccessToken().length())) : "null");
-		log.info("💳   - Public Key: {}", paymentConfig.getPublicKey());
+		log.info("💳   - Access Token (first 20 chars): {}...", effectiveAccessToken != null ? effectiveAccessToken.substring(0, Math.min(20, effectiveAccessToken.length())) : "null");
+		log.info("💳   - Public Key: {}", effectivePublicKey);
 		log.info("💳   - Account ID: {}", paymentConfig.getAccountId());
-		log.info("💳   - Sandbox Mode (from DB): {} ⚠️ (IGNORADO - puede estar desactualizado)", paymentConfig.getSandboxMode());
+		log.info("💳   - Sandbox Mode (from DB): {} ⚠️ (IGNORADO en dev)", paymentConfig.getSandboxMode());
 		log.info("💳   - Sandbox Mode (from CONFIG): {} ✅ (ESTE SE USA)", sandboxMode);
 		log.info("💳   - Is Configured: {}", paymentConfig.getIsConfigured());
+		log.info("💳   - Active Profile: {}", activeProfile);
 		
 		// SIEMPRE usar configuración, IGNORAR DB
 		// El valor de DB puede estar incorrecto del OAuth anterior
@@ -119,13 +143,13 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.setBearerAuth(paymentConfig.getAccessToken());
+			headers.setBearerAuth(effectiveAccessToken);
 			// Agregar X-Idempotency-Key para evitar duplicados
 			headers.set("X-Idempotency-Key", "booking-" + request.getBookingId() + "-" + System.currentTimeMillis());
 			
 			log.info("💳 Request Headers:");
 			log.info("💳   - Content-Type: {}", headers.getContentType());
-			log.info("💳   - Authorization: Bearer {}...", paymentConfig.getAccessToken().substring(0, Math.min(20, paymentConfig.getAccessToken().length())));
+			log.info("💳   - Authorization: Bearer {}...", effectiveAccessToken.substring(0, Math.min(20, effectiveAccessToken.length())));
 			log.info("💳   - X-Idempotency-Key: {}", headers.get("X-Idempotency-Key"));
 			
 			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(preferenceData, headers);
@@ -186,11 +210,24 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		
 		preference.put("items", List.of(item));
 		
-		// URLs de retorno
+		// URLs de retorno con placeholders de MercadoPago
+		// MercadoPago reemplazará automáticamente estos placeholders con los valores reales
 		Map<String, String> backUrls = new HashMap<>();
-		String successUrl = frontendBaseUrl + "/payment/success";
-		String failureUrl = frontendBaseUrl + "/payment/failure";
-		String pendingUrl = frontendBaseUrl + "/payment/pending";
+		String successUrl = frontendBaseUrl + "/payment/success" +
+			"?payment_id={payment_id}" +
+			"&status={status}" +
+			"&external_reference={external_reference}" +
+			"&merchant_order_id={merchant_order_id}";
+			
+		String failureUrl = frontendBaseUrl + "/payment/failure" +
+			"?payment_id={payment_id}" +
+			"&status={status}" +
+			"&external_reference={external_reference}";
+			
+		String pendingUrl = frontendBaseUrl + "/payment/pending" +
+			"?payment_id={payment_id}" +
+			"&status={status}" +
+			"&external_reference={external_reference}";
 		
 		log.info("💳 MercadoPago - Constructed URLs:");
 		log.info("💳   - success: '{}'", successUrl);
