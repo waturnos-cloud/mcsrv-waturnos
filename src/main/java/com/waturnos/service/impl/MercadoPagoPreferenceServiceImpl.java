@@ -210,26 +210,14 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		
 		preference.put("items", List.of(item));
 		
-		// URLs de retorno con placeholders de MercadoPago
-		// MercadoPago reemplazará automáticamente estos placeholders con los valores reales
+		// URLs de retorno - MercadoPago agrega los query params automáticamente
+		// NO usar placeholders {}, MercadoPago los agrega por su cuenta
 		Map<String, String> backUrls = new HashMap<>();
-		String successUrl = frontendBaseUrl + "/payment/success" +
-			"?payment_id={payment_id}" +
-			"&status={status}" +
-			"&external_reference={external_reference}" +
-			"&merchant_order_id={merchant_order_id}";
-			
-		String failureUrl = frontendBaseUrl + "/payment/failure" +
-			"?payment_id={payment_id}" +
-			"&status={status}" +
-			"&external_reference={external_reference}";
-			
-		String pendingUrl = frontendBaseUrl + "/payment/pending" +
-			"?payment_id={payment_id}" +
-			"&status={status}" +
-			"&external_reference={external_reference}";
+		String successUrl = frontendBaseUrl + "/payment/success";
+		String failureUrl = frontendBaseUrl + "/payment/failure";
+		String pendingUrl = frontendBaseUrl + "/payment/pending";
 		
-		log.info("💳 MercadoPago - Constructed URLs:");
+		log.info("💳 MercadoPago - Constructed URLs (sin placeholders, MP los agrega auto):");
 		log.info("💳   - success: '{}'", successUrl);
 		log.info("💳   - failure: '{}'", failureUrl);
 		log.info("💳   - pending: '{}'", pendingUrl);
