@@ -171,6 +171,25 @@ List<BookingReminder> findBookingsForTomorrow();
 	        """)
 	List<Booking> findReservedWithClientAndServiceBetween(@Param("start") LocalDateTime start,
 	        @Param("end") LocalDateTime end, @Param("serviceId") Long serviceId);
+	
+	
+	/**
+	 * Find by service between.
+	 *
+	 * @param start the start
+	 * @param end the end
+	 * @param serviceId the service id
+	 * @return the list
+	 */
+	@Query("""
+	        SELECT b FROM Booking b
+	        WHERE b.startTime >= :start
+	          AND b.endTime <= :end 
+	          AND b.status NOT IN ('CANCELLED', 'COMPLETED') 
+	          AND b.service.id = :serviceId
+	        """)
+	List<Booking> findByServiceBetween(@Param("start") LocalDateTime start,
+	        @Param("end") LocalDateTime end, @Param("serviceId") Long serviceId);
 
 	/**
 	 * Delete bookings between dates.

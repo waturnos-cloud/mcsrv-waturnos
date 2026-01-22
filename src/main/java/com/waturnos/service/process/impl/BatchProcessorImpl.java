@@ -15,7 +15,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,6 @@ import com.waturnos.entity.Booking;
 import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ServiceEntity;
-import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
@@ -186,6 +184,36 @@ public class BatchProcessorImpl implements BatchProcessor {
 		bookingRepository.deleteBookingsBetweenDates(startDate, endDate, serviceEntity.getId());
 	}
 	
+	/**
+	 * Disable booking.
+	 *
+	 * @param startDate the start date
+	 * @param endDate the end date
+	 * @param serviceEntity the service entity
+	 */
+	@Override
+	@Async
+	@Transactional(readOnly = false)
+	public void disableBooking(LocalDateTime startDate, LocalDateTime endDate, ServiceEntity serviceEntity) {
+
+		List<Booking> bookingList = bookingRepository.findByServiceBetween(startDate, endDate, serviceEntity.getId());
+
+		bookingList.forEach(booking -> {
+            
+            if (booking.getBookingClients() != null && !booking.getBookingClients().isEmpty()) {
+                
+                booking.getBookingClients().stream()
+                    .map(bookingClient -> bookingClient.getClient())
+                    .forEach(client -> {
+                        notificationFactory.send(buildRequest(booking, client, serviceEntity.getName()));
+                    });
+            }
+            // Actualizar directamente el estado y persistir
+            booking.setStatus(BookingStatus.DISABLE);
+            bookingRepository.save(booking);
+		});
+	}
+
 	/**
 	 * Procesa de forma asíncrona los bookings afectados por cambios en availability.
 	 *

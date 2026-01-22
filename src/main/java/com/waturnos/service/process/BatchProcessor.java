@@ -35,6 +35,15 @@ public interface BatchProcessor {
 	void deleteBookings(LocalDateTime startDate, LocalDateTime endDate, ServiceEntity serviceEntity);
 	
 	/**
+	 * Disable booking.
+	 *
+	 * @param startDate the start date
+	 * @param endDate the end date
+	 * @param serviceEntity the service entity
+	 */
+	void disableBooking(LocalDateTime startDate, LocalDateTime endDate, ServiceEntity serviceEntity);
+	
+	/**
 	 * Procesa de forma asíncrona los bookings afectados por cambios en availability.
 	 * Cancela los bookings y notifica a los clientes.
 	 *

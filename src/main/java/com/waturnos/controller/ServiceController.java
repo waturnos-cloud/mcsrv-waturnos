@@ -140,7 +140,8 @@ public class ServiceController {
 	 */
 	@PostMapping("/calendar/lock")
 	public ResponseEntity<ApiResponse<Void>> lockCalendar(@RequestBody UnavailabilityDTO unavailableDto) {
-		service.lockCalendar(unavailableDto.getStartTime(), unavailableDto.getEndTime(), unavailableDto.getServiceId());
+		service.lockCalendar(unavailableDto.getStartTime(), unavailableDto.getEndTime(), unavailableDto.getServiceId(),
+				unavailableDto.getProviderId());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Lock calendar", null));
 	}
 	

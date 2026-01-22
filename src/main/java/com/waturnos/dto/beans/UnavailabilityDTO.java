@@ -14,7 +14,8 @@ public class UnavailabilityDTO {
 	private LocalDateTime startTime;
 	/** The end time. */
 	private LocalDateTime endTime;
-	
 	/** The service id. */
 	private Long serviceId;
+	/** The provider id. */
+	private Long providerId;
 }

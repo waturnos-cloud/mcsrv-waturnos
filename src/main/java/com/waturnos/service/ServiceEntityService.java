@@ -73,8 +73,9 @@ public interface ServiceEntityService {
 	 * @param startDate the start date
 	 * @param endDate the end date
 	 * @param serviceId the service id
+	 * @param providerId the provider id
 	 */
-	void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId);
+	void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId, Long providerId);
 
 	/**
 	 * Valida el impacto de cambios en availability sobre bookings existentes.

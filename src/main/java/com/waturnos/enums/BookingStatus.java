@@ -1,7 +1,8 @@
 package com.waturnos.enums;
 
 public enum BookingStatus {
-	FREE, 
+	FREE,
+	DISABLE,
 	PARTIALLY_RESERVED, 
 	RESERVED, 
 	CANCELLED, 

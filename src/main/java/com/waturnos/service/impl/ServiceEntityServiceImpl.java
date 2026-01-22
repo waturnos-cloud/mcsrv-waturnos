@@ -8,16 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.waturnos.audit.AuditContext;
 import com.waturnos.audit.annotations.AuditAspect;
 import com.waturnos.dto.beans.AvailabilityDTO;
+import com.waturnos.dto.beans.ServicePropsDTO;
 import com.waturnos.dto.response.AffectedBookingDTO;
 import com.waturnos.dto.response.AvailabilityImpactResponse;
 import com.waturnos.entity.AvailabilityEntity;
@@ -26,6 +28,7 @@ import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.Recurrence;
 import com.waturnos.entity.ServiceEntity;
+import com.waturnos.entity.ServicePropsEntity;
 import com.waturnos.entity.UnavailabilityEntity;
 import com.waturnos.entity.User;
 import com.waturnos.enums.BookingStatus;
@@ -35,11 +38,9 @@ import com.waturnos.repository.AvailabilityRepository;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.LocationRepository;
 import com.waturnos.repository.RecurrenceRepository;
-import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.ServicePropsRepository;
+import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
-import com.waturnos.entity.ServicePropsEntity;
-import com.waturnos.dto.beans.ServicePropsDTO;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingGeneratorService;
@@ -537,25 +538,57 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	 * @param startDate the start date
 	 * @param endDate   the end date
 	 * @param serviceId the service id
+	 * @param providerId the provider id
 	 */
 	@Override
 	@RequireRole({ UserRole.ADMIN, UserRole.MANAGER, UserRole.PROVIDER })
 	@AuditAspect("SERVICE_LOCK_CALENDAR")
-	public void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId) {
-		Optional<ServiceEntity> serviceEntity = serviceRepository.findById(serviceId);
-		if (!serviceEntity.isPresent()) {
-			throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+	public void lockCalendar(LocalDateTime startDate, LocalDateTime endDate, Long serviceId, Long providerId) {
+		List<ServiceEntity> listServices = new ArrayList<>();
+		
+		if(serviceId == 0) {
+			// Bloquear todos los servicios de un proveedor
+			Optional<User> provider = userRepository.findById(providerId);
+			if (!provider.isPresent()) {
+				throw new ServiceException(ErrorCode.USER_NOT_FOUND, "Incorrect user");
+			}
+			listServices = serviceRepository.findByUserId(providerId);
+			if (listServices == null || listServices.isEmpty()) {
+				throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Provider has no services");
+			} 
+		} else {
+			// Bloquear un servicio específico
+			Optional<ServiceEntity> serviceEntity = serviceRepository.findById(serviceId);
+			if (!serviceEntity.isPresent()) {
+				throw new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Incorrect service");
+			}
+			listServices.add(serviceEntity.get());
 		}
-		AuditContext.setOrganization(serviceEntity.get().getUser().getOrganization());
-		AuditContext.setService(serviceEntity.get());
-		AuditContext.setProvider(serviceEntity.get().getUser());
-		AuditContext.get().setObject(serviceEntity.get().getName());
+		
+		// Configurar contexto de auditoría con el primer servicio
+		ServiceEntity firstService = listServices.get(0);
+		AuditContext.setOrganization(firstService.getUser().getOrganization());
+		AuditContext.setProvider(firstService.getUser());
+		AuditContext.setService(firstService);
+		AuditContext.get().setObject("Lock calendar: " + startDate + " - " + endDate);
 
-		unavailabilityService.create(UnavailabilityEntity.builder().startDay(startDate.toLocalDate())
-				.startTime(startDate.toLocalTime()).endDay(endDate.toLocalDate()).endTime(endDate.toLocalTime())
-				.service(ServiceEntity.builder().id(serviceId).build()).build());
-        
-		batchProcessor.deleteBookings(startDate, endDate, serviceEntity.get());
+		// Procesar cada servicio de forma asíncrona
+		for (ServiceEntity service : listServices) {
+			// Crear unavailability para este servicio
+			unavailabilityService.create(UnavailabilityEntity.builder()
+					.startDay(startDate.toLocalDate())
+					.startTime(startDate.toLocalTime())
+					.endDay(endDate.toLocalDate())
+					.endTime(endDate.toLocalTime())
+					.service(ServiceEntity.builder().id(service.getId()).build())
+					.build());
+			
+			// Disparar proceso asíncrono para deshabilitar bookings
+			batchProcessor.disableBooking(startDate, endDate, service);
+			
+			log.info("Lock calendar initiated for service {} from {} to {}", 
+					service.getId(), startDate, endDate);
+		}
 	}
 
 	/**
@@ -569,7 +602,7 @@ public class ServiceEntityServiceImpl implements ServiceEntityService {
 	@Transactional(readOnly = true)
 	public AvailabilityImpactResponse validateAvailabilityChange(Long serviceId, List<AvailabilityDTO> newAvailability) {
 		// Verificar que el servicio existe
-		ServiceEntity service = serviceRepository.findById(serviceId)
+		serviceRepository.findById(serviceId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.SERVICE_EXCEPTION, "Service not found"));
 		
 		// Obtener todos los bookings futuros con clientes asignados
