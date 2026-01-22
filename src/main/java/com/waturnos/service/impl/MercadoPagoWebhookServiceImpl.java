@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waturnos.entity.Booking;
 import com.waturnos.enums.BookingStatus;
 import com.waturnos.repository.BookingRepository;
+import com.waturnos.repository.BookingPropsRepository;
+import com.waturnos.service.BookingService;
 import com.waturnos.service.MercadoPagoWebhookService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService {
 	
 	private final BookingRepository bookingRepository;
+	private final BookingPropsRepository bookingPropsRepository;
+	private final BookingService bookingService;
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 	
@@ -172,6 +176,7 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			}
 			
 			log.info("🔔 Booking found - Current status: {}", booking.getStatus());
+			log.info("🔔 Booking has {} client(s) assigned", booking.getBookingClients().size());
 			
 			// 4. Actualizar el estado de la reserva según el estado del pago
 			BookingStatus newStatus = mapPaymentStatusToBookingStatus(status);
@@ -182,6 +187,26 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 				booking.setStatus(newStatus);
 				bookingRepository.save(booking);
 				log.info("🔔 ✅ Booking status updated successfully");
+				
+				// 5. Si el pago fue aprobado y aún no hay cliente asignado, 
+				// buscar el clientId en las booking props y asignar
+				if ("approved".equals(status) && booking.getBookingClients().isEmpty()) {
+					log.info("🔔 Payment approved and no clients assigned yet. Looking for clientId in booking props...");
+					try {
+						// Buscar el clientId guardado en las props
+						var clientIdProp = bookingPropsRepository.findByBookingIdAndPropKey(bookingId, "_clientId");
+						if (clientIdProp.isPresent()) {
+							Long clientIdToAssign = Long.parseLong(clientIdProp.get().getPropValue());
+							log.info("🔔 Found clientId {} in booking props. Assigning to booking...", clientIdToAssign);
+							bookingService.assignBookingToClient(bookingId, clientIdToAssign);
+							log.info("🔔 ✅ Client assigned to booking via webhook");
+						} else {
+							log.warn("🔔 ⚠️ No _clientId found in booking props for booking {}", bookingId);
+						}
+					} catch (Exception e) {
+						log.error("🔔 ❌ Error assigning client to booking {}", bookingId, e);
+					}
+				}
 				
 				// TODO: Enviar notificación al cliente sobre el estado del pago
 			} else if (newStatus == null) {

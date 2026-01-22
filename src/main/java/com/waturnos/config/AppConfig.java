@@ -85,7 +85,7 @@ public class AppConfig {
 				.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/auth/**", "/api/auth/**", "/swagger-ui.html", "/swagger-ui/**",
-								"/api-docs/**", "/v3/api-docs/**", "/public/**", "/images/**")
+								"/api-docs/**", "/v3/api-docs/**", "/public/**", "/images/**", "/webhooks/**")
 						.permitAll().anyRequest().authenticated())
 				// Manejar errores de autenticación con 401 en lugar de 403
 				.exceptionHandling(ex -> ex
