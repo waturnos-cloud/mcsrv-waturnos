@@ -222,18 +222,6 @@ CREATE TABLE booking (
     CHECK (free_slots >= 0)    
 );
 
--- Tabla: payment
-CREATE TABLE payment (
-    id BIGSERIAL PRIMARY KEY,
-    booking_id BIGINT REFERENCES booking(id) ON DELETE SET NULL,
-    amount DECIMAL(10,2),
-    method VARCHAR(50),
-    status VARCHAR(50),
-    currency VARCHAR(10),
-    voucher VARCHAR(100),
-    paid_at TIMESTAMP
-);
-
 -- Tabla: notification
 CREATE TABLE notification (
     id BIGSERIAL PRIMARY KEY,

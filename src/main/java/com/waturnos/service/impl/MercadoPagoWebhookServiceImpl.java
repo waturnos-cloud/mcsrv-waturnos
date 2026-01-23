@@ -1,9 +1,11 @@
 package com.waturnos.service.impl;
 
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -17,9 +19,14 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.waturnos.entity.Booking;
+import com.waturnos.entity.Client;
+import com.waturnos.entity.Payment;
 import com.waturnos.enums.BookingStatus;
+import com.waturnos.enums.PaymentProviderType;
+import com.waturnos.enums.PaymentStatus;
 import com.waturnos.repository.BookingRepository;
-import com.waturnos.repository.BookingPropsRepository;
+import com.waturnos.repository.ClientRepository;
+import com.waturnos.repository.PaymentRepository;
 import com.waturnos.service.BookingService;
 import com.waturnos.service.MercadoPagoWebhookService;
 
@@ -35,8 +42,9 @@ import lombok.extern.slf4j.Slf4j;
 public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService {
 	
 	private final BookingRepository bookingRepository;
-	private final BookingPropsRepository bookingPropsRepository;
 	private final BookingService bookingService;
+	private final PaymentRepository paymentRepository;
+	private final ClientRepository clientRepository;
 	private final RestTemplate restTemplate;
 	private final ObjectMapper objectMapper;
 	
@@ -45,6 +53,9 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	
 	@Value("${mercadopago.webhook-secret}")
 	private String webhookSecret;
+	
+	@Value("${mercadopago.mock-webhook-enabled:false}")
+	private boolean mockWebhookEnabled;
 	/**
 	 * Valida la firma del webhook de MercadoPago.
 	 *
@@ -142,28 +153,37 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			
 			// 2. Extraer información del pago
 			String status = paymentData.path("status").asText();
-			String externalReference = paymentData.path("external_reference").asText(); // Booking ID
+			String externalReference = paymentData.path("external_reference").asText(); // Formato: "bookingId_clientId"
 			String statusDetail = paymentData.path("status_detail").asText();
 			
 			log.info("🔔 Payment Data:");
 			log.info("🔔   - Status: {}", status);
 			log.info("🔔   - Status Detail: {}", statusDetail);
-			log.info("🔔   - External Reference (Booking ID): {}", externalReference);
+			log.info("🔔   - External Reference: {}", externalReference);
 			
 			if (externalReference == null || externalReference.isEmpty()) {
-				log.warn("🔔 ⚠️ Payment {} has no external_reference (booking ID)", paymentId);
+				log.warn("🔔 ⚠️ Payment {} has no external_reference", paymentId);
 				log.info("🔔 ========== FIN PROCESAMIENTO (SIN EXTERNAL REF) ==========");
 				return;
 			}
 			
-			// 3. Buscar la reserva por ID
+			// 3. Parsear external_reference: formato "bookingId_clientId"
+			String[] parts = externalReference.split("_");
+			if (parts.length != 2) {
+				log.error("🔔 ❌ Invalid external_reference format: {}. Expected 'bookingId_clientId'", externalReference);
+				log.info("🔔 ========== FIN PROCESAMIENTO (INVALID FORMAT) ==========");
+				return;
+			}
+			
 			Long bookingId;
+			Long clientId;
 			try {
-				bookingId = Long.parseLong(externalReference);
-				log.info("🔔 Booking ID parsed: {}", bookingId);
+				bookingId = Long.parseLong(parts[0]);
+				clientId = Long.parseLong(parts[1]);
+				log.info("🔔 Parsed - Booking ID: {}, Client ID: {}", bookingId, clientId);
 			} catch (NumberFormatException e) {
-				log.error("🔔 ❌ Invalid booking ID in external_reference: {}", externalReference);
-				log.info("🔔 ========== FIN PROCESAMIENTO (INVALID BOOKING ID) ==========");
+				log.error("🔔 ❌ Error parsing external_reference: {}", externalReference, e);
+				log.info("🔔 ========== FIN PROCESAMIENTO (PARSE ERROR) ==========");
 				return;
 			}
 			
@@ -178,41 +198,24 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 Booking found - Current status: {}", booking.getStatus());
 			log.info("🔔 Booking has {} client(s) assigned", booking.getBookingClients().size());
 			
-			// 4. Actualizar el estado de la reserva según el estado del pago
-			BookingStatus newStatus = mapPaymentStatusToBookingStatus(status);
-			log.info("🔔 Mapped status '{}' to BookingStatus: {}", status, newStatus);
-			
-			if (newStatus != null && booking.getStatus() != newStatus) {
-				log.info("🔔 Updating booking {} status from {} to {}", bookingId, booking.getStatus(), newStatus);
-				booking.setStatus(newStatus);
-				bookingRepository.save(booking);
-				log.info("🔔 ✅ Booking status updated successfully");
+			// 4. Verificar si el pago fue aprobado y asignar el cliente
+			if ("approved".equals(status)) {
+				log.info("🔔 Payment approved. Checking if client {} is assigned to booking...", clientId);
+				boolean isClientAssigned = booking.getBookingClients().stream()
+						.anyMatch(bc -> bc.getClient().getId().equals(clientId));
 				
-				// 5. Si el pago fue aprobado y aún no hay cliente asignado, 
-				// buscar el clientId en las booking props y asignar
-				if ("approved".equals(status) && booking.getBookingClients().isEmpty()) {
-					log.info("🔔 Payment approved and no clients assigned yet. Looking for clientId in booking props...");
-					try {
-						// Buscar el clientId guardado en las props
-						var clientIdProp = bookingPropsRepository.findByBookingIdAndPropKey(bookingId, "_clientId");
-						if (clientIdProp.isPresent()) {
-							Long clientIdToAssign = Long.parseLong(clientIdProp.get().getPropValue());
-							log.info("🔔 Found clientId {} in booking props. Assigning to booking...", clientIdToAssign);
-							bookingService.assignBookingToClient(bookingId, clientIdToAssign);
-							log.info("🔔 ✅ Client assigned to booking via webhook");
-						} else {
-							log.warn("🔔 ⚠️ No _clientId found in booking props for booking {}", bookingId);
-						}
-					} catch (Exception e) {
-						log.error("🔔 ❌ Error assigning client to booking {}", bookingId, e);
-					}
+				if (!isClientAssigned) {
+					log.info("🔔 Client {} not assigned yet. Assigning to booking...", clientId);
+					bookingService.assignBookingToClientNotLogin(bookingId, clientId);
+					log.info("🔔 ✅ Client {} assigned successfully to booking {}", clientId, bookingId);
+				} else {
+					log.info("🔔 ℹ️ Client {} already assigned to booking {}", clientId, bookingId);
 				}
 				
-				// TODO: Enviar notificación al cliente sobre el estado del pago
-			} else if (newStatus == null) {
-				log.warn("🔔 ⚠️ No status mapping found for MercadoPago status: {}", status);
-			} else {
-				log.info("🔔 Booking status unchanged (already {})", booking.getStatus());
+				// 5. Crear registro de Payment con toda la información de MercadoPago
+				log.info("🔔 Creating Payment record for approved payment...");
+				createPaymentRecord(paymentData, booking, clientId);
+				log.info("🔔 ✅ Payment record created successfully");
 			}
 			
 			log.info("🔔 ========== FIN PROCESAMIENTO WEBHOOK (SUCCESS) ==========");
@@ -230,6 +233,12 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	 * @return los datos del pago en formato JSON
 	 */
 	private JsonNode getPaymentFromMercadoPago(String paymentId) {
+		// Si está habilitado el modo mock, retornar datos dummy
+		if (mockWebhookEnabled) {
+			log.info("🔔 🧪 MOCK MODE ENABLED - Returning dummy payment data for paymentId: {}", paymentId);
+			return getMockPaymentData(paymentId);
+		}
+		
 		try {
 			String url = MERCADOPAGO_API_URL + paymentId;
 			log.info("🔔 Fetching payment data from: {}", url);
@@ -280,5 +289,132 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			case "refunded", "charged_back" -> BookingStatus.CANCELLED;
 			default -> null;
 		};
+	}
+	
+	/**
+	 * Crea un registro de Payment con los datos de MercadoPago.
+	 *
+	 * @param paymentData datos del pago de MercadoPago
+	 * @param booking el booking asociado
+	 * @param clientId el ID del cliente
+	 */
+	private void createPaymentRecord(JsonNode paymentData, Booking booking, Long clientId) {
+		try {
+			// Verificar si ya existe un payment con este transaction_id
+			String transactionId = paymentData.path("id").asText();
+			var existingPayment = paymentRepository.findByTransactionId(transactionId);
+			if (existingPayment.isPresent()) {
+				log.info("🔔 Payment record already exists for transaction_id: {}", transactionId);
+				return;
+			}
+			
+			// Crear nuevo Payment
+			Payment payment = new Payment();
+			payment.setBooking(booking);
+			
+			// Buscar el cliente
+			Client client = clientRepository.findById(clientId)
+					.orElseThrow(() -> new RuntimeException("Client not found: " + clientId));
+			payment.setClient(client);
+			
+			// Datos de MercadoPago
+			payment.setPaymentMethod(PaymentProviderType.MERCADO_PAGO);
+			payment.setTransactionId(transactionId);
+			payment.setMerchantOrderId(paymentData.path("order").path("id").asText(null));
+			payment.setPaymentType(paymentData.path("payment_type_id").asText(null));
+			payment.setStatusDetail(paymentData.path("status_detail").asText(null));
+			payment.setCurrency(paymentData.path("currency_id").asText("ARS"));
+			
+			// Monto
+			BigDecimal amount = paymentData.path("transaction_amount").decimalValue();
+			payment.setAmount(amount != null ? amount : BigDecimal.ZERO);
+			
+			// Email del pagador
+			payment.setPayerEmail(paymentData.path("payer").path("email").asText(null));
+			
+			// Descripción
+			payment.setDescription(paymentData.path("description").asText(null));
+			
+			// Estado del pago
+			String mpStatus = paymentData.path("status").asText();
+			payment.setStatus(mapMercadoPagoStatusToPaymentStatus(mpStatus));
+			
+			// Metadata completo como JSON
+			payment.setMetadata(paymentData.toString());
+			
+			// Fechas
+			LocalDateTime now = LocalDateTime.now();
+			payment.setCreatedAt(now);
+			payment.setUpdatedAt(now);
+			
+			if ("approved".equals(mpStatus)) {
+				payment.setApprovedAt(now);
+			}
+			
+			paymentRepository.save(payment);
+			log.info("🔔 ✅ Payment record saved with ID: {}", payment.getId());
+			
+		} catch (Exception e) {
+			log.error("🔔 ❌ Error creating payment record", e);
+			throw e;
+		}
+	}
+	
+	/**
+	 * Mapea el estado de MercadoPago al enum PaymentStatus.
+	 */
+	private PaymentStatus mapMercadoPagoStatusToPaymentStatus(String mpStatus) {
+		return switch (mpStatus) {
+			case "approved" -> PaymentStatus.APPROVED;
+			case "pending" -> PaymentStatus.PENDING;
+			case "in_process", "in_mediation" -> PaymentStatus.IN_PROCESS;
+			case "rejected" -> PaymentStatus.REJECTED;
+			case "cancelled" -> PaymentStatus.CANCELLED;
+			case "refunded" -> PaymentStatus.REFUNDED;
+			case "charged_back" -> PaymentStatus.CHARGED_BACK;
+			default -> PaymentStatus.PENDING;
+		};
+	}
+	
+	/**
+	 * Retorna datos de pago dummy para testing local.
+	 * Simula la respuesta de la API de MercadoPago.
+	 */
+	private JsonNode getMockPaymentData(String paymentId) {
+		try {
+			// JSON que simula una respuesta de MercadoPago exitosa
+			String mockJson = """
+				{
+					"id": "%s",
+					"status": "approved",
+					"status_detail": "accredited",
+					"external_reference": "868_4",
+					"transaction_amount": 5000.00,
+					"currency_id": "ARS",
+					"payment_type_id": "credit_card",
+					"payment_method_id": "visa",
+					"merchant_order_id": "123456789",
+					"payer": {
+						"email": "test@test.com",
+						"identification": {
+							"type": "DNI",
+							"number": "12345678"
+						}
+					},
+					"date_created": "2026-01-23T14:00:00.000Z",
+					"date_approved": "2026-01-23T14:00:05.000Z",
+					"description": "Pago de turno - Booking ID: 868",
+					"metadata": {
+						"booking_id": "868",
+						"client_id": "4"
+					}
+				}
+				""".formatted(paymentId);
+			
+			return objectMapper.readTree(mockJson);
+		} catch (Exception e) {
+			log.error("🔔 ❌ Error creating mock payment data", e);
+			throw new RuntimeException("Error creating mock payment data", e);
+		}
 	}
 }

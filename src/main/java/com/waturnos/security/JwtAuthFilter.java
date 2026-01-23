@@ -9,15 +9,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.waturnos.entity.User;
 import com.waturnos.repository.UserRepository;
 
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.GenericFilter;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtAuthFilter extends GenericFilter {
-
-    /** The Constant serialVersionUID. */
-    private static final long serialVersionUID = 7772564977220933356L;
+public class JwtAuthFilter extends OncePerRequestFilter {
 	
 	/** The jwt util. */
 	private final JwtUtil jwtUtil;
@@ -41,7 +36,30 @@ public class JwtAuthFilter extends GenericFilter {
     private final UserRepository userRepository;
 
     /**
-     * Do filter.
+     * Should not filter.
+     * Excluye endpoints públicos del filtro JWT.
+     *
+     * @param request the request
+     * @return true si el filtro NO debe ejecutarse
+     * @throws ServletException the servlet exception
+     */
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        
+        // Endpoints públicos que no requieren JWT
+        return path.startsWith("/msvc-waturnos/v1.0/auth/") ||
+               path.startsWith("/msvc-waturnos/v1.0/api/auth/") ||
+               path.startsWith("/msvc-waturnos/v1.0/webhooks/") ||
+               path.startsWith("/msvc-waturnos/v1.0/public/") ||
+               path.startsWith("/msvc-waturnos/v1.0/images/") ||
+               path.startsWith("/msvc-waturnos/v1.0/swagger-ui") ||
+               path.startsWith("/msvc-waturnos/v1.0/api-docs") ||
+               path.startsWith("/msvc-waturnos/v1.0/v3/api-docs");
+    }
+
+    /**
+     * Do filter internal.
      *
      * @param request the request
      * @param response the response
@@ -50,11 +68,9 @@ public class JwtAuthFilter extends GenericFilter {
      * @throws ServletException the servlet exception
      */
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-        String authHeader = httpRequest.getHeader("Authorization");
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        String authHeader = request.getHeader("Authorization");
+        
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.replace("Bearer ", "");
 
@@ -89,18 +105,18 @@ public class JwtAuthFilter extends GenericFilter {
                     }
                 } else {
                     // Token inválido o expirado: retornar 401
-                    log.warn("Token inválido o expirado para la request: {}", httpRequest.getRequestURI());
-                    httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    httpResponse.setContentType("application/json");
-                    httpResponse.getWriter().write("{\"error\":\"Token expired or invalid\",\"message\":\"Please login again\"}");
+                    log.warn("Token inválido o expirado para la request: {}", request.getRequestURI());
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Token expired or invalid\",\"message\":\"Please login again\"}");
                     return;
                 }
             } catch (Exception e) {
                 // Error al procesar el token: retornar 401
                 log.error("Error procesando token JWT", e);
-                httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-                httpResponse.setContentType("application/json");
-                httpResponse.getWriter().write("{\"error\":\"Authentication failed\",\"message\":\"Invalid token\"}");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Authentication failed\",\"message\":\"Invalid token\"}");
                 return;
             }
         }

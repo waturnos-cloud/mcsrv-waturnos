@@ -174,4 +174,6 @@ public interface BookingService {
 	 */
 	void saveBookingProps(Long bookingId, Map<String, String> bookingProps);
 
+	Booking assignBookingToClientNotLogin(Long bookingId, Long clientId);
+
 }

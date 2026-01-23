@@ -198,8 +198,10 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 	private Map<String, Object> buildPreferenceData(CreatePreferenceRequest request, Booking booking) {
 		Map<String, Object> preference = new HashMap<>();
 		
-		// External reference: permite rastrear el pago en el webhook
-		preference.put("external_reference", request.getBookingId().toString());
+		// External reference: formato "bookingId_clientId" para identificar ambos en el webhook
+		String externalReference = request.getBookingId() + "_" + request.getClientId();
+		preference.put("external_reference", externalReference);
+		log.info("💳 External reference: {}", externalReference);
 		
 		// Items (productos/servicios)
 		Map<String, Object> item = new HashMap<>();

@@ -40,9 +40,12 @@ import com.waturnos.service.BookingService;
 import com.waturnos.service.PaymentProviderService;
 import com.waturnos.service.RecurrenceService;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * The Class BookingController.
  */
+@Slf4j
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
@@ -105,11 +108,15 @@ public class BookingController {
 	 */
 	@PostMapping("/assign")
 	public ResponseEntity<ApiResponse<BookingDTO>> assingBooking(@RequestBody AssignBooking dto) {
-
+		
+		log.info("📋 [assignBooking] Asignando booking {} a cliente {}", dto.getId(), dto.getClientId());
+		
+		// El service valida internamente si requiere pago
 		Booking updated = service.assignBookingToClient(dto.getId(), dto.getClientId());
 		
 		// Guardar booking props si existen
 		if (dto.getBookingProps() != null && !dto.getBookingProps().isEmpty()) {
+			log.info("📋 [assignBooking] Guardando {} booking props", dto.getBookingProps().size());
 			service.saveBookingProps(dto.getId(), dto.getBookingProps());
 		}
 		

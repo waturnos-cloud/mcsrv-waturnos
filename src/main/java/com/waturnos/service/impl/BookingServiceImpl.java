@@ -29,10 +29,12 @@ import com.waturnos.entity.Booking;
 import com.waturnos.entity.BookingClient;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
+import com.waturnos.entity.Payment;
 import com.waturnos.entity.ServiceEntity;
 import com.waturnos.entity.User;
 import com.waturnos.entity.extended.BookingSummaryDetail;
 import com.waturnos.enums.BookingStatus;
+import com.waturnos.enums.PaymentStatus;
 import com.waturnos.enums.UserRole;
 import com.waturnos.mapper.ServiceBookingMapper;
 import com.waturnos.notification.bean.NotificationRequest;
@@ -41,6 +43,7 @@ import com.waturnos.notification.factory.NotificationFactory;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
+import com.waturnos.repository.PaymentRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.repository.WaitlistEntryRepository;
@@ -108,6 +111,9 @@ public class BookingServiceImpl implements BookingService {
 	
 	/** The booking props repository. */
 	private final BookingPropsRepository bookingPropsRepository;
+	
+	/** The payment repository. */
+	private final PaymentRepository paymentRepository;
 
 	/** The Constant DATE_FORMATTER. */
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -211,7 +217,15 @@ public class BookingServiceImpl implements BookingService {
 	@Transactional(readOnly = false)
 	@AuditAspect("BOOKING_ASSIGN_CLIENT")
 	public Booking assignBookingToClient(Long bookingId, Long clientId) {
-		return assignBooking(bookingId, clientId, true);
+		return assignBooking(bookingId, clientId, true, true, false);
+	}
+	
+	@Override
+	@Transactional(readOnly = false)
+	@AuditAspect("BOOKING_ASSIGN_CLIENT")
+	public Booking assignBookingToClientNotLogin(Long bookingId, Long clientId) {
+		// Cuando se llama desde el webhook, el pago ya fue validado
+		return assignBooking(bookingId, clientId, true, false, true);
 	}
 
 	/**
@@ -220,12 +234,31 @@ public class BookingServiceImpl implements BookingService {
 	 * @param bookingId the booking id
 	 * @param clientId  the client id
 	 * @param sendEmail the send email
+	 * @param checkPayment the check payment
 	 * @return the booking
 	 */
-	private Booking assignBooking(Long bookingId, Long clientId, Boolean sendEmail) {
+	private Booking assignBooking(Long bookingId, Long clientId, Boolean sendEmail, Boolean checkPayment, Boolean fromWebHook) {
 		Booking booking = bookingRepository.findById(bookingId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.BOOKING_NOT_FOUND, "Booking not found"));
-
+		// VALIDACIÓN: Si el servicio requiere seña y el pago NO fue validado, verificar Payment
+		ServiceEntity service = booking.getService();
+		Integer advancePayment = service.getAdvancePayment();
+		boolean serviceRequiresPayment = advancePayment != null && advancePayment > 0;
+		
+		if (serviceRequiresPayment && checkPayment) {
+			// El servicio requiere seña pero el pago NO fue validado
+			// Esto significa que se está llamando desde el controller, no desde el webhook
+			// Debemos verificar que exista un Payment aprobado
+			List<Payment> payments = paymentRepository.findByBookingId(bookingId);
+			boolean hasApprovedPayment = payments.stream()
+					.anyMatch(p -> p.getClient().getId().equals(clientId) && 
+							   p.getStatus() == PaymentStatus.APPROVED);
+			
+			if (!hasApprovedPayment) {
+				throw new ServiceException(ErrorCode.PAYMENT_REQUIRED, 
+						"Este servicio requiere pago de seña. Debe completar el pago antes de confirmar la reserva.");
+			}
+		}
 		if (booking.getService() != null && booking.getService().getUser() != null
 				&& booking.getService().getUser().getOrganization() != null) {
 			AuditContext.setOrganization(booking.getService().getUser().getOrganization());
@@ -238,7 +271,9 @@ public class BookingServiceImpl implements BookingService {
 				.orElseThrow(
 						() -> new ServiceException(ErrorCode.CLIENT_NOT_EXISTS_IN_ORGANIZATION, "Booking not found"));
 
-		securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
+		if(!fromWebHook) {
+			securityAccessEntity.controlValidAccessOrganization(clientOrganization.getOrganization().getId());
+		}	
 
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));
@@ -269,7 +304,7 @@ public class BookingServiceImpl implements BookingService {
 		Booking savedBooking = bookingRepository.save(booking);
 
 		// Verificar si cumple una waitlist (solo si el servicio tiene waitList activo)
-		ServiceEntity service = savedBooking.getService();
+		// Reutilizamos la variable 'service' ya declarada al inicio del método
 		if (service != null && Boolean.TRUE.equals(service.getWaitList())) {
 			waitlistService.fulfillWaitlist(savedBooking, clientId);
 		}
@@ -813,7 +848,7 @@ public class BookingServiceImpl implements BookingService {
 		bookingRepository.save(actualBooking);
 
 		// 4. Asignar el cliente al nuevo booking
-		Booking newBooking = assignBooking(newBookingId, clientId, false);
+		Booking newBooking = assignBooking(newBookingId, clientId, false, false, false);
 
 		Client client = clientRepository.findById(clientId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.CLIENT_NOT_FOUND, "Client not found"));

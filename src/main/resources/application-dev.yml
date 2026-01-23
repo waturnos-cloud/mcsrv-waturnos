@@ -38,6 +38,7 @@ mercadopago:
   frontend.base.url: http://localhost:5174
   webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago
   oauth-redirect-uri: http://localhost:5174/oauth/mercadopago/callback
+  mock-webhook-enabled: true # Habilita modo mock para testing local sin llamar a MercadoPago API
 
 # Cloudinary - Development
 cloudinary:

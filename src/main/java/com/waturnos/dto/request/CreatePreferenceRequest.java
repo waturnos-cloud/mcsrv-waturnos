@@ -19,6 +19,9 @@ public class CreatePreferenceRequest {
 	@NotNull(message = "El ID del booking es requerido")
 	private Long bookingId;
 	
+	@NotNull(message = "El ID del cliente es requerido")
+	private Long clientId;
+	
 	@NotNull(message = "El monto es requerido")
 	@Positive(message = "El monto debe ser positivo")
 	private BigDecimal amount;

@@ -15,5 +15,5 @@ public class AssignBooking {
 	private Long id;
 	private Long clientId;
 	private Map<String, String> bookingProps;
-
 }
+
