@@ -205,7 +205,7 @@ class ServiceControllerTest {
 		unavailabilityDTO.setStartTime(LocalDateTime.now());
 		unavailabilityDTO.setEndTime(LocalDateTime.now().plusHours(2));
 
-		doNothing().when(serviceEntityService).lockCalendar(any(LocalDateTime.class), any(LocalDateTime.class), anyLong());
+		doNothing().when(serviceEntityService).lockCalendar(any(LocalDateTime.class), any(LocalDateTime.class), anyLong(), anyLong());
 
 		// Act & Assert
 		mockMvc.perform(post("/services/calendar/lock")
