@@ -138,63 +138,6 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 //		return xSignature;
 //	}
 	
-	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
-	    try {
-	        // 1. IMPORTANTE: Agregar el ";" al final del manifest
-	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";";
-	        
-	        Mac hmac = Mac.getInstance("HmacSHA256");
-	        SecretKeySpec secretKey = new SecretKeySpec(
-	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
-	            "HmacSHA256"
-	        );
-	        hmac.init(secretKey);
-	        
-	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
-	        
-	        // Convertir a hexadecimal de forma más eficiente
-	        StringBuilder hexString = new StringBuilder();
-	        for (byte b : hash) {
-	            hexString.append(String.format("%02x", b));
-	        }
-	        
-	        String calculatedSignature = hexString.toString();
-	        
-	        // 2. Extraer solo la parte 'v1' si el header trae múltiples valores
-	        String actualSignature = extractV1(xSignature);
-	        
-	        // 3. Usar MessageDigest.isEqual para prevenir ataques de tiempo (Timing Attacks)
-	        boolean isValid = MessageDigest.isEqual(
-	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
-	            actualSignature.getBytes(StandardCharsets.UTF_8)
-	        );
-	        
-	        if (!isValid) {
-	            log.warn("Invalid signature. Manifest: {} | Expected: {} | Received: {}", manifest, calculatedSignature, actualSignature);
-	        }
-	        
-	        return isValid;
-	        
-	    } catch (Exception e) {
-	        log.error("Error validating webhook signature", e);
-	        return false;
-	    }
-	}
-
-	// Auxiliar para limpiar el header
-	private String extractV1(String header) {
-	    if (header == null) return "";
-	    if (!header.contains("v1=")) return header; // Si viene la firma pura
-	    
-	    // Si viene formato ts=xxx,v1=yyy
-	    for (String part : header.split(",")) {
-	        if (part.trim().startsWith("v1=")) {
-	            return part.split("=")[1].trim();
-	        }
-	    }
-	    return header;
-	}
-	
 	@Override
 	public boolean validateAndProcessWebhook(String xSignature, String xRequestId, String paymentId) {
 		// Si está en modo dev, saltear validación de firma
@@ -225,6 +168,75 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 		processPaymentNotification(paymentId);
 		return true;
 	}
+	
+	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
+	    try {
+	        // 1. Extraer ts y v1 del header x-signature
+	        // El header viene como: ts=12345678,v1=hash_hexadecimal
+	        String ts = "";
+	        String v1 = "";
+	        
+	        if (xSignature != null && xSignature.contains(",")) {
+	            String[] parts = xSignature.split(",");
+	            for (String part : parts) {
+	                String[] kv = part.split("=");
+	                if (kv.length == 2) {
+	                    String key = kv[0].trim();
+	                    String value = kv[1].trim();
+	                    if (key.equals("ts")) ts = value;
+	                    if (key.equals("v1")) v1 = value;
+	                }
+	            }
+	        } else {
+	            // Si no tiene el formato esperado, fallamos temprano
+	            log.warn("Formato de x-signature no reconocido: {}", xSignature);
+	            return false;
+	        }
+
+	        // 2. Construir el manifest EXACTAMENTE en este orden
+	        // IMPORTANTE: id:[data_id];request-id:[x-request-id];ts:[ts];
+	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
+	        
+	        // 3. Calcular HMAC SHA-256 con tu webhookSecret
+	        Mac hmac = Mac.getInstance("HmacSHA256");
+	        SecretKeySpec secretKey = new SecretKeySpec(
+	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
+	            "HmacSHA256"
+	        );
+	        hmac.init(secretKey);
+	        
+	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
+	        
+	        // Convertir a hexadecimal (lowercase)
+	        StringBuilder hexString = new StringBuilder();
+	        for (byte b : hash) {
+	            hexString.append(String.format("%02x", b));
+	        }
+	        
+	        String calculatedSignature = hexString.toString();
+	        
+	        // 4. Comparación segura usando MessageDigest.isEqual
+	        boolean isValid = MessageDigest.isEqual(
+	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
+	            v1.getBytes(StandardCharsets.UTF_8)
+	        );
+	        
+	        if (!isValid) {
+	            log.warn("Firma inválida.");
+	            log.warn("Manifest generado localmente: {}", manifest);
+	            log.warn("Esperado (v1): {}", v1);
+	            log.warn("Calculado: {}", calculatedSignature);
+	        }
+	        
+	        return isValid;
+	        
+	    } catch (Exception e) {
+	        log.error("Error crítico validando firma de webhook", e);
+	        return false;
+	    }
+	}
+
+	// Ya no necesitas el método extractV1 separado porque la lógica está integrada arriba.
 	
 	@Override
 	@Transactional
