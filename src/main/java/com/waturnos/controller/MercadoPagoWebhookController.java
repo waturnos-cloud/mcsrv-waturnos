@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.service.MercadoPagoWebhookService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,13 +43,17 @@ public class MercadoPagoWebhookController {
 			@RequestBody(required = false) Map<String, Object> payload,
 			@RequestParam(required = false) String topic,
 			@RequestParam(required = false) String id,
+			@RequestParam(name = "data.id", required = false) String dataId,
 			@RequestHeader(value = "x-signature", required = false) String xSignature,
-			@RequestHeader(value = "x-request-id", required = false) String xRequestId) {
+			@RequestHeader(value = "x-request-id", required = false) String xRequestId,
+			HttpServletRequest request) {
 		
 		try {
 			log.info("🌐 ========== WEBHOOK MERCADOPAGO RECIBIDO ==========");
 			log.info("🌐 Topic: {}", topic);
 			log.info("🌐 ID: {}", id);
+			log.info("🌐 data.id: {}", dataId);
+			log.info("🌐 Query String: {}", request.getQueryString());
 			log.info("🌐 Payload: {}", payload);
 			log.info("🌐 Headers - x-signature: {}", xSignature != null ? "present" : "absent");
 			log.info("🌐 Headers - x-request-id: {}", xRequestId);
@@ -74,9 +79,13 @@ public class MercadoPagoWebhookController {
 				}
 			}
 			
-			// Si viene por query param, usar ese ID
-			if (id != null && !id.isEmpty()) {
+			// Si viene por query param, priorizar data.id
+			if (dataId != null && !dataId.isEmpty()) {
+				paymentId = dataId;
+				log.info("🌐 Using data.id from query param: {}", paymentId);
+			} else if (id != null && !id.isEmpty()) {
 				paymentId = id;
+				log.info("🌐 Using id from query param: {}", paymentId);
 			}
 			
 			log.info("🌐 Extracted - Payment ID: {}, Notification Type: {}", paymentId, notificationType);
