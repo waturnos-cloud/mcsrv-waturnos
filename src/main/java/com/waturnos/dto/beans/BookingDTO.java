@@ -1,6 +1,7 @@
 package com.waturnos.dto.beans;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.waturnos.enums.BookingStatus;
 
@@ -19,4 +20,5 @@ public class BookingDTO {
 	protected Boolean isRecurrent;
 	protected String recurrencePattern; // Ej: "MIÉRCOLES 20:00"
 	protected Boolean isOverbooking;
+	protected List<BookingPropsDTO> bookingProps;
 }

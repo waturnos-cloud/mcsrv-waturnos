@@ -662,7 +662,7 @@ public class BookingServiceImpl implements BookingService {
 	 */
 	@Override
 	public com.waturnos.dto.response.BookingDetailsDTO findBookingDetailsById(Long bookingId) {
-		Booking booking = bookingRepository.findById(bookingId)
+		Booking booking = bookingRepository.findByIdWithProps(bookingId)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found with id: " + bookingId));
 
 		com.waturnos.dto.response.BookingDetailsDTO detailsDTO = new com.waturnos.dto.response.BookingDetailsDTO();
@@ -675,6 +675,19 @@ public class BookingServiceImpl implements BookingService {
 		detailsDTO.setNotes(booking.getNotes());
 		detailsDTO.setServiceId(booking.getService().getId());
 		detailsDTO.setFreeSlots(booking.getFreeSlots());
+
+		// Mapear las propiedades del booking
+		if (booking.getBookingProps() != null && !booking.getBookingProps().isEmpty()) {
+			List<com.waturnos.dto.beans.BookingPropsDTO> propsDTOs = booking.getBookingProps().stream()
+				.map(prop -> {
+					com.waturnos.dto.beans.BookingPropsDTO propsDTO = new com.waturnos.dto.beans.BookingPropsDTO();
+					propsDTO.setId(prop.getId());
+					propsDTO.setKey(prop.getKey());
+					propsDTO.setValue(prop.getValue());
+					return propsDTO;
+				}).collect(Collectors.toList());
+			detailsDTO.setBookingProps(propsDTOs);
+		}
 
 		// Mapear los clientes vinculados
 		List<com.waturnos.dto.beans.ClientDTO> clientDTOs = booking.getBookingClients().stream().map(bc -> {
