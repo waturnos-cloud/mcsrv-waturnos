@@ -125,7 +125,7 @@ public class Booking {
 
 		if (this.status != BookingStatus.CANCELLED && this.status != BookingStatus.COMPLETED) {
 			if (this.freeSlots.equals(serviceCapacity)) {
-				this.status = BookingStatus.FREE;
+				this.status = BookingStatus.FREE_AFTER_CANCEL;
 			} else {
 				this.status = BookingStatus.PARTIALLY_RESERVED;
 			}

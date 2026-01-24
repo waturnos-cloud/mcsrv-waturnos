@@ -27,6 +27,7 @@ import com.waturnos.dto.response.CountBookingDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
 import com.waturnos.entity.BookingClient;
+import com.waturnos.entity.BookingPropsEntity;
 import com.waturnos.entity.Client;
 import com.waturnos.entity.ClientOrganization;
 import com.waturnos.entity.Payment;
@@ -40,6 +41,7 @@ import com.waturnos.mapper.ServiceBookingMapper;
 import com.waturnos.notification.bean.NotificationRequest;
 import com.waturnos.notification.enums.NotificationType;
 import com.waturnos.notification.factory.NotificationFactory;
+import com.waturnos.repository.BookingPropsRepository;
 import com.waturnos.repository.BookingRepository;
 import com.waturnos.repository.ClientOrganizationRepository;
 import com.waturnos.repository.ClientRepository;
@@ -47,8 +49,6 @@ import com.waturnos.repository.PaymentRepository;
 import com.waturnos.repository.ServiceRepository;
 import com.waturnos.repository.UserRepository;
 import com.waturnos.repository.WaitlistEntryRepository;
-import com.waturnos.repository.BookingPropsRepository;
-import com.waturnos.entity.BookingPropsEntity;
 import com.waturnos.security.SecurityAccessEntity;
 import com.waturnos.security.annotations.RequireRole;
 import com.waturnos.service.BookingService;
@@ -453,14 +453,22 @@ public class BookingServiceImpl implements BookingService {
 
 		boolean waitList = service != null && Boolean.TRUE.equals(service.getWaitList());
 
+		// Eliminar todas las relaciones BookingClient (desvincular clientes)
+		Integer serviceCapacity = service.getCapacity();
+		List<BookingClient> bookingClientsToRemove = new ArrayList<>(booking.getBookingClients());
+		for (BookingClient bc : bookingClientsToRemove) {
+			booking.removeBookingClient(bc, serviceCapacity);
+		}
+				
 		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		booking.setStatus(BookingStatus.FREE_AFTER_CANCEL);
-		if (waitList &&  !waitlistRepo.findCandidatesForBooking(booking.getService().getId(),
-				booking.getStartTime().toLocalDate(), booking.getStartTime().toLocalTime(), booking.getId()).isEmpty()) {
-			booking.setStatus(BookingStatus.CANCELLED);
-		} else {
-			// Si NO tiene waitList, desbloquear bookings bloqueados por exclusión
-			unlockBookingsByExclusion(booking);
+		if(!booking.getStatus().equals(BookingStatus.PARTIALLY_RESERVED)) {
+			if (!waitlistRepo.findCandidatesForBooking(booking.getService().getId(),
+					booking.getStartTime().toLocalDate(), booking.getStartTime().toLocalTime(), booking.getId()).isEmpty()) {
+				booking.setStatus(BookingStatus.CANCELLED);
+			} else {
+				// Si NO tiene waitList, desbloquear bookings bloqueados por exclusión
+				unlockBookingsByExclusion(booking);
+			}
 		}
 		booking.setCancelReason(reason);
 
@@ -468,13 +476,6 @@ public class BookingServiceImpl implements BookingService {
 		List<Client> clientsToNotify = booking.getBookingClients().stream()
 				.map(BookingClient::getClient)
 				.collect(Collectors.toList());
-
-		// Eliminar todas las relaciones BookingClient (desvincular clientes)
-		Integer serviceCapacity = service.getCapacity();
-		List<BookingClient> bookingClientsToRemove = new ArrayList<>(booking.getBookingClients());
-		for (BookingClient bc : bookingClientsToRemove) {
-			booking.removeBookingClient(bc, serviceCapacity);
-		}
 
 		Booking savedBooking = bookingRepository.save(booking);
 
@@ -583,24 +584,21 @@ public class BookingServiceImpl implements BookingService {
 				dto.setCountNoShow(count);
 				break;
 			case RESERVED:
+			case RESERVED_AFTER_CANCEL:
 				dto.setCountReserved(count);
 				break;
 			case CANCELLED:
-				dto.setCountReserved(count);
+			case CANCELED_BY_PROVIDER:
+				dto.setCountCancelled(count);
 				break;
 			case COMPLETED:
+			case COMPLETED_AFTER_CANCEL:
 				dto.setCountCompleted(count);
 				break;
 			case FREE:
-				dto.setCountFree(count);
-				break;
-			default:
-				break;
+			case FREE_AFTER_CANCEL:
 			}
-
-			countsByDate.put(dateKey, dto);
 		}
-
 		return new ArrayList<>(countsByDate.values());
 	}
 
