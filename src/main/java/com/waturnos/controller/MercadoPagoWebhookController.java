@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.waturnos.service.MercadoPagoWebhookService;
-import com.waturnos.service.impl.MercadoPagoWebhookServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MercadoPagoWebhookController {
 	
 	private final MercadoPagoWebhookService webhookService;
-	private final MercadoPagoWebhookServiceImpl webhookServiceImpl;
 	
 	/**
 	 * Endpoint para recibir notificaciones IPN de MercadoPago.
@@ -89,32 +87,17 @@ public class MercadoPagoWebhookController {
 				return ResponseEntity.ok("OK");
 			}
 			
-			// VALIDAR FIRMA DEL WEBHOOK (seguridad crítica)
-			if (xSignature != null && xRequestId != null) {
-				log.info("🌐 Validating webhook signature...");
-				boolean isValid = webhookServiceImpl.validateWebhookSignature(xSignature, xRequestId, paymentId);
-				
-				if (!isValid) {
-					log.error("🌐 ❌ Invalid webhook signature! Potential security issue. PaymentId: {}", paymentId);
-					// En modo demo/sandbox permitir continuar si la firma falla
-					// TODO: En producción esto debería retornar UNAUTHORIZED
-					log.warn("🌐 ⚠️ Continuing webhook processing despite invalid signature (demo/sandbox mode)");
-					// log.info("🌐 ========== FIN WEBHOOK (INVALID SIGNATURE) ==========");
-					// return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
-				} else {
-					log.info("🌐 ✅ Webhook signature validated successfully for payment: {}", paymentId);
-				}
-			} else {
-				log.warn("🌐 ⚠️ Webhook received without signature headers. PaymentId: {}", paymentId);
-				// En producción considera rechazar webhooks sin firma
-				// return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing signature");
-			}
-			
 			// Procesar la notificación según el tipo
 			log.info("🌐 Processing notification type: {}", notificationType);
 			if ("payment".equals(notificationType)) {
-				log.info("🌐 Calling webhookService.processPaymentNotification({})...", paymentId);
-				webhookService.processPaymentNotification(paymentId);
+				log.info("🌐 Calling webhookService.validateAndProcessWebhook({})...", paymentId);
+				boolean processed = webhookService.validateAndProcessWebhook(xSignature, xRequestId, paymentId);
+				
+				if (!processed) {
+					log.error("🌐 ❌ Webhook validation failed or processing error");
+					log.info("🌐 ========== FIN WEBHOOK (VALIDATION FAILED) ==========");
+					return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid signature");
+				}
 			} else {
 				log.info("🌐 ⚠️ Webhook type {} not processed", notificationType);
 			}
