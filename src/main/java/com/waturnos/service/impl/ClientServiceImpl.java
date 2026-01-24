@@ -419,18 +419,39 @@ public class ClientServiceImpl implements ClientService {
 		Organization organization = organizationRepository.findById(organizationId)
 				.orElseThrow(() -> new ServiceException(ErrorCode.ORGANIZATION_NOT_FOUND_EXCEPTION, "Organization not found"));
 		
-		// Verificar que el cliente NO exista por email, phone o dni
+		// Verificar si el cliente ya existe por email, phone o dni
 		Optional<Client> existingClient = clientRepository.findByEmailOrPhoneOrDni(
 				StringUtils.hasLength(email) ? email.trim() : null,
 				StringUtils.hasLength(phone) ? phone.trim() : null,
 				StringUtils.hasLength(dni) ? dni.trim() : null
 		);
 		
+		// Si el cliente existe, verificar si está vinculado a esta organización
 		if (existingClient.isPresent()) {
-			throw new ServiceException(ErrorCode.CLIENT_EXISTS, "Client already exists");
+			Client client = existingClient.get();
+			
+			// Verificar si ya está vinculado a esta organización
+			boolean isAlreadyLinked = clientOrganizationRepository.existsByClientIdAndOrganizationId(
+					client.getId(), organizationId);
+			
+			if (isAlreadyLinked) {
+				// El cliente ya existe y ya está vinculado a esta organización
+				throw new ServiceException(ErrorCode.CLIENT_EXISTS_IN_ORGANIZATION, 
+						"Client already exists and is linked to this organization");
+			}
+			
+			// El cliente existe pero NO está vinculado a esta organización → vincularlo
+			ClientOrganization clientOrg = ClientOrganization.builder()
+					.client(client)
+					.organization(organization)
+					.build();
+			clientOrganizationRepository.save(clientOrg);
+			
+			log.info("✅ Existing client {} linked to organization {}", client.getId(), organizationId);
+			return client;
 		}
 		
-		// Crear nuevo cliente
+		// El cliente NO existe → crear nuevo cliente
 		Client client = new Client();
 		
 		if (StringUtils.hasLength(email)) {
