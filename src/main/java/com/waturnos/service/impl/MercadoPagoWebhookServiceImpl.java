@@ -137,8 +137,16 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	
 	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
 	    try {
-	        // 1. IMPORTANTE: Agregar el ";" al final del manifest
-	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";";
+	        // 🔍 DEBUG: Log del header completo
+	        log.info("🔍 DEBUG x-signature header: [{}]", xSignature);
+	        
+	        // Extraer timestamp del header x-signature (formato: ts=1234567890,v1=abc123...)
+	        String timestamp = extractTimestamp(xSignature);
+	        log.info("🔍 DEBUG extracted timestamp: [{}]", timestamp);
+	        
+	        // Construir manifest según documentación oficial de MercadoPago
+	        // Formato: id:<data.id>;request-id:<x-request-id>;ts:<timestamp>;
+	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + timestamp + ";";
 	        
 	        Mac hmac = Mac.getInstance("HmacSHA256");
 	        SecretKeySpec secretKey = new SecretKeySpec(
@@ -149,7 +157,7 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	        
 	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
 	        
-	        // Convertir a hexadecimal de forma más eficiente
+	        // Convertir a hexadecimal
 	        StringBuilder hexString = new StringBuilder();
 	        for (byte b : hash) {
 	            hexString.append(String.format("%02x", b));
@@ -157,10 +165,10 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	        
 	        String calculatedSignature = hexString.toString();
 	        
-	        // 2. Extraer solo la parte 'v1' si el header trae múltiples valores
+	        // Extraer la firma v1 del header
 	        String actualSignature = extractV1(xSignature);
 	        
-	        // 3. Usar MessageDigest.isEqual para prevenir ataques de tiempo (Timing Attacks)
+	        // Usar MessageDigest.isEqual para prevenir timing attacks
 	        boolean isValid = MessageDigest.isEqual(
 	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
 	            actualSignature.getBytes(StandardCharsets.UTF_8)
@@ -178,12 +186,25 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	    }
 	}
 
-	// Auxiliar para limpiar el header
+	// Extrae el timestamp del header x-signature
+	private String extractTimestamp(String header) {
+	    if (header == null) return "";
+	    
+	    // Formato esperado: ts=1234567890,v1=abc123...
+	    for (String part : header.split(",")) {
+	        if (part.trim().startsWith("ts=")) {
+	            return part.split("=")[1].trim();
+	        }
+	    }
+	    return "";
+	}
+	
+	// Extrae la firma v1 del header x-signature
 	private String extractV1(String header) {
 	    if (header == null) return "";
 	    if (!header.contains("v1=")) return header; // Si viene la firma pura
 	    
-	    // Si viene formato ts=xxx,v1=yyy
+	    // Formato esperado: ts=1234567890,v1=abc123...
 	    for (String part : header.split(",")) {
 	        if (part.trim().startsWith("v1=")) {
 	            return part.split("=")[1].trim();
