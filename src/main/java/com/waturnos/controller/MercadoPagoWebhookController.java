@@ -116,7 +116,7 @@ public class MercadoPagoWebhookController {
 	}
 	
 	/**
-	 * Endpoint para probar el webhook manualmente.
+	 * Endpoint para probar el webhook manualmente con paymentId.
 	 * Solo para desarrollo/testing.
 	 *
 	 * @param paymentId el ID del pago a procesar
@@ -131,6 +131,49 @@ public class MercadoPagoWebhookController {
 			log.error("Error in webhook test", e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 					.body("Error: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Endpoint para simular webhooks de MercadoPago sin validación de firma.
+	 * Útil para testing con la herramienta de simulación de webhooks de MercadoPago.
+	 * Solo para desarrollo/testing.
+	 *
+	 * @param payload el cuerpo de la notificación de MercadoPago
+	 * @return respuesta 200 OK
+	 */
+	@PostMapping("/mercadopago/simulate")
+	public ResponseEntity<String> simulateWebhook(@RequestBody Map<String, Object> payload) {
+		try {
+			log.info("🧪 ========== WEBHOOK SIMULADO (SIN VALIDACIÓN DE FIRMA) ==========");
+			log.info("🧪 Payload recibido: {}", payload);
+			
+			// Extraer payment ID del payload
+			String paymentId = null;
+			if (payload.containsKey("data")) {
+				@SuppressWarnings("unchecked")
+				Map<String, Object> data = (Map<String, Object>) payload.get("data");
+				if (data != null && data.containsKey("id")) {
+					paymentId = data.get("id").toString();
+				}
+			}
+			
+			if (paymentId == null || paymentId.isEmpty()) {
+				log.warn("🧪 ⚠️ Payload simulado sin payment ID");
+				return ResponseEntity.ok("OK - No payment ID");
+			}
+			
+			log.info("🧪 Processing simulated webhook for payment: {}", paymentId);
+			
+			// Procesar sin validar firma (solo para testing)
+			webhookService.processPaymentNotification(paymentId);
+			
+			log.info("🧪 ========== FIN WEBHOOK SIMULADO ==========");
+			return ResponseEntity.ok("OK");
+			
+		} catch (Exception e) {
+			log.error("🧪 ❌ Error processing simulated webhook", e);
+			return ResponseEntity.ok("ERROR - " + e.getMessage());
 		}
 	}
 }
