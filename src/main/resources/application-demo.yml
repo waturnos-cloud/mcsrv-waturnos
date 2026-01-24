@@ -32,6 +32,7 @@ cors:
 
 # MercadoPago - Demo
 mercadopago:
+  environment.dev: false # Producción: validación de firma habilitada
   backend.base.url: https://mcsrv-waturnos.onrender.com
   frontend.base.url: https://waturnos-client-demo.onrender.com
   webhook-url: https://mcsrv-waturnos.onrender.com/msvc-waturnos/v1.0/webhooks/mercadopago

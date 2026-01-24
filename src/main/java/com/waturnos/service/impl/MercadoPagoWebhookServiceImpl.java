@@ -58,6 +58,9 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	@Value("${mercadopago.mock-webhook-enabled:false}")
 	private boolean mockWebhookEnabled;
 	
+	@Value("${mercadopago.environment.dev:false}")
+	private Boolean isDevMode;
+	
 	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/v1/payments/";
 	/**
 	 * Valida la firma del webhook de MercadoPago.
@@ -194,6 +197,13 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	
 	@Override
 	public boolean validateAndProcessWebhook(String xSignature, String xRequestId, String paymentId) {
+		// Si está en modo dev, saltear validación de firma
+		if (isDevMode) {
+			log.info("🧪 DEV MODE - Skipping webhook signature validation");
+			processPaymentNotification(paymentId);
+			return true;
+		}
+		
 		// Validar firma del webhook si están presentes los headers
 		if (xSignature != null && xRequestId != null) {
 			log.info("🌐 Validating webhook signature for payment: {}", paymentId);

@@ -33,3 +33,7 @@ cors:
     - https://admin.waturnos.com
     - https://waturnos.com
     - https://www.waturnos.com
+
+# MercadoPago - Production
+mercadopago:
+  environment.dev: false # Producción: validación de firma habilitada

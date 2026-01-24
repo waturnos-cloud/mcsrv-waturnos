@@ -26,3 +26,7 @@ cors:
     - https://waturnos-backoffice-release.onrender.com
     - https://waturnos-client-release.onrender.com
     - https://mcsrv-waturnos-release.onrender.com
+
+# MercadoPago - Release
+mercadopago:
+  environment.dev: false # Producción: validación de firma habilitada
