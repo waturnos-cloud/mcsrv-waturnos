@@ -138,84 +138,7 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 //		return xSignature;
 //	}
 	
-	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
-	    try {
-	        // 🔍 DEBUG: Log del header completo
-	        log.info("🔍 DEBUG x-signature header: [{}]", xSignature);
-	        
-	        // Extraer timestamp del header x-signature (formato: ts=1234567890,v1=abc123...)
-	        String timestamp = extractTimestamp(xSignature);
-	        log.info("🔍 DEBUG extracted timestamp: [{}]", timestamp);
-	        
-	        // Construir manifest según documentación oficial de MercadoPago
-	        // Formato: id:<data.id>;request-id:<x-request-id>;ts:<timestamp>;
-	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + timestamp + ";";
-	        
-	        Mac hmac = Mac.getInstance("HmacSHA256");
-	        SecretKeySpec secretKey = new SecretKeySpec(
-	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
-	            "HmacSHA256"
-	        );
-	        hmac.init(secretKey);
-	        
-	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
-	        
-	        // Convertir a hexadecimal
-	        StringBuilder hexString = new StringBuilder();
-	        for (byte b : hash) {
-	            hexString.append(String.format("%02x", b));
-	        }
-	        
-	        String calculatedSignature = hexString.toString();
-	        
-	        // Extraer la firma v1 del header
-	        String actualSignature = extractV1(xSignature);
-	        
-	        // Usar MessageDigest.isEqual para prevenir timing attacks
-	        boolean isValid = MessageDigest.isEqual(
-	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
-	            actualSignature.getBytes(StandardCharsets.UTF_8)
-	        );
-	        
-	        if (!isValid) {
-	            log.warn("Invalid signature. Manifest: {} | Expected: {} | Received: {}", manifest, calculatedSignature, actualSignature);
-	        }
-	        
-	        return isValid;
-	        
-	    } catch (Exception e) {
-	        log.error("Error validating webhook signature", e);
-	        return false;
-	    }
-	}
 
-	// Extrae el timestamp del header x-signature
-	private String extractTimestamp(String header) {
-	    if (header == null) return "";
-	    
-	    // Formato esperado: ts=1234567890,v1=abc123...
-	    for (String part : header.split(",")) {
-	        if (part.trim().startsWith("ts=")) {
-	            return part.split("=")[1].trim();
-	        }
-	    }
-	    return "";
-	}
-	
-	// Extrae la firma v1 del header x-signature
-	private String extractV1(String header) {
-	    if (header == null) return "";
-	    if (!header.contains("v1=")) return header; // Si viene la firma pura
-	    
-	    // Formato esperado: ts=1234567890,v1=abc123...
-	    for (String part : header.split(",")) {
-	        if (part.trim().startsWith("v1=")) {
-	            return part.split("=")[1].trim();
-	        }
-	    }
-	    return header;
-	}
-	
 	@Override
 	public boolean validateAndProcessWebhook(String xSignature, String xRequestId, String paymentId) {
 		// Si está en modo dev, saltear validación de firma
@@ -246,6 +169,75 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 		processPaymentNotification(paymentId);
 		return true;
 	}
+	
+	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
+	    try {
+	        // 1. Extraer ts y v1 del header x-signature
+	        // El header viene como: ts=12345678,v1=hash_hexadecimal
+	        String ts = "";
+	        String v1 = "";
+	        
+	        if (xSignature != null && xSignature.contains(",")) {
+	            String[] parts = xSignature.split(",");
+	            for (String part : parts) {
+	                String[] kv = part.split("=");
+	                if (kv.length == 2) {
+	                    String key = kv[0].trim();
+	                    String value = kv[1].trim();
+	                    if (key.equals("ts")) ts = value;
+	                    if (key.equals("v1")) v1 = value;
+	                }
+	            }
+	        } else {
+	            // Si no tiene el formato esperado, fallamos temprano
+	            log.warn("Formato de x-signature no reconocido: {}", xSignature);
+	            return false;
+	        }
+
+	        // 2. Construir el manifest EXACTAMENTE en este orden
+	        // IMPORTANTE: id:[data_id];request-id:[x-request-id];ts:[ts];
+	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
+	        
+	        // 3. Calcular HMAC SHA-256 con tu webhookSecret
+	        Mac hmac = Mac.getInstance("HmacSHA256");
+	        SecretKeySpec secretKey = new SecretKeySpec(
+	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
+	            "HmacSHA256"
+	        );
+	        hmac.init(secretKey);
+	        
+	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
+	        
+	        // Convertir a hexadecimal (lowercase)
+	        StringBuilder hexString = new StringBuilder();
+	        for (byte b : hash) {
+	            hexString.append(String.format("%02x", b));
+	        }
+	        
+	        String calculatedSignature = hexString.toString();
+	        
+	        // 4. Comparación segura usando MessageDigest.isEqual
+	        boolean isValid = MessageDigest.isEqual(
+	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
+	            v1.getBytes(StandardCharsets.UTF_8)
+	        );
+	        
+	        if (!isValid) {
+	            log.warn("Firma inválida.");
+	            log.warn("Manifest generado localmente: {}", manifest);
+	            log.warn("Esperado (v1): {}", v1);
+	            log.warn("Calculado: {}", calculatedSignature);
+	        }
+	        
+	        return isValid;
+	        
+	    } catch (Exception e) {
+	        log.error("Error crítico validando firma de webhook", e);
+	        return false;
+	    }
+	}
+
+	// Ya no necesitas el método extractV1 separado porque la lógica está integrada arriba.
 	
 	@Override
 	@Transactional
