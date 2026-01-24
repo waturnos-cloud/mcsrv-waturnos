@@ -3,6 +3,7 @@ package com.waturnos.repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -18,6 +19,16 @@ import com.waturnos.enums.BookingStatus;
  * The Interface BookingRepository.
  */
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+	/**
+	 * Find by id with booking props.
+	 * Carga el booking con sus propiedades para mostrar detalles completos.
+	 *
+	 * @param id the booking id
+	 * @return the booking with props
+	 */
+	@Query("SELECT b FROM Booking b LEFT JOIN FETCH b.bookingProps WHERE b.id = :id")
+	Optional<Booking> findByIdWithProps(@Param("id") Long id);
 
 	/**
 	 * Find by service id.
@@ -217,13 +228,13 @@ List<BookingReminder> findBookingsForTomorrow();
 	 * @return the list
 	 */
 	@Query("""
-			    SELECT b
-			    FROM Booking b
-			    JOIN b.service s
-			    WHERE s.user.id = :providerId
-			      AND b.startTime >= :start
-			      AND b.startTime < :end
-			""")
+		    SELECT b
+		    FROM Booking b
+		    JOIN b.service s
+		    WHERE s.user.id = :providerId
+		      AND b.startTime >= :start
+		      AND b.startTime < :end
+		""")
 	List<Booking> findByProviderAndRange(@Param("providerId") Long providerId, @Param("start") LocalDateTime start,
 			@Param("end") LocalDateTime end);
 
@@ -237,19 +248,19 @@ List<BookingReminder> findBookingsForTomorrow();
 	 * @return the list
 	 */
 	@Query("""
-			    SELECT b
-			    FROM Booking b
-			    JOIN b.service s
-			    WHERE s.user.id = :providerId
-			      AND s.id = :serviceId
-			      AND b.startTime >= :start
-			      AND b.startTime < :end
-			""")
+		    SELECT b
+		    FROM Booking b
+		    JOIN b.service s
+		    WHERE s.user.id = :providerId
+		      AND s.id = :serviceId
+		      AND b.startTime >= :start
+		      AND b.startTime < :end
+		""")
 	List<Booking> findByProviderServiceAndRange(@Param("providerId") Long providerId,
 			@Param("serviceId") Long serviceId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
 	/**
-	 * Find upcoming bookings for a client starting from now, ordered by date ascending.
+	 * Find bookings for a client with their assigned service, provider, location and organization.
 	 * Optionally filters by organization and date range.
 	 *
 	 * @param clientId the client id

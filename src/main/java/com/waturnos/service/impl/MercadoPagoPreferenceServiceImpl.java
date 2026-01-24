@@ -59,6 +59,9 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 	@Value("${spring.profiles.active:dev}")
 	private String activeProfile;
 	
+	@Value("${mercadopago.environment.dev:false}")
+	private Boolean isDevMode;
+	
 	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/checkout/preferences";
 	
 	@Override
@@ -67,6 +70,14 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		log.info("💳 Booking ID: {}", request.getBookingId());
 		log.info("💳 Amount: {}", request.getAmount());
 		log.info("💳 Description: {}", request.getDescription());
+		log.info("💳 CONFIG - Dev Mode: {}", isDevMode);
+		
+		// Si está en modo dev, devolver dummy
+		if (isDevMode) {
+			log.info("🧪 DEV MODE ENABLED - Returning dummy preference");
+			return createDummyPreference(request);
+		}
+		
 		log.info("💳 CONFIG - frontendBaseUrl: '{}'", frontendBaseUrl);
 		log.info("💳 CONFIG - webhookUrl: '{}'", webhookUrl);
 		log.info("💳 CONFIG - sandboxMode (from application.yml): {}", sandboxMode);
@@ -245,5 +256,23 @@ public class MercadoPagoPreferenceServiceImpl implements MercadoPagoPreferenceSe
 		preference.put("metadata", metadata);
 		
 		return preference;
+	}
+	
+	/**
+	 * Crea una preferencia dummy para modo desarrollo.
+	 * No llama a la API de MercadoPago.
+	 */
+	private PaymentPreferenceResponse createDummyPreference(CreatePreferenceRequest request) {
+		log.info("🧪 Creating dummy preference for development");
+		
+		PaymentPreferenceResponse response = new PaymentPreferenceResponse();
+		response.setPreferenceId("DUMMY-PREF-" + System.currentTimeMillis());
+		response.setInitPoint("http://localhost:5174/payment/dummy");
+		response.setSandboxInitPoint("http://localhost:5174/payment/dummy");
+		
+		log.info("🧪 Dummy preference created: {}", response.getPreferenceId());
+		log.info("🔵 ========== FIN CREACIÓN DUMMY PREFERENCIA ==========");
+		
+		return response;
 	}
 }

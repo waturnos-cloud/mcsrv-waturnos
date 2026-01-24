@@ -33,8 +33,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = { "service", "bookingClients","recurrence" })
-@EqualsAndHashCode(exclude = { "bookingClients" })
+@ToString(exclude = { "service", "bookingClients","recurrence", "bookingProps" })
+@EqualsAndHashCode(exclude = { "bookingClients", "bookingProps" })
 public class Booking {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "booking_sequence")
@@ -67,6 +67,10 @@ public class Booking {
 	@OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
 	@Builder.Default
 	private Set<BookingClient> bookingClients = new HashSet<>();
+
+	@OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+	@Builder.Default
+	private Set<BookingPropsEntity> bookingProps = new HashSet<>();
 
 	
 	/**

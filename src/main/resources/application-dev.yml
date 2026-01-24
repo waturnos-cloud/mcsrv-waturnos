@@ -34,6 +34,7 @@ cors:
 
 # MercadoPago - Development
 mercadopago:
+  environment.dev: true # Modo desarrollo: preferencias dummy y sin validación de firma
   backend.base.url: http://localhost:8085
   frontend.base.url: http://localhost:5174
   webhook-url: ${mercadopago.backend.base.url}/msvc-waturnos/v1.0/webhooks/mercadopago

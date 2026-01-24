@@ -18,7 +18,7 @@ import com.waturnos.entity.extended.BookingSummaryDetail;
 /**
  * The Interface BookingMapper.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {BookingPropsMapper.class})
 public interface BookingMapper {
 
 	/**
@@ -65,7 +65,8 @@ public interface BookingMapper {
 			@Mapping(target = "recurrenceId", source = "recurrence.id"),
 			@Mapping(target = "isRecurrent", expression = "java(e.getRecurrence() != null)"),
 			@Mapping(target = "recurrencePattern", expression = "java(getRecurrencePattern(e))"),
-			@Mapping(target = "isOverbooking", source = "isOverbooking") })
+			@Mapping(target = "isOverbooking", source = "isOverbooking"),
+			@Mapping(target = "bookingProps", source = "bookingProps") })
 	BookingDTO toDto(Booking e);
 	
 	/**
