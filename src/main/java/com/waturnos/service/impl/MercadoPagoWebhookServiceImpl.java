@@ -2,6 +2,7 @@ package com.waturnos.service.impl;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
 
 import javax.crypto.Mac;
@@ -56,6 +57,8 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	
 	@Value("${mercadopago.mock-webhook-enabled:false}")
 	private boolean mockWebhookEnabled;
+	
+	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/v1/payments/";
 	/**
 	 * Valida la firma del webhook de MercadoPago.
 	 *
@@ -64,76 +67,154 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	 * @param dataId el ID del recurso (payment ID)
 	 * @return true si la firma es válida
 	 */
+//	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
+//		try {
+//			// Construir el manifest según la documentación de MercadoPago
+//			// Format: id:<dataId>;request-id:<xRequestId>
+//			String manifest = "id:" + dataId + ";request-id:" + xRequestId;
+//			
+//			// Calcular HMAC SHA-256
+//			Mac hmac = Mac.getInstance("HmacSHA256");
+//			SecretKeySpec secretKey = new SecretKeySpec(
+//				webhookSecret.getBytes(StandardCharsets.UTF_8), 
+//				"HmacSHA256"
+//			);
+//			hmac.init(secretKey);
+//			
+//			byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
+//			
+//			// Convertir a hexadecimal
+//			StringBuilder hexString = new StringBuilder();
+//			for (byte b : hash) {
+//				String hex = Integer.toHexString(0xff & b);
+//				if (hex.length() == 1) {
+//					hexString.append('0');
+//				}
+//				hexString.append(hex);
+//			}
+//			
+//			String calculatedSignature = hexString.toString();
+//			
+//			// Extraer la firma real del header (puede tener formato "v1=<signature>,ts=<timestamp>")
+//			String actualSignature = extractSignatureFromHeader(xSignature);
+//			
+//			boolean isValid = actualSignature != null && actualSignature.equals(calculatedSignature);
+//			
+//			if (!isValid) {
+//				log.warn("Invalid webhook signature. Expected: {}, Received: {}", calculatedSignature, actualSignature);
+//			}
+//			
+//			return isValid;
+//			
+//		} catch (Exception e) {
+//			log.error("Error validating webhook signature", e);
+//			return false;
+//		}
+//	}
+//	
+//	/**
+//	 * Extrae la firma del header x-signature.
+//	 * Formato esperado: "v1=<signature>,ts=<timestamp>"
+//	 */
+//	private String extractSignatureFromHeader(String xSignature) {
+//		if (xSignature == null || xSignature.isEmpty()) {
+//			return null;
+//		}
+//		
+//		// Si tiene formato "v1=...,ts=..."
+//		if (xSignature.contains("v1=")) {
+//			String[] parts = xSignature.split(",");
+//			for (String part : parts) {
+//				if (part.trim().startsWith("v1=")) {
+//					return part.trim().substring(3);
+//				}
+//			}
+//		}
+//		
+//		// Si es solo el hash
+//		return xSignature;
+//	}
+	
 	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
-		try {
-			// Construir el manifest según la documentación de MercadoPago
-			// Format: id:<dataId>;request-id:<xRequestId>
-			String manifest = "id:" + dataId + ";request-id:" + xRequestId;
-			
-			// Calcular HMAC SHA-256
-			Mac hmac = Mac.getInstance("HmacSHA256");
-			SecretKeySpec secretKey = new SecretKeySpec(
-				webhookSecret.getBytes(StandardCharsets.UTF_8), 
-				"HmacSHA256"
-			);
-			hmac.init(secretKey);
-			
-			byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
-			
-			// Convertir a hexadecimal
-			StringBuilder hexString = new StringBuilder();
-			for (byte b : hash) {
-				String hex = Integer.toHexString(0xff & b);
-				if (hex.length() == 1) {
-					hexString.append('0');
-				}
-				hexString.append(hex);
-			}
-			
-			String calculatedSignature = hexString.toString();
-			
-			// Extraer la firma real del header (puede tener formato "v1=<signature>,ts=<timestamp>")
-			String actualSignature = extractSignatureFromHeader(xSignature);
-			
-			boolean isValid = actualSignature != null && actualSignature.equals(calculatedSignature);
+	    try {
+	        // 1. IMPORTANTE: Agregar el ";" al final del manifest
+	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";";
+	        
+	        Mac hmac = Mac.getInstance("HmacSHA256");
+	        SecretKeySpec secretKey = new SecretKeySpec(
+	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
+	            "HmacSHA256"
+	        );
+	        hmac.init(secretKey);
+	        
+	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
+	        
+	        // Convertir a hexadecimal de forma más eficiente
+	        StringBuilder hexString = new StringBuilder();
+	        for (byte b : hash) {
+	            hexString.append(String.format("%02x", b));
+	        }
+	        
+	        String calculatedSignature = hexString.toString();
+	        
+	        // 2. Extraer solo la parte 'v1' si el header trae múltiples valores
+	        String actualSignature = extractV1(xSignature);
+	        
+	        // 3. Usar MessageDigest.isEqual para prevenir ataques de tiempo (Timing Attacks)
+	        boolean isValid = MessageDigest.isEqual(
+	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
+	            actualSignature.getBytes(StandardCharsets.UTF_8)
+	        );
+	        
+	        if (!isValid) {
+	            log.warn("Invalid signature. Manifest: {} | Expected: {} | Received: {}", manifest, calculatedSignature, actualSignature);
+	        }
+	        
+	        return isValid;
+	        
+	    } catch (Exception e) {
+	        log.error("Error validating webhook signature", e);
+	        return false;
+	    }
+	}
+
+	// Auxiliar para limpiar el header
+	private String extractV1(String header) {
+	    if (header == null) return "";
+	    if (!header.contains("v1=")) return header; // Si viene la firma pura
+	    
+	    // Si viene formato ts=xxx,v1=yyy
+	    for (String part : header.split(",")) {
+	        if (part.trim().startsWith("v1=")) {
+	            return part.split("=")[1].trim();
+	        }
+	    }
+	    return header;
+	}
+	
+	@Override
+	public boolean validateAndProcessWebhook(String xSignature, String xRequestId, String paymentId) {
+		// Validar firma del webhook si están presentes los headers
+		if (xSignature != null && xRequestId != null) {
+			log.info("🌐 Validating webhook signature for payment: {}", paymentId);
+			boolean isValid = validateWebhookSignature(xSignature, xRequestId, paymentId);
 			
 			if (!isValid) {
-				log.warn("Invalid webhook signature. Expected: {}, Received: {}", calculatedSignature, actualSignature);
+				log.error("🌐 ❌ Invalid webhook signature! Rejecting webhook. PaymentId: {}", paymentId);
+				return false;
 			}
 			
-			return isValid;
-			
-		} catch (Exception e) {
-			log.error("Error validating webhook signature", e);
-			return false;
-		}
-	}
-	
-	/**
-	 * Extrae la firma del header x-signature.
-	 * Formato esperado: "v1=<signature>,ts=<timestamp>"
-	 */
-	private String extractSignatureFromHeader(String xSignature) {
-		if (xSignature == null || xSignature.isEmpty()) {
-			return null;
+			log.info("🌐 ✅ Webhook signature validated successfully for payment: {}", paymentId);
+		} else {
+			log.warn("🌐 ⚠️ Webhook received without signature headers. PaymentId: {}", paymentId);
+			// En producción podrías rechazar webhooks sin firma
+			// return false;
 		}
 		
-		// Si tiene formato "v1=...,ts=..."
-		if (xSignature.contains("v1=")) {
-			String[] parts = xSignature.split(",");
-			for (String part : parts) {
-				if (part.trim().startsWith("v1=")) {
-					return part.trim().substring(3);
-				}
-			}
-		}
-		
-		// Si es solo el hash
-		return xSignature;
+		// Procesar el pago
+		processPaymentNotification(paymentId);
+		return true;
 	}
-	
-	
-	private static final String MERCADOPAGO_API_URL = "https://api.mercadopago.com/v1/payments/";
 	
 	@Override
 	@Transactional
