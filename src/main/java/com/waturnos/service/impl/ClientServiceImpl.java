@@ -447,7 +447,6 @@ public class ClientServiceImpl implements ClientService {
 					.build();
 			clientOrganizationRepository.save(clientOrg);
 			
-			log.info("✅ Existing client {} linked to organization {}", client.getId(), organizationId);
 			return client;
 		}
 		
