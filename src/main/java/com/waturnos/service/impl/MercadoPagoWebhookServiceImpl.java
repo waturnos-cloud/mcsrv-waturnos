@@ -172,73 +172,52 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	
 	public boolean validateWebhookSignature(String xSignature, String xRequestId, String dataId) {
 	    try {
-	        // 1. Extraer ts y v1 del header x-signature
-	        // El header viene como: ts=12345678,v1=hash_hexadecimal
+	        // 1. Extraer ts y v1 del header
 	        String ts = "";
 	        String v1 = "";
-	        
-	        if (xSignature != null && xSignature.contains(",")) {
-	            String[] parts = xSignature.split(",");
-	            for (String part : parts) {
-	                String[] kv = part.split("=");
-	                if (kv.length == 2) {
-	                    String key = kv[0].trim();
-	                    String value = kv[1].trim();
-	                    if (key.equals("ts")) ts = value;
-	                    if (key.equals("v1")) v1 = value;
-	                }
+	        for (String part : xSignature.split(",")) {
+	            String[] kv = part.split("=");
+	            if (kv.length == 2) {
+	                if (kv[0].trim().equals("ts")) ts = kv[1].trim();
+	                if (kv[0].trim().equals("v1")) v1 = kv[1].trim();
 	            }
-	        } else {
-	            // Si no tiene el formato esperado, fallamos temprano
-	            log.warn("Formato de x-signature no reconocido: {}", xSignature);
-	            return false;
 	        }
 
-	        // 2. Construir el manifest EXACTAMENTE en este orden
-	        // IMPORTANTE: id:[data_id];request-id:[x-request-id];ts:[ts];
-	        String manifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
-	        
-	        // 3. Calcular HMAC SHA-256 con tu webhookSecret
-	        Mac hmac = Mac.getInstance("HmacSHA256");
-	        SecretKeySpec secretKey = new SecretKeySpec(
-	            webhookSecret.getBytes(StandardCharsets.UTF_8), 
-	            "HmacSHA256"
-	        );
-	        hmac.init(secretKey);
-	        
-	        byte[] hash = hmac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
-	        
-	        // Convertir a hexadecimal (lowercase)
-	        StringBuilder hexString = new StringBuilder();
-	        for (byte b : hash) {
-	            hexString.append(String.format("%02x", b));
+	        // 2. Intentar primero con el formato de PAGO REAL (data.id)
+	        String manifest = "data.id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
+	        String calculated = calculateHmac(manifest);
+
+	        if (MessageDigest.isEqual(calculated.getBytes(StandardCharsets.UTF_8), v1.getBytes(StandardCharsets.UTF_8))) {
+	            return true;
 	        }
-	        
-	        String calculatedSignature = hexString.toString();
-	        
-	        // 4. Comparación segura usando MessageDigest.isEqual
-	        boolean isValid = MessageDigest.isEqual(
-	            calculatedSignature.getBytes(StandardCharsets.UTF_8), 
-	            v1.getBytes(StandardCharsets.UTF_8)
-	        );
-	        
-	        if (!isValid) {
-	            log.warn("Firma inválida.");
-	            log.warn("Manifest generado localmente: {}", manifest);
-	            log.warn("Esperado (v1): {}", v1);
-	            log.warn("Calculado: {}", calculatedSignature);
+
+	        // 3. Si falla, intentar con el formato de TEST (id)
+	        String altManifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
+	        String altCalculated = calculateHmac(altManifest);
+
+	        if (MessageDigest.isEqual(altCalculated.getBytes(StandardCharsets.UTF_8), v1.getBytes(StandardCharsets.UTF_8))) {
+	            return true;
 	        }
-	        
-	        return isValid;
-	        
+
+	        log.warn("❌ Firma inválida con ambos formatos. Manifest intentado: {}", manifest);
+	        return false;
+
 	    } catch (Exception e) {
-	        log.error("Error crítico validando firma de webhook", e);
+	        log.error("Error validando firma", e);
 	        return false;
 	    }
 	}
 
-	// Ya no necesitas el método extractV1 separado porque la lógica está integrada arriba.
-	
+	// Agrega este método auxiliar abajo para que el código anterior funcione
+	private String calculateHmac(String message) throws Exception {
+	    Mac hmac = Mac.getInstance("HmacSHA256");
+	    SecretKeySpec secretKey = new SecretKeySpec(webhookSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+	    hmac.init(secretKey);
+	    byte[] hash = hmac.doFinal(message.getBytes(StandardCharsets.UTF_8));
+	    StringBuilder hexString = new StringBuilder();
+	    for (byte b : hash) hexString.append(String.format("%02x", b));
+	    return hexString.toString();
+	}	
 	@Override
 	@Transactional
 	public void processPaymentNotification(String paymentId) {
