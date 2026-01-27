@@ -237,6 +237,15 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 ========== INICIANDO PROCESAMIENTO DE WEBHOOK MERCADOPAGO ==========");
 			log.info("🔔 Payment ID: {}", paymentId);
 			
+			// 0. PRIMERA VALIDACIÓN: Verificar si ya existe un payment con este transaction_id
+			// Esto debe hacerse ANTES de hacer cualquier otra operación para evitar race conditions
+			var existingPayment = paymentRepository.findByTransactionId(paymentId);
+			if (existingPayment.isPresent()) {
+				log.info("🔔 ℹ️ Payment already processed for transaction_id: {}. Skipping.", paymentId);
+				log.info("🔔 ========== FIN PROCESAMIENTO (ALREADY PROCESSED) ==========");
+				return;
+			}
+			
 			// 1. Consultar el pago en MercadoPago para verificar su estado
 			JsonNode paymentData = getPaymentFromMercadoPago(paymentId);
 			
@@ -293,17 +302,7 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 Booking found - Current status: {}", booking.getStatus());
 			log.info("🔔 Booking has {} client(s) assigned", booking.getBookingClients().size());
 			
-			// 4. Verificar si ya existe un pago registrado para este transaction_id
-			// Esto evita procesar el mismo webhook múltiples veces
-			String transactionId = paymentData.path("id").asText();
-			var existingPayment = paymentRepository.findByTransactionId(transactionId);
-			if (existingPayment.isPresent()) {
-				log.info("🔔 ℹ️ Payment already processed for transaction_id: {}", transactionId);
-				log.info("🔔 ========== FIN PROCESAMIENTO (ALREADY PROCESSED) ==========");
-				return;
-			}
-			
-			// 5. Verificar si el pago fue aprobado y asignar el cliente
+			// 4. Verificar si el pago fue aprobado y asignar el cliente
 			if ("approved".equals(status)) {
 				log.info("🔔 Payment approved. Checking if client {} is assigned to booking...", clientId);
 				boolean isClientAssigned = booking.getBookingClients().stream()
