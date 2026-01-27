@@ -3,7 +3,11 @@ package com.waturnos.repository;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.waturnos.entity.Payment;
@@ -23,12 +27,15 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 	List<Payment> findByBookingId(Long bookingId);
 
 	/**
-	 * Busca un pago por transaction ID.
+	 * Busca un pago por transaction ID con lock pesimista para evitar race conditions.
+	 * El lock PESSIMISTIC_WRITE asegura que solo un thread puede leer y crear el payment.
 	 *
 	 * @param transactionId el ID de transacción
 	 * @return el pago si existe
 	 */
-	Optional<Payment> findByTransactionId(String transactionId);
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("SELECT p FROM Payment p WHERE p.transactionId = :transactionId")
+	Optional<Payment> findByTransactionIdWithLock(@Param("transactionId") String transactionId);
 
 	/**
 	 * Busca todos los pagos de un cliente.
