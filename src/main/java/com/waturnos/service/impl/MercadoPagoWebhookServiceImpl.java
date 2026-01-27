@@ -239,8 +239,9 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 Payment ID: {}", paymentId);
 			
 			// 0. PRIMERA VALIDACIÓN: Verificar si ya existe un payment con este transaction_id
-			// Esto debe hacerse ANTES de hacer cualquier otra operación para evitar race conditions
-			var existingPayment = paymentRepository.findByTransactionId(paymentId);
+			// Usamos PESSIMISTIC_WRITE lock para asegurar que solo un thread procese este payment
+			// Esto previene race conditions entre múltiples webhooks concurrentes
+			var existingPayment = paymentRepository.findByTransactionIdWithLock(paymentId);
 			if (existingPayment.isPresent()) {
 				log.info("🔔 ℹ️ Payment already processed for transaction_id: {}. Skipping.", paymentId);
 				log.info("🔔 ========== FIN PROCESAMIENTO (ALREADY PROCESSED) ==========");
@@ -418,9 +419,9 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	 */
 	private void createPaymentRecord(JsonNode paymentData, Booking booking, Long clientId) {
 		try {
-			// Verificar si ya existe un payment con este transaction_id
+			// Verificar si ya existe un payment con este transaction_id (con lock)
 			String transactionId = paymentData.path("id").asText();
-			var existingPayment = paymentRepository.findByTransactionId(transactionId);
+			var existingPayment = paymentRepository.findByTransactionIdWithLock(transactionId);
 			if (existingPayment.isPresent()) {
 				log.info("🔔 Payment record already exists for transaction_id: {}", transactionId);
 				return;
