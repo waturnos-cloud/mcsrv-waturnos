@@ -294,7 +294,17 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 Booking found - Current status: {}", booking.getStatus());
 			log.info("🔔 Booking has {} client(s) assigned", booking.getBookingClients().size());
 			
-			// 4. Verificar si el pago fue aprobado y asignar el cliente
+			// 4. Verificar si ya existe un pago registrado para este transaction_id
+			// Esto evita procesar el mismo webhook múltiples veces
+			String transactionId = paymentData.path("id").asText();
+			var existingPayment = paymentRepository.findByTransactionId(transactionId);
+			if (existingPayment.isPresent()) {
+				log.info("🔔 ℹ️ Payment already processed for transaction_id: {}", transactionId);
+				log.info("🔔 ========== FIN PROCESAMIENTO (ALREADY PROCESSED) ==========");
+				return;
+			}
+			
+			// 5. Verificar si el pago fue aprobado y asignar el cliente
 			if ("approved".equals(status)) {
 				log.info("🔔 Payment approved. Checking if client {} is assigned to booking...", clientId);
 				boolean isClientAssigned = booking.getBookingClients().stream()
@@ -302,13 +312,22 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 				
 				if (!isClientAssigned) {
 					log.info("🔔 Client {} not assigned yet. Assigning to booking...", clientId);
-					bookingService.assignBookingToClientNotLogin(bookingId, clientId);
-					log.info("🔔 ✅ Client {} assigned successfully to booking {}", clientId, bookingId);
+					try {
+						bookingService.assignBookingToClientNotLogin(bookingId, clientId);
+						log.info("🔔 ✅ Client {} assigned successfully to booking {}", clientId, bookingId);
+					} catch (Exception e) {
+						// Si falla por duplicate key, es porque otro webhook ya lo asignó
+						if (e.getMessage() != null && e.getMessage().contains("uk_booking_client")) {
+							log.warn("🔔 ⚠️ Client {} already assigned by another webhook thread", clientId);
+						} else {
+							throw e; // Re-lanzar si es otro tipo de error
+						}
+					}
 				} else {
 					log.info("🔔 ℹ️ Client {} already assigned to booking {}", clientId, bookingId);
 				}
 				
-				// 5. Crear registro de Payment con toda la información de MercadoPago
+				// 6. Crear registro de Payment con toda la información de MercadoPago
 				log.info("🔔 Creating Payment record for approved payment...");
 				createPaymentRecord(paymentData, booking, clientId);
 				log.info("🔔 ✅ Payment record created successfully");
