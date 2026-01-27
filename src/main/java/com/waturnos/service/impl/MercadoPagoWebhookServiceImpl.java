@@ -139,6 +139,7 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 //	}
 	
 	@Override
+	@Transactional
 	public boolean validateAndProcessWebhook(String xSignature, String xRequestId, String paymentId) {
 		// Si está en modo dev, saltear validación de firma
 		if (isDevMode) {
