@@ -181,24 +181,38 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 	                if (kv[0].trim().equals("v1")) v1 = kv[1].trim();
 	            }
 	        }
+	        
+	        // DEBUG: Log del webhook secret (solo primeros 10 chars por seguridad)
+	        log.info("🔍 Webhook secret length: {}, starts with: {}...", 
+	            webhookSecret != null ? webhookSecret.length() : 0,
+	            webhookSecret != null ? webhookSecret.substring(0, Math.min(10, webhookSecret.length())) : "null");
+	        log.info("🔍 x-signature: {}", xSignature);
+	        log.info("🔍 Extracted ts={}, v1={}", ts, v1);
 
 	        // 2. Intentar primero con el formato de PAGO REAL (data.id)
 	        String manifest = "data.id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
 	        String calculated = calculateHmac(manifest);
+	        log.info("🔍 Manifest (data.id): {}", manifest);
+	        log.info("🔍 Calculated (data.id): {}", calculated);
 
 	        if (MessageDigest.isEqual(calculated.getBytes(StandardCharsets.UTF_8), v1.getBytes(StandardCharsets.UTF_8))) {
+	            log.info("✅ Firma válida con formato data.id");
 	            return true;
 	        }
 
 	        // 3. Si falla, intentar con el formato de TEST (id)
 	        String altManifest = "id:" + dataId + ";request-id:" + xRequestId + ";ts:" + ts + ";";
 	        String altCalculated = calculateHmac(altManifest);
+	        log.info("🔍 Manifest (id): {}", altManifest);
+	        log.info("🔍 Calculated (id): {}", altCalculated);
 
 	        if (MessageDigest.isEqual(altCalculated.getBytes(StandardCharsets.UTF_8), v1.getBytes(StandardCharsets.UTF_8))) {
+	            log.info("✅ Firma válida con formato id");
 	            return true;
 	        }
 
-	        log.warn("❌ Firma inválida con ambos formatos. Manifest intentado: {}", manifest);
+	        log.warn("❌ Firma inválida con ambos formatos");
+	        log.warn("Expected v1: {}", v1);
 	        return false;
 
 	    } catch (Exception e) {
