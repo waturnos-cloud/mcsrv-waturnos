@@ -340,8 +340,12 @@ public class MercadoPagoWebhookServiceImpl implements MercadoPagoWebhookService 
 			log.info("🔔 Fetching payment data from: {}", url);
 			
 			HttpHeaders headers = new HttpHeaders();
-			headers.set("Authorization", "Bearer " + accessToken.substring(0, Math.min(20, accessToken.length())) + "...");
+			headers.set("Authorization", "Bearer " + accessToken);
 			headers.set("Content-Type", "application/json");
+			
+			// Log solo para debug (no incluir el token completo por seguridad)
+			log.info("🔔 Authorization header set with token starting: {}...", 
+				accessToken != null ? accessToken.substring(0, Math.min(20, accessToken.length())) : "null");
 			
 			HttpEntity<String> entity = new HttpEntity<>(headers);
 			
