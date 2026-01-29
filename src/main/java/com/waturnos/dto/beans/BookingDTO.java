@@ -15,6 +15,10 @@ public class BookingDTO {
 	protected BookingStatus status;
 	protected String notes;
 	protected Long serviceId;
+	protected String serviceName;
+	protected Integer serviceDurationMinutes;
+	protected Long userId;
+	protected String userFullName;
 	protected Integer freeSlots;
 	protected Long recurrenceId;
 	protected Boolean isRecurrent;

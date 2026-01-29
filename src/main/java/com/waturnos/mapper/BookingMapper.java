@@ -62,6 +62,10 @@ public interface BookingMapper {
 	 */
 	@Mappings({
 			@Mapping(target = "serviceId", source = "service.id"),
+			@Mapping(target = "serviceName", source = "service.name"),
+			@Mapping(target = "serviceDurationMinutes", source = "service.durationMinutes"),
+			@Mapping(target = "userId", source = "service.user.id"),
+			@Mapping(target = "userFullName", source = "service.user.fullName"),
 			@Mapping(target = "recurrenceId", source = "recurrence.id"),
 			@Mapping(target = "isRecurrent", expression = "java(e.getRecurrence() != null)"),
 			@Mapping(target = "recurrencePattern", expression = "java(getRecurrencePattern(e))"),

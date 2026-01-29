@@ -176,4 +176,13 @@ public interface BookingService {
 
 	Booking assignBookingToClientNotLogin(Long bookingId, Long clientId);
 
+	/**
+	 * Find all bookings (past and upcoming) for a client.
+	 * Returns ALL bookings including cancelled ones, ordered by date descending.
+	 *
+	 * @param clientId the client id
+	 * @return the list of all bookings for the client
+	 */
+	List<Booking> findAllByClient(Long clientId);
+
 }
