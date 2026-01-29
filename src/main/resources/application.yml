@@ -159,7 +159,7 @@ app:
     expiration:
       timetoken: 15 # 15 minutos dura el token para reset de contraseña
   datetime: 
-    email-format: d 'de' MMMM 'de las' HH 'hs'
+    email-format: d 'de' MMMM 'de las' HH:mm 'hs'
     booking-date-format: EEEE, dd 'de' MMMM 'de' yyyy
   scheduling: 
     run-tasks-on-startup: ${ENABLE_CRON_ONSTART:false}
