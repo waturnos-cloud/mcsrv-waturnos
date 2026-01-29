@@ -956,4 +956,9 @@ public class BookingServiceImpl implements BookingService {
 		});
 	}
 
+	@Override
+	public List<Booking> findAllByClient(Long clientId) {
+		return bookingRepository.findAllByClient(clientId);
+	}
+
 }

@@ -2,6 +2,7 @@ package com.waturnos.config;
 
 import java.time.LocalDate;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -11,7 +12,6 @@ import com.waturnos.enums.ScheduleType;
 import com.waturnos.schedule.impl.ScheduledTasksServiceImpl;
 import com.waturnos.service.SyncTaskService;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -19,18 +19,25 @@ import lombok.extern.slf4j.Slf4j;
  * Si no, las dispara manualmente para no perder la ventana.
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class StartupTasksChecker {
 
-    private final SyncTaskService syncTaskService;
-    private final ScheduledTasksServiceImpl scheduledTasksService;
+    @Autowired(required = false)
+    private SyncTaskService syncTaskService;
+    
+    @Autowired(required = false)
+    private ScheduledTasksServiceImpl scheduledTasksService;
     
     @Value("${app.scheduling.run-tasks-on-startup:false}")
     private boolean runTasksOnStartup;
 
     @EventListener(ApplicationReadyEvent.class)
     public void onReady() {
+        if (syncTaskService == null || scheduledTasksService == null) {
+            log.warn("StartupTasksChecker: Servicios no disponibles, se omite verificación");
+            return;
+        }
+        
         if (!runTasksOnStartup) {
             log.info("StartupTasksChecker desactivado (app.scheduling.run-tasks-on-startup=false). Las tareas se ejecutarán según su programación cron.");
             return;

@@ -378,4 +378,24 @@ List<BookingReminder> findBookingsForTomorrow();
 			@Param("rangeStart") LocalDateTime rangeStart,
 			@Param("rangeEnd") LocalDateTime rangeEnd);
 
+	/**
+	 * Find all bookings (past and upcoming) for a client with full details.
+	 * Returns ALL bookings including cancelled ones, ordered by date descending (most recent first).
+	 *
+	 * @param clientId the client id
+	 * @return the list of all bookings for the client
+	 */
+	@Query("""
+			SELECT b
+			FROM Booking b
+			JOIN b.bookingClients bc
+			JOIN FETCH b.service s
+			JOIN FETCH s.user u
+			JOIN FETCH s.location l
+			JOIN FETCH l.organization o
+			WHERE bc.client.id = :clientId
+			ORDER BY b.startTime DESC
+			""")
+	List<Booking> findAllByClient(@Param("clientId") Long clientId);
+
 }

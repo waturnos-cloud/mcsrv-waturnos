@@ -378,4 +378,18 @@ public class BookingController {
 		return ResponseEntity.ok(new ApiResponse<>(true, "Overbooking created successfully", mapper.toDto(created)));
 	}
 
+	/**
+	 * Get all bookings (past and upcoming) for a client.
+	 * Returns the complete booking history including cancelled bookings.
+	 *
+	 * @param clientId the client id
+	 * @return the list of all bookings for the client
+	 */
+	@GetMapping("/client/{clientId}")
+	public ResponseEntity<ApiResponse<List<BookingDTO>>> getByClient(@PathVariable Long clientId) {
+		log.info("📋 [getByClient] Obteniendo historial completo para cliente {}", clientId);
+		List<Booking> bookings = service.findAllByClient(clientId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Bookings retrieved successfully", mapper.toDtoList(bookings)));
+	}
+
 }
