@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.waturnos.dto.response.BookingClientSimpleDTO;
 import com.waturnos.dto.response.BookingSimpleDTO;
 import com.waturnos.dto.response.ServiceWithBookingsDTO;
 import com.waturnos.entity.Booking;
@@ -36,6 +37,24 @@ public class ServiceBookingMapper {
         dto.setEndTime(b.getEndTime());
         dto.setStatus(b.getStatus());
         dto.setIsOverbooking(b.getIsOverbooking());
+        
+        // Map bookingClients with client information
+        if (b.getBookingClients() != null) {
+            List<BookingClientSimpleDTO> clientDTOs = b.getBookingClients().stream()
+                .map(bc -> {
+                    BookingClientSimpleDTO clientDTO = new BookingClientSimpleDTO();
+                    if (bc.getClient() != null) {
+                        clientDTO.setClientId(bc.getClient().getId());
+                        clientDTO.setClientName(bc.getClient().getFullName());
+                        clientDTO.setClientEmail(bc.getClient().getEmail());
+                        clientDTO.setClientPhone(bc.getClient().getPhone());
+                    }
+                    return clientDTO;
+                })
+                .toList();
+            dto.setBookingClients(clientDTOs);
+        }
+        
         return dto;
     }
 }

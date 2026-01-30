@@ -1,6 +1,7 @@
 package com.waturnos.dto.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.waturnos.enums.BookingStatus;
 
@@ -13,4 +14,5 @@ public class BookingSimpleDTO {
     private LocalDateTime endTime;
     private BookingStatus status;
     private Boolean isOverbooking;
+    private List<BookingClientSimpleDTO> bookingClients;
 }

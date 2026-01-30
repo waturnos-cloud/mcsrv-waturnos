@@ -29,3 +29,4 @@ replay_pid*
 /bin/
 .metadata/
 /MERCADOPAGO_IMPLEMENTATION_PLAN.md
+.env
