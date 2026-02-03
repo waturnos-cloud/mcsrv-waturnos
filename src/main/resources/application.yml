@@ -72,7 +72,7 @@ spring:
     encoding: UTF-8
     cache: false                      # Desactivar caché en desarrollo                      
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:waturnos-secret-key-change-this-in-production-12345678}
   expiration-ms: 32400000 #9 horas
   
 logging:
