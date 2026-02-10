@@ -50,21 +50,34 @@ public class MercadoPagoWebhookController {
 	        @RequestParam(required = false) String id) throws JsonMappingException, JsonProcessingException {
 
 	    String paymentId = null;
-	    log.error("RAW BODY: [{}]", rawBody);
+	    log.info("🔔 Webhook received - xSignature: {}, xRequestId: {}, queryId: {}", xSignature, xRequestId, id);
+	    log.info("🔔 RAW BODY: [{}]", rawBody);
+	    
 	    // Caso 1 — Webhook NUEVO con body firmado
 	    if (rawBody != null && !rawBody.isBlank()) {
 	        JsonNode node = objectMapper.readTree(rawBody);
 	        paymentId = node.path("data").path("id").asText(null);
+	        log.info("🔔 Payment ID extracted from body: {}", paymentId);
 
 	        boolean valid = webhookService.validateAndProcessWebhook(xSignature, xRequestId, paymentId);
-	        if (!valid) return ResponseEntity.status(401).build();
+	        if (!valid) {
+	            log.warn("🔔 ⚠️ Webhook signature validation failed");
+	            return ResponseEntity.status(401).build();
+	        }
 	    }
 	    // Caso 2 — Webhook viejo (sin firma)
 	    else if (id != null) {
 	        paymentId = id; // procesás pero NO validás firma
-	        log.error("Legacy webhook without signature");
+	        log.info("🔔 Legacy webhook without signature - Payment ID from query param: {}", paymentId);
 	    }
 
+	    // Validar que tenemos un payment ID antes de procesar
+	    if (paymentId == null || paymentId.isBlank() || "null".equals(paymentId)) {
+	        log.error("🔔 ❌ No payment ID found in webhook request. Cannot process.");
+	        return ResponseEntity.badRequest().body("Missing payment ID");
+	    }
+
+	    log.info("🔔 Processing payment notification for ID: {}", paymentId);
 	    webhookService.processPaymentNotification(paymentId);
 	    return ResponseEntity.ok().build();
 	}
