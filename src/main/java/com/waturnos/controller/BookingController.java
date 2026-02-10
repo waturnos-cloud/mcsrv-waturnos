@@ -131,7 +131,7 @@ public class BookingController {
 	@PostMapping("/cancel")
 	public ResponseEntity<ApiResponse<BookingDTO>> cancelBooking(@RequestBody CancelBooking dto) {
 
-		Booking canceled = service.cancelBooking(dto.getId(), dto.getReason());
+		Booking canceled = service.cancelBooking(dto.getId(), dto.getReason(), dto.getClientId());
 		return ResponseEntity.ok(new ApiResponse<>(true, "Booking canceled", mapper.toDto(canceled)));
 	}
 

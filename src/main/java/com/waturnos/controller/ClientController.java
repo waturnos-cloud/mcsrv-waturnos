@@ -103,6 +103,25 @@ public class ClientController {
 	}
 	
 	/**
+	 * Validate if a client exists and is linked to an organization.
+	 * Used after login to determine if client needs registration or linking.
+	 * DEPRECATED: Use /public/clients/validate instead (stateless endpoint).
+	 *
+	 * @param contact the contact (email or phone)
+	 * @param organizationId the organization id
+	 * @return the validation response
+	 */
+	@Deprecated
+	@GetMapping("/validate")
+	public ResponseEntity<ApiResponse<com.waturnos.dto.response.ClientValidationDTO>> validateClient(
+			@RequestParam String contact,
+			@RequestParam Long organizationId) {
+		
+		com.waturnos.dto.response.ClientValidationDTO validation = service.validateClient(contact, organizationId);
+		return ResponseEntity.ok(new ApiResponse<>(true, "Client validation completed", validation));
+	}
+	
+	/**
 	 * Search clients.
 	 *
 	 * @param name the name

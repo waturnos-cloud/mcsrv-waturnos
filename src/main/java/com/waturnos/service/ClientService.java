@@ -138,6 +138,15 @@ public interface ClientService {
 	Client findClientIfExists(Long organizationId, String email, String phone);
 	
 	/**
+	 * Validate if a client exists and is linked to an organization.
+	 * 
+	 * @param contact the contact (email or phone)
+	 * @param organizationId the organization id
+	 * @return the validation DTO with exists, linked, clientId, and clientData
+	 */
+	com.waturnos.dto.response.ClientValidationDTO validateClient(String contact, Long organizationId);
+	
+	/**
 	 * Register a new client and link to organization.
 	 * 
 	 * @param organizationId the organization id

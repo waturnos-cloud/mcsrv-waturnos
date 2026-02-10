@@ -52,11 +52,12 @@ public interface BookingService {
 	/**
 	 * Cancel.
 	 *
-	 * @param id     the id
-	 * @param reason the reason
+	 * @param id       the id
+	 * @param reason   the reason
+	 * @param clientId the client id (required - cannot be null)
 	 * @return the booking
 	 */
-	Booking cancelBooking(Long id, String reason);
+	Booking cancelBooking(Long id, String reason, Long clientId);
 
 	/**
 	 * Find bookings for today.

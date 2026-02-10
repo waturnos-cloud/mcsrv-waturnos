@@ -431,7 +431,12 @@ public class BookingServiceImpl implements BookingService {
 	@RequireRole({ UserRole.MANAGER, UserRole.ADMIN, UserRole.PROVIDER, UserRole.CLIENT })
 	@AuditAspect("BOOKING_CANCEL")
 	@Transactional
-	public Booking cancelBooking(Long id, String reason) {
+	public Booking cancelBooking(Long id, String reason, Long clientId) {
+		// Validar que clientId sea obligatorio
+		if (clientId == null) {
+			throw new IllegalArgumentException("Client ID is required");
+		}
+
 		Booking booking = bookingRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("Booking not found"));
 
@@ -444,7 +449,8 @@ public class BookingServiceImpl implements BookingService {
 		}
 
 		if ((!booking.getStatus().equals(BookingStatus.RESERVED))
-				&& (!booking.getStatus().equals(BookingStatus.RESERVED_AFTER_CANCEL))) {
+				&& (!booking.getStatus().equals(BookingStatus.RESERVED_AFTER_CANCEL))
+				&& (!booking.getStatus().equals(BookingStatus.PARTIALLY_RESERVED))) {
 			throw new EntityNotFoundException("Not valid status");
 		}
 
@@ -452,16 +458,23 @@ public class BookingServiceImpl implements BookingService {
 				.orElseThrow(() -> new EntityNotFoundException("Service not found"));
 
 		boolean waitList = service != null && Boolean.TRUE.equals(service.getWaitList());
-
-		// Eliminar todas las relaciones BookingClient (desvincular clientes)
 		Integer serviceCapacity = service.getCapacity();
-		List<BookingClient> bookingClientsToRemove = new ArrayList<>(booking.getBookingClients());
-		for (BookingClient bc : bookingClientsToRemove) {
-			booking.removeBookingClient(bc, serviceCapacity);
-		}
-				
-		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
-		if(!booking.getStatus().equals(BookingStatus.PARTIALLY_RESERVED)) {
+
+		// Buscar el BookingClient específico
+		BookingClient bookingClientToRemove = booking.getBookingClients().stream()
+				.filter(bc -> bc.getClient().getId().equals(clientId))
+				.findFirst()
+				.orElseThrow(() -> new EntityNotFoundException("Client not found in this booking"));
+
+		// Guardar cliente para notificación
+		Client clientToNotify = bookingClientToRemove.getClient();
+
+		// Remover el BookingClient específico
+		booking.removeBookingClient(bookingClientToRemove, serviceCapacity);
+
+		// Si después de remover el cliente, el booking queda sin clientes
+		if (booking.getBookingClients().isEmpty()) {
+			// Marcar como CANCELLED si no tiene más clientes
 			if (!waitlistRepo.findCandidatesForBooking(booking.getService().getId(),
 					booking.getStartTime().toLocalDate(), booking.getStartTime().toLocalTime(), booking.getId()).isEmpty()) {
 				booking.setStatus(BookingStatus.CANCELLED);
@@ -469,26 +482,23 @@ public class BookingServiceImpl implements BookingService {
 				// Si NO tiene waitList, desbloquear bookings bloqueados por exclusión
 				unlockBookingsByExclusion(booking);
 			}
+			booking.setCancelReason(reason);
 		}
-		booking.setCancelReason(reason);
+		// Si aún quedan clientes, el estado ya fue actualizado por removeBookingClient
+		// (PARTIALLY_RESERVED o FREE_AFTER_CANCEL según corresponda)
 
-		// Guardar los clientes ANTES de eliminarlos (para las notificaciones)
-		List<Client> clientsToNotify = booking.getBookingClients().stream()
-				.map(BookingClient::getClient)
-				.collect(Collectors.toList());
-
+		booking.setUpdatedAt(DateUtils.getCurrentDateTime());
 		Booking savedBooking = bookingRepository.save(booking);
 
 		// Notificar waitlist solo si el servicio tiene habilitada la lista de espera
-		if (waitList) {
+		// y solo si quedó completamente libre (sin clientes)
+		if (waitList && booking.getBookingClients().isEmpty()) {
 			waitlistService.notifyNextInLine(savedBooking);
 		}
 
-		// Notificar a los clientes que fueron desvinculados
-		clientsToNotify.forEach(client -> {
-			notificationFactory.sendAsync(buildRequest(booking, client, NotificationType.BOOKING_CANCELED,
-					"notification.subject.canceled.booking"));
-		});
+		// Notificar al cliente que fue desvinculado
+		notificationFactory.sendAsync(buildRequest(booking, clientToNotify, NotificationType.BOOKING_CANCELED,
+				"notification.subject.canceled.booking"));
 
 		return savedBooking;
 	}

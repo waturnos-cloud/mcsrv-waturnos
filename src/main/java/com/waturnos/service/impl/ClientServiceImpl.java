@@ -80,6 +80,53 @@ public class ClientServiceImpl implements ClientService {
 		securityAccessEntity.controlValidAccessOrganization(organizationId);
 		return clientOrganizationRepository.findClientsByOrganization(organizationId);
 	}
+	
+	/**
+	 * Validate if a client exists and is linked to an organization.
+	 *
+	 * @param contact the contact (email or phone)
+	 * @param organizationId the organization id
+	 * @return the validation DTO
+	 */
+	@Override
+	public com.waturnos.dto.response.ClientValidationDTO validateClient(String contact, Long organizationId) {
+		// Try to find client by email or phone (globally, not filtered by organization)
+		Optional<Client> clientOpt = clientRepository.findByEmailOrPhone(
+				contact, // Could be email or phone
+				contact  // Could be email or phone
+		);
+		
+		com.waturnos.dto.response.ClientValidationDTO validation = new com.waturnos.dto.response.ClientValidationDTO();
+		
+		if (clientOpt.isEmpty()) {
+			// Client doesn't exist at all
+			validation.setExists(false);
+			validation.setLinked(false);
+			validation.setClientId(null);
+			validation.setClientData(null);
+		} else {
+			Client client = clientOpt.get();
+			
+			// Client exists - check if linked to this organization
+			boolean isLinked = clientOrganizationRepository.existsByClientIdAndOrganizationId(
+					client.getId(), organizationId);
+			
+			validation.setExists(true);
+			validation.setLinked(isLinked);
+			validation.setClientId(client.getId());
+			
+			// Include client data
+			com.waturnos.dto.response.ClientValidationDTO.ClientDataDTO clientData = 
+					new com.waturnos.dto.response.ClientValidationDTO.ClientDataDTO();
+			clientData.setFullName(client.getFullName());
+			clientData.setEmail(client.getEmail());
+			clientData.setPhone(client.getPhone());
+			clientData.setDni(client.getDni());
+			validation.setClientData(clientData);
+		}
+		
+		return validation;
+	}
 
 	/**
 	 * Creates the.

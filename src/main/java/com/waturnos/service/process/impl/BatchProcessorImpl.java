@@ -250,8 +250,7 @@ public class BatchProcessorImpl implements BatchProcessor {
 						Client client = bc.getClient();
 						
 						affectedBookings.add(AffectedBookingDTO.builder()
-								.bookingId(booking.getId())
-								.clientFullName(client.getFullName())
+								.bookingId(booking.getId())							.clientId(client.getId())								.clientFullName(client.getFullName())
 								.clientPhone(client.getPhone())
 								.clientEmail(client.getEmail())
 								.startTime(booking.getStartTime())
@@ -268,70 +267,71 @@ public class BatchProcessorImpl implements BatchProcessor {
 						.collect(Collectors.groupingBy(AffectedBookingDTO::getBookingId));
 				
 				bookingGroups.forEach((bookingId, affectedClients) -> {
-					try {
-						// Cancelar el booking
-						bookingService.cancelBooking(bookingId, "Cambio en horarios de disponibilidad del servicio");
-						
-						// Notificar a cada cliente afectado
-						affectedClients.forEach(clientData -> {
-							try {
-								Map<String, String> properties = new HashMap<>();
-								properties.put("USERNAME", clientData.getClientFullName());
-								properties.put("DATEBOOKING", DateUtils.format(clientData.getStartTime(), dateFormaEmail));
-								properties.put("URLHOME", urlHome);
-								properties.put("REASON", "El provider ha modificado los horarios de atención");
-								
-								NotificationRequest notificationRequest = NotificationRequest.builder()
-										.email(clientData.getClientEmail())
-										.language("ES")
-										.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", 
-												null, LocaleContextHolder.getLocale()))
-										.type(NotificationType.CANCELBOOKING_BY_PROVIDER)
-										.properties(properties)
-										.build();
-								
-								notificationFactory.send(notificationRequest);
-								
-								log.info("Notified client {} about booking {} cancellation", 
-										clientData.getClientEmail(), bookingId);
-							} catch (Exception e) {
-								log.error("Error notifying client {} about booking cancellation", 
-										clientData.getClientEmail(), e);
-							}
-						});
-						
-					} catch (Exception e) {
-						log.error("Error processing affected booking {}", bookingId, e);
-					}
-				});
-				
-				log.info("Finished processing {} affected bookings for service {}", 
-						bookingGroups.size(), serviceId);
-			} else {
-				log.info("No affected bookings found for service {}", serviceId);
-			}
+					// Cancelar el booking para cada cliente afectado
+					affectedClients.forEach(clientData -> {
+						try {
+							// Cancelar para este cliente específico
+							bookingService.cancelBooking(bookingId, "Cambio en horarios de disponibilidad del servicio", clientData.getClientId());
+							log.info("Cancelled booking {} for client {} due to availability change", 
+								bookingId, clientData.getClientId());
+						} catch (Exception e) {
+							log.error("Error cancelling booking {} for client {}: {}", 
+								bookingId, clientData.getClientId(), e.getMessage());
+						}
+					});
+					
+					// Notificar a cada cliente afectado
+					affectedClients.forEach(clientData -> {
+						try {
+							Map<String, String> properties = new HashMap<>();
+							properties.put("USERNAME", clientData.getClientFullName());
+							properties.put("DATEBOOKING", DateUtils.format(clientData.getStartTime(), dateFormaEmail));
+							properties.put("URLHOME", urlHome);
+							properties.put("REASON", "El provider ha modificado los horarios de atención");
+							
+							NotificationRequest notificationRequest = NotificationRequest.builder()
+									.email(clientData.getClientEmail())
+									.language("ES")
+									.subject(messageSource.getMessage("notification.subject.cancel.booking.by.provider", 
+											null, LocaleContextHolder.getLocale()))
+									.type(NotificationType.CANCELBOOKING_BY_PROVIDER)
+									.properties(properties)
+									.build();
+							
+							notificationFactory.send(notificationRequest);
+							
+							log.info("Notified client {} about booking {} cancellation", 
+									clientData.getClientEmail(), bookingId);
+						} catch (Exception e) {
+							log.error("Error notifying client {} about booking cancellation", 
+									clientData.getClientEmail(), e);
+						}
+					});
+			});
 			
-		} catch (Exception e) {
-			log.error("Error processing affected bookings for service {}", serviceId, e);
+			log.info("Finished processing {} affected bookings for service {}", 
+					bookingGroups.size(), serviceId);
+		} else {
+			log.info("No affected bookings found for service {}", serviceId);
 		}
-	}
-	
-	/**
-	 * Verifica si un booking está dentro de los rangos de availability.
-	 */
-	private boolean isBookingWithinAvailability(Booking booking, List<AvailabilityDTO> availabilities) {
-		DayOfWeek bookingDay = booking.getStartTime().getDayOfWeek();
-		LocalTime bookingStartTime = booking.getStartTime().toLocalTime();
-		LocalTime bookingEndTime = booking.getEndTime().toLocalTime();
 		
-		// Buscar si existe un availability para ese día que cubra el horario
-		return availabilities.stream()
-				.filter(av -> av.getDayOfWeek() == bookingDay.getValue())
-				.anyMatch(av -> {
-					// El booking debe estar completamente dentro del rango
-					return !bookingStartTime.isBefore(av.getStartTime()) && 
-						   !bookingEndTime.isAfter(av.getEndTime());
-				});
+	} catch (Exception e) {
+		log.error("Error processing affected bookings for service {}", serviceId, e);
 	}
+}
+
+/**
+ * Verifica si un booking está dentro de los rangos de availability.
+ */
+private boolean isBookingWithinAvailability(Booking booking, List<AvailabilityDTO> availabilities) {
+	DayOfWeek bookingDay = booking.getStartTime().getDayOfWeek();
+	LocalTime bookingStartTime = booking.getStartTime().toLocalTime();
+	LocalTime bookingEndTime = booking.getEndTime().toLocalTime();
+	
+	return availabilities.stream()
+			.anyMatch(avail -> avail.getDayOfWeek() == bookingDay.getValue() && 
+					!bookingStartTime.isBefore(avail.getStartTime()) && 
+					!bookingEndTime.isAfter(avail.getEndTime()));
+}
 
 }

@@ -228,9 +228,11 @@ List<BookingReminder> findBookingsForTomorrow();
 	 * @return the list
 	 */
 	@Query("""
-		    SELECT b
+		    SELECT DISTINCT b
 		    FROM Booking b
-		    JOIN b.service s
+		    JOIN FETCH b.service s
+		    LEFT JOIN FETCH b.bookingClients bc
+		    LEFT JOIN FETCH bc.client
 		    WHERE s.user.id = :providerId
 		      AND b.startTime >= :start
 		      AND b.startTime < :end
@@ -248,9 +250,11 @@ List<BookingReminder> findBookingsForTomorrow();
 	 * @return the list
 	 */
 	@Query("""
-		    SELECT b
+		    SELECT DISTINCT b
 		    FROM Booking b
-		    JOIN b.service s
+		    JOIN FETCH b.service s
+		    LEFT JOIN FETCH b.bookingClients bc
+		    LEFT JOIN FETCH bc.client
 		    WHERE s.user.id = :providerId
 		      AND s.id = :serviceId
 		      AND b.startTime >= :start

@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class AffectedBookingDTO {
 	
 	private Long bookingId;
+	private Long clientId;
 	private String clientFullName;
 	private String clientPhone;
 	private String clientEmail;

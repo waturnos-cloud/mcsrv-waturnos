@@ -162,7 +162,7 @@ class BookingControllerTest {
 
 		testBooking.setStatus(BookingStatus.CANCELLED);
 
-		when(bookingService.cancelBooking(1L, "Cliente canceló")).thenReturn(testBooking);
+		when(bookingService.cancelBooking(1L, "Cliente canceló",1L)).thenReturn(testBooking);
 		when(bookingMapper.toDto(any(Booking.class))).thenReturn(testBookingDTO);
 
 		// Act & Assert
